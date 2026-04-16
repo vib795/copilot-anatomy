@@ -4,8 +4,8 @@ A reference implementation for configuring **GitHub Copilot** across a multi-mod
 polyglot team. Includes every customisation primitive — instructions, prompts, skills,
 agents, chat modes — plus governance tooling and an interactive visualisation.
 
-> **Live demo →** Open `copilot-anatomy.html` in a browser to explore every file and
-> how the pieces fit together.
+> **[Live demo →](https://vib795.github.io/copilot-anatomy/)** Explore every file and
+> how the pieces fit together — right in your browser.
 
 ---
 
@@ -99,15 +99,15 @@ COPILOT-CHANGELOG.md                 ← Asset change log
 
 Each model is routed to tasks that play to its strengths:
 
-| Model | Best for |
-|-------|----------|
-| **o3** | Architecture decisions, complex reasoning, planning |
-| **o4-mini** | Fast completions, boilerplate, quick fixes |
-| **gpt-4.1** | General-purpose, DevOps commands, balanced tasks |
-| **Claude Sonnet 4.5** | Code generation, review, documentation, tests |
-| **Claude Opus 4.5** | Security audits, thorough review, nuanced analysis |
-| **Gemini 2.5 Pro** | Reading large files or entire codebases (1M context) |
-| **Gemini 2.0 Flash** | Fast analysis of many files simultaneously |
+| Model                 | Best for                                             |
+| --------------------- | ---------------------------------------------------- |
+| **o3**                | Architecture decisions, complex reasoning, planning  |
+| **o4-mini**           | Fast completions, boilerplate, quick fixes           |
+| **gpt-4.1**           | General-purpose, DevOps commands, balanced tasks     |
+| **Claude Sonnet 4.5** | Code generation, review, documentation, tests        |
+| **Claude Opus 4.5**   | Security audits, thorough review, nuanced analysis   |
+| **Gemini 2.5 Pro**    | Reading large files or entire codebases (1M context) |
+| **Gemini 2.0 Flash**  | Fast analysis of many files simultaneously           |
 
 Routing is configured in `.vscode/settings.json` and referenced from prompt/agent frontmatter via `.github/model-compatibility.json`.
 
@@ -130,14 +130,14 @@ See [GOVERNANCE.md](.github/GOVERNANCE.md) for the full process.
 
 ## The six primitives
 
-| Primitive | Trigger | Location |
-|-----------|---------|----------|
-| **Team instructions** | Always on | `copilot-instructions.md` |
-| **Instruction files** | Auto, by file type | `instructions/*.instructions.md` |
-| **Prompt files** | Manual — `/command` | `prompts/*.prompt.md` |
-| **Skills** | Auto-discovered | `skills/*/SKILL.md` |
-| **Chat modes** | Manual — mode picker | `chatmodes/*.chatmode.md` |
-| **Agents** | Manual or chained | `agents/*.agent.md` |
+| Primitive             | Trigger              | Location                         |
+| --------------------- | -------------------- | -------------------------------- |
+| **Team instructions** | Always on            | `copilot-instructions.md`        |
+| **Instruction files** | Auto, by file type   | `instructions/*.instructions.md` |
+| **Prompt files**      | Manual — `/command`  | `prompts/*.prompt.md`            |
+| **Skills**            | Auto-discovered      | `skills/*/SKILL.md`              |
+| **Chat modes**        | Manual — mode picker | `chatmodes/*.chatmode.md`        |
+| **Agents**            | Manual or chained    | `agents/*.agent.md`              |
 
 ---
 
