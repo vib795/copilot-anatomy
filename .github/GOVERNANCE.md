@@ -50,9 +50,9 @@ this checklist. CI will enforce manifest sync and frontmatter validation automat
 
 The following checks run automatically via `.github/workflows/copilot-eval.yml`:
 
-| Check | What it validates | Blocking |
-|-------|-------------------|----------|
-| `naming.sh` | Kebab-case file names, correct extensions | Yes |
-| `frontmatter.sh` | Required YAML frontmatter fields | Yes |
-| `model-refs.sh` | Model names exist in compatibility matrix | Yes |
-| `manifest-sync.sh` | Every file in manifest exists; no untracked assets | Yes |
+| Check              | What it validates                                  | Blocking |
+| ------------------ | -------------------------------------------------- | -------- |
+| `naming.sh`        | Kebab-case file names, correct extensions          | Yes      |
+| `frontmatter.sh`   | Required YAML frontmatter fields                   | Yes      |
+| `model-refs.sh`    | Model names exist in compatibility matrix          | Yes      |
+| `manifest-sync.sh` | Every file in manifest exists; no untracked assets | Yes      |

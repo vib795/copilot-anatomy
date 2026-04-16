@@ -1,0 +1,10 @@
+# ── Vendored tools (not project source) ──
+.gstack/
+.atv/
+
+# ── Personal IDE overrides ──
+.vscode/settings.local.json
+
+# ── OS junk ──
+.DS_Store
+Thumbs.db

@@ -24,14 +24,14 @@
 
 Copilot has six customisation primitives. Each solves a different problem:
 
-| Primitive | Where | Trigger | Best for |
-|-----------|-------|---------|----------|
-| **Team instructions** | `copilot-instructions.md` | Always, automatically | Project overview, non-negotiables |
-| **Instructions files** | `instructions/*.instructions.md` | Auto, scoped by file type | Language/framework conventions |
-| **Prompt files** | `prompts/*.prompt.md` | Manual (`/command`) | Repeatable slash commands |
-| **Skills** | `skills/*/SKILL.md` | Auto-discovered by description | Task runbooks (helm, terraform, K8s) |
-| **Chat modes** | `chatmodes/*.chatmode.md` | Manual (mode picker) | Persona-driven conversation sessions |
-| **Agents** | `agents/*.agent.md` | Manual or chained | Autonomous multi-step workflows |
+| Primitive              | Where                            | Trigger                        | Best for                             |
+| ---------------------- | -------------------------------- | ------------------------------ | ------------------------------------ |
+| **Team instructions**  | `copilot-instructions.md`        | Always, automatically          | Project overview, non-negotiables    |
+| **Instructions files** | `instructions/*.instructions.md` | Auto, scoped by file type      | Language/framework conventions       |
+| **Prompt files**       | `prompts/*.prompt.md`            | Manual (`/command`)            | Repeatable slash commands            |
+| **Skills**             | `skills/*/SKILL.md`              | Auto-discovered by description | Task runbooks (helm, terraform, K8s) |
+| **Chat modes**         | `chatmodes/*.chatmode.md`        | Manual (mode picker)           | Persona-driven conversation sessions |
+| **Agents**             | `agents/*.agent.md`              | Manual or chained              | Autonomous multi-step workflows      |
 
 Think of it as layers, innermost to outermost:
 
@@ -52,38 +52,38 @@ Autonomous:  [agents] ← runs a full workflow, can chain to other agents
 
 ### Model strengths
 
-| Model | Strength | Cost tier | Use for |
-|-------|----------|-----------|---------|
-| `o3` | Deep multi-step reasoning | High | Architecture, planning, trade-off analysis |
-| `o4-mini` | Speed | Low | Inline completions, quick fixes, boilerplate |
-| `gpt-4.1` | Balanced, reliable | Medium | DevOps commands, general tasks, good default |
-| `claude-sonnet-4-5` | Code quality + instruction following | Medium | Code gen, review, docs, tests |
-| `claude-opus-4-5` | Maximum thoroughness | High | Security audit, nuanced analysis |
-| `claude-haiku-4-5` | Speed + cost | Low | Fast chatmodes, light review |
-| `gemini-2.5-pro` | 1M token context window | High | Reading entire codebases, large files |
-| `gemini-2.0-flash` | Fast long context | Medium | Quick multi-file analysis |
+| Model               | Strength                             | Cost tier | Use for                                      |
+| ------------------- | ------------------------------------ | --------- | -------------------------------------------- |
+| `o3`                | Deep multi-step reasoning            | High      | Architecture, planning, trade-off analysis   |
+| `o4-mini`           | Speed                                | Low       | Inline completions, quick fixes, boilerplate |
+| `gpt-4.1`           | Balanced, reliable                   | Medium    | DevOps commands, general tasks, good default |
+| `claude-sonnet-4-5` | Code quality + instruction following | Medium    | Code gen, review, docs, tests                |
+| `claude-opus-4-5`   | Maximum thoroughness                 | High      | Security audit, nuanced analysis             |
+| `claude-haiku-4-5`  | Speed + cost                         | Low       | Fast chatmodes, light review                 |
+| `gemini-2.5-pro`    | 1M token context window              | High      | Reading entire codebases, large files        |
+| `gemini-2.0-flash`  | Fast long context                    | Medium    | Quick multi-file analysis                    |
 
 ### Task → model routing table
 
-| Task | Model | Why |
-|------|-------|-----|
-| Typing autocomplete | `o4-mini` | Must be fast enough not to interrupt typing |
-| `/review` — code review | `claude-sonnet-4-5` | Best code understanding + natural feedback |
-| `/fix-issue` — bug fix | `claude-sonnet-4-5` | Reliable targeted edits, follows instructions |
-| `/deploy` — deployment checklist | `gpt-4.1` | Fast, structured CLI output |
-| `/architect` — system design | `o3` | Multi-step trade-off reasoning |
-| `/security-scan` — security audit | `claude-opus-4-5` | Most thorough, catches subtle issues |
-| `/document` — write docs | `claude-sonnet-4-5` | Natural prose + technical accuracy |
-| `/explain-codebase` — understand large code | `gemini-2.5-pro` | Only model that fits entire service |
-| `/test-gen` — write tests | `claude-sonnet-4-5` | Best at realistic, idiomatic tests |
-| Plan agent (planning phase) | `o3` | Systematic planning and risk analysis |
-| Implement agent (coding phase) | `claude-sonnet-4-5` | Code generation at scale |
-| Review agent (final review) | `claude-opus-4-5` | Maximum scrutiny before merge |
-| Code reviewer chatmode | `claude-sonnet-4-5` | Balanced speed + quality for back-and-forth |
-| Security auditor chatmode | `claude-opus-4-5` | Most thorough for deep sessions |
-| Architect chatmode | `o3` | Extended reasoning conversations |
-| DevOps chatmode | `gpt-4.1` | Fast, reliable for command lookups |
-| Large codebase reader chatmode | `gemini-2.5-pro` | 1M token window |
+| Task                                        | Model               | Why                                           |
+| ------------------------------------------- | ------------------- | --------------------------------------------- |
+| Typing autocomplete                         | `o4-mini`           | Must be fast enough not to interrupt typing   |
+| `/review` — code review                     | `claude-sonnet-4-5` | Best code understanding + natural feedback    |
+| `/fix-issue` — bug fix                      | `claude-sonnet-4-5` | Reliable targeted edits, follows instructions |
+| `/deploy` — deployment checklist            | `gpt-4.1`           | Fast, structured CLI output                   |
+| `/architect` — system design                | `o3`                | Multi-step trade-off reasoning                |
+| `/security-scan` — security audit           | `claude-opus-4-5`   | Most thorough, catches subtle issues          |
+| `/document` — write docs                    | `claude-sonnet-4-5` | Natural prose + technical accuracy            |
+| `/explain-codebase` — understand large code | `gemini-2.5-pro`    | Only model that fits entire service           |
+| `/test-gen` — write tests                   | `claude-sonnet-4-5` | Best at realistic, idiomatic tests            |
+| Plan agent (planning phase)                 | `o3`                | Systematic planning and risk analysis         |
+| Implement agent (coding phase)              | `claude-sonnet-4-5` | Code generation at scale                      |
+| Review agent (final review)                 | `claude-opus-4-5`   | Maximum scrutiny before merge                 |
+| Code reviewer chatmode                      | `claude-sonnet-4-5` | Balanced speed + quality for back-and-forth   |
+| Security auditor chatmode                   | `claude-opus-4-5`   | Most thorough for deep sessions               |
+| Architect chatmode                          | `o3`                | Extended reasoning conversations              |
+| DevOps chatmode                             | `gpt-4.1`           | Fast, reliable for command lookups            |
+| Large codebase reader chatmode              | `gemini-2.5-pro`    | 1M token window                               |
 
 ### How model selection works
 
@@ -169,18 +169,20 @@ your-project/
 ### `.github/copilot-instructions.md`
 
 **What it is**: The single most important file. Injected into Copilot's context for
-*every* interaction — inline completions, chat, agents, skill lookups. Think of it as
+_every_ interaction — inline completions, chat, agents, skill lookups. Think of it as
 the team constitution that every model reads before doing anything in your repo.
 
 **When loaded**: Always, automatically.
 
 **What to put here**:
+
 - Project overview (what it is, what languages/frameworks)
 - Non-negotiables that apply to everything
 - Available models and when to use them (helps models give better advice)
 - Commit message format
 
 **What NOT to put here**:
+
 - Long specifics for individual languages (use `instructions/` files instead)
 - Task-specific runbooks (use `skills/` instead)
 - Anything that only applies to 20% of tasks
@@ -197,6 +199,7 @@ Same syntax as `.gitignore`. Does NOT affect git — files are still tracked.
 **When loaded**: Before every context assembly.
 
 **What to exclude**:
+
 - Build artefacts (`target/`, `build/`, `*.class`, `*.jar`)
 - Terraform state (`*.tfstate`, `.terraform/`)
 - Secrets (`*.pem`, `*.key`, `*.jks`, `.env.*`)
@@ -215,12 +218,14 @@ keystores to any external API is a security risk.
 Everyone on the team gets these defaults when they clone the repo.
 
 **Key things it controls**:
+
 - `github.copilot.enable` — which file types get inline completions
 - `github.copilot.chat.models` — named model slots used by prompts/chatmodes
 - `codeGeneration.instructions` — which instruction files auto-load
 - `chat.experimental.chatModes` — enables the chatmodes/ feature
 
 **Named model slots** (defined here, referenced in frontmatter):
+
 ```json
 "fast":      o4-mini           → speed, inline, boilerplate
 "reason":    o3                → architecture, planning, trade-offs
@@ -232,7 +237,7 @@ Everyone on the team gets these defaults when they clone the repo.
 
 ---
 
-### `.vscode/settings.local.json` *(gitignored)*
+### `.vscode/settings.local.json` _(gitignored)_
 
 **What it is**: Personal overrides that never get committed. Machine-specific
 preferences, experimental settings, your own model preferences.
@@ -240,6 +245,7 @@ preferences, experimental settings, your own model preferences.
 **Add to `.gitignore`**: `.vscode/settings.local.json`
 
 **Common uses**:
+
 - Override a model slot with your personal preference
 - Point at a local JDK or Python interpreter
 - Increase timeouts when on a slow VPN
@@ -253,7 +259,7 @@ preferences, experimental settings, your own model preferences.
 Copilot agent mode live access to external systems during task execution.
 
 **How it works**: When you ask Copilot to "fix the bug from issue #42", it can
-call the GitHub MCP server to *actually read issue #42* rather than asking you
+call the GitHub MCP server to _actually read issue #42_ rather than asking you
 to paste it. Tools are called automatically when relevant.
 
 **Servers in this setup**:
@@ -275,7 +281,7 @@ to paste it. Tools are called automatically when relevant.
 ### `.vscode/extensions.json`
 
 **What it is**: When a teammate clones the repo, VS Code shows a notification:
-*"This repo recommends extensions. Install all?"*. This ensures everyone has the
+_"This repo recommends extensions. Install all?"_. This ensures everyone has the
 same toolchain without a setup wiki page.
 
 **Usage**: Just commit the file. VS Code handles the rest.
@@ -292,11 +298,12 @@ your active model picker. So `/architect` always uses `o3` even if you have
 `gpt-4.1` selected in the picker.
 
 **Frontmatter fields**:
+
 ```yaml
 ---
-mode: ask           # "ask" = chat response only, "edit" = modifies files
-model: o3           # which model to use for THIS command
-description: "..."  # shown in the /command picker list
+mode: ask # "ask" = chat response only, "edit" = modifies files
+model: o3 # which model to use for THIS command
+description: "..." # shown in the /command picker list
 ---
 ```
 
@@ -321,6 +328,7 @@ code for a matching file type. Unlike `copilot-instructions.md` (always loaded),
 these are scoped to specific contexts.
 
 **The `applyTo:` glob**:
+
 ```yaml
 applyTo: "**/*.{java,go,py}"     ← loads for these file types
 applyTo: "**/*Test*.java"         ← loads only for Java test files
@@ -346,15 +354,17 @@ applyTo: "**/{controller}/**"     ← loads for files in controller directories
 
 **What they are**: Task runbooks that Copilot loads automatically when your
 request matches the skill's description. Unlike instructions (file-type scoped),
-skills are loaded based on what you're *asking*, not which file is open.
+skills are loaded based on what you're _asking_, not which file is open.
 
 **How discovery works**:
+
 1. Copilot reads ONLY `name:` and `description:` from all `SKILL.md` files.
 2. If description matches your prompt, the full SKILL.md body is injected.
 3. You can also invoke manually: type the skill name in chat.
 
 **The description: field is critical** — it's the only thing Copilot reads to
 decide whether the skill is relevant. Write it like search keywords:
+
 ```yaml
 # Bad — too vague, won't trigger reliably:
 description: "Helm deployment skill"
@@ -366,6 +376,7 @@ description: >
 ```
 
 **Where skills live**:
+
 ```
 .github/skills/<name>/SKILL.md     ← project-scoped (committed, everyone uses)
 .claude/skills/<name>/SKILL.md     ← same spec, works with both Copilot and Claude Code
@@ -382,6 +393,7 @@ description: >
 
 **Adding bundled resources**: Put helper files in the skill folder and reference
 them in the SKILL.md:
+
 ```
 skills/incident-triage/
 ├── SKILL.md
@@ -399,24 +411,27 @@ take a task and run it — reading files, writing code, running builds, then
 handing off to the next agent.
 
 **Key feature — handoffs**: An agent can chain to another agent:
+
 ```yaml
 handoffs:
   - implement      ← when planning is done, button appears to hand off to implement
 ```
+
 This creates a Plan → Implement → Review pipeline where each phase uses
 the optimal model for that work type.
 
 **Frontmatter fields**:
+
 ```yaml
 ---
-name: plan                  # identifier used in handoffs:
-model: o3                   # model for this agent's work
-tools:                      # what the agent can do
+name: plan # identifier used in handoffs:
+model: o3 # model for this agent's work
+tools: # what the agent can do
   - read_file
   - write_file
   - run_terminal_command
 handoffs:
-  - implement               # which agent to hand off to when done
+  - implement # which agent to hand off to when done
 ---
 ```
 
@@ -428,6 +443,7 @@ handoffs:
 | `review` | claude-opus-4-5 | Read-only | (terminal) |
 
 **When to use agents vs chatmodes**:
+
 - Use **agents** when you want Copilot to execute a complete workflow autonomously
 - Use **chatmodes** when you want to have a conversation with an expert persona
 
@@ -443,10 +459,11 @@ for your entire conversation session.
 once). Chatmodes are persistent personas for extended back-and-forth.
 
 **Frontmatter fields**:
+
 ```yaml
 ---
 description: "What this mode does — shown in the picker"
-model: claude-opus-4-5      # model for all messages in this mode
+model: claude-opus-4-5 # model for all messages in this mode
 ---
 ```
 
@@ -467,7 +484,7 @@ model: claude-opus-4-5      # model for all messages in this mode
 ### `workflows/copilot-setup-steps.yml`
 
 **What it is**: A GitHub Actions workflow that bootstraps the environment for
-the Copilot *coding agent* (the autonomous one that works on GitHub issues).
+the Copilot _coding agent_ (the autonomous one that works on GitHub issues).
 
 **When it runs**: Automatically before the agent starts any assigned task.
 
@@ -486,10 +503,12 @@ verify its own work.
 every agent action, regardless of which model or agent triggered it.
 
 **`copilot_pre_action`** — runs BEFORE changes are made:
+
 - Blocks hardcoded credential patterns
 - Blocks terraform state commits
 
 **`copilot_post_action`** — runs AFTER changes:
+
 - Runs the test suite
 - Runs linters
 
@@ -501,30 +520,39 @@ doesn't rely on model behaviour — they're enforced at the workflow level.
 ## 5. Decision guide — what to use when
 
 ### "I want to do something once, right now"
+
 → Use a **slash command** (`/review`, `/deploy`, `/fix-issue`)
 
 ### "I want to have an extended conversation with an expert"
+
 → Use a **chatmode** (Code reviewer, Architect, Security auditor)
 
 ### "I want Copilot to understand how we do X in this project"
+
 → Add a **skill** (SKILL.md with a good description)
 
 ### "I want Copilot to follow rules when writing Java/Python/Go code"
+
 → Add an **instruction file** with the right `applyTo:` glob
 
 ### "I want to run a complete feature from planning to PR"
+
 → Use the **agent chain**: plan → implement → review
 
 ### "I need to read and understand a huge codebase"
+
 → Use the **Large codebase reader chatmode** (Gemini 2.5 Pro, 1M tokens)
 
 ### "I need to find a security vulnerability"
+
 → Use `/security-scan` or the **Security auditor chatmode** (Claude Opus, most thorough)
 
 ### "I'm designing a new system architecture"
+
 → Use `/architect` or the **Architect chatmode** (o3, best reasoning)
 
 ### "I want these rules to apply across ALL my projects"
+
 → Copy skills to `~/.copilot/skills/` and instructions to `~/.copilot/instructions/`
 
 ---
@@ -534,21 +562,24 @@ doesn't rely on model behaviour — they're enforced at the workflow level.
 ### Adding a new slash command
 
 Create `.github/prompts/my-command.prompt.md`:
+
 ```markdown
 ---
-mode: ask                    # or "edit" to modify files
-model: claude-sonnet-4-5     # pick the best model for this task
+mode: ask # or "edit" to modify files
+model: claude-sonnet-4-5 # pick the best model for this task
 description: "What /my-command does — shown in the picker"
 ---
 
 Your prompt instructions here.
 Tell Copilot exactly what to do when this command is invoked.
 ```
+
 The command is immediately available as `/my-command`.
 
 ### Adding a new skill
 
 Create `.github/skills/my-skill/SKILL.md`:
+
 ```markdown
 ---
 name: my-skill
@@ -562,11 +593,13 @@ description: >
 Detailed instructions for Copilot to follow when this skill is loaded.
 Include code examples, commands, decision tables — anything useful.
 ```
+
 The skill auto-discovers when Copilot detects relevance.
 
 ### Adding a new chatmode
 
 Create `.github/chatmodes/my-persona.chatmode.md`:
+
 ```markdown
 ---
 description: "My persona — what it does — shown in mode picker"
@@ -577,11 +610,13 @@ You are [name], a [role] with expertise in [domain].
 
 [Describe the persona's approach, rules, and constraints.]
 ```
+
 Appears immediately in the VS Code chat mode dropdown.
 
 ### Adding an instruction file
 
 Create `.github/instructions/my-rules.instructions.md`:
+
 ```markdown
 ---
 applyTo: "**/*.{java,go}"
@@ -591,7 +626,9 @@ applyTo: "**/*.{java,go}"
 
 [Rules Copilot should follow when generating code for matching files.]
 ```
+
 Then register it in `.vscode/settings.json`:
+
 ```json
 "github.copilot.chat.codeGeneration.instructions": [
   { "file": ".github/instructions/my-rules.instructions.md" }
@@ -615,6 +652,7 @@ Then register it in `.vscode/settings.json`:
 ### Sharing skills org-wide
 
 Skills can be published as GitHub repos and installed:
+
 ```bash
 # From the github/awesome-copilot community collection
 copilot plugin install my-skill@awesome-copilot
@@ -626,6 +664,7 @@ Or committed to a central config repo and referenced via
 ### Premium request usage
 
 Some models cost more than 1× the base request rate. Current multipliers:
+
 - `o3`, `claude-opus-4-5`, `gemini-2.5-pro` → higher multiplier (check GitHub docs)
 - `o4-mini`, `claude-haiku-4-5`, `gemini-2.0-flash` → 1× or close
 - `gpt-4.1` → check current docs
@@ -653,6 +692,7 @@ manifest entry or vice versa.
 named slots (referenced in `settings.json`), and fallback behavior.
 
 **Fallback policy**:
+
 - **Gated workflows** (security scans, eval checks): **fail-closed** — if the
   specified model is unavailable, the workflow blocks rather than silently falling back
 - **Advisory workflows** (code review, documentation): **controlled fallback** — may
@@ -662,11 +702,11 @@ named slots (referenced in `settings.json`), and fallback behavior.
 
 PRs touching Copilot assets trigger `.github/workflows/copilot-eval.yml`, which runs:
 
-| Check | What it validates |
-|-------|-------------------|
-| `naming.sh` | Kebab-case file names, correct extensions |
-| `frontmatter.sh` | Required YAML frontmatter fields per asset type |
-| `model-refs.sh` | Model names exist in the compatibility matrix |
+| Check              | What it validates                                       |
+| ------------------ | ------------------------------------------------------- |
+| `naming.sh`        | Kebab-case file names, correct extensions               |
+| `frontmatter.sh`   | Required YAML frontmatter fields per asset type         |
+| `model-refs.sh`    | Model names exist in the compatibility matrix           |
 | `manifest-sync.sh` | Every manifest path exists on disk; no untracked assets |
 
 All deterministic checks must pass (100%). Rubric-based behavioral checks will be
@@ -682,6 +722,7 @@ PR that adds, changes, deprecates, or removes a Copilot asset.
 
 See `.github/GOVERNANCE.md` for the full checklist when adding, deprecating, or
 transferring ownership of assets. Key rules:
+
 - Every asset must have a declared owner
 - Deprecation requires 60-day minimum grace period
 - New assets must pass all eval checks before merge
@@ -691,13 +732,17 @@ transferring ownership of assets. Key rules:
 ## 9. Troubleshooting
 
 ### Chatmodes not appearing in VS Code
+
 Add to `.vscode/settings.json`:
+
 ```json
 "github.copilot.chat.experimental.chatModes": true
 ```
+
 Restart VS Code after changing.
 
 ### Claude/Gemini not appearing in model picker
+
 1. Go to VS Code → Copilot Chat panel → model dropdown
 2. Click **"Manage Models"**
 3. Click **"Copilot"** (not "Anthropic" or "Google") in the provider list
@@ -707,25 +752,32 @@ Restart VS Code after changing.
 > not the individual company names.
 
 ### Skills not triggering automatically
+
 The `description:` field must match your natural language. Tips:
+
 - Include both the action ("deploy a service") and the symptoms ("image tag not found")
 - List specific keywords people would actually say
 - Test by typing `/skills list` to see what's discovered
 
 ### Model not being used as set in frontmatter
+
 - Verify the exact model string matches your picker dropdown name
 - Some models require the org admin to enable them first (see Admin section)
 - Premium models may be rate-limited; try again or switch to a fallback
 
 ### MCP tools not working
+
 Check env vars are exported in your shell:
+
 ```bash
 echo $GITHUB_TOKEN    # should print a value
 echo $KUBECONFIG      # should print a path
 ```
+
 Restart VS Code after setting new env vars — VS Code reads them at startup.
 
 ### "Another operation in progress" in Helm
+
 ```bash
 kubectl get secrets -n <namespace> | grep helm
 kubectl delete secret sh.helm.release.v1.<release>.v<n> -n <namespace>
@@ -733,6 +785,6 @@ kubectl delete secret sh.helm.release.v1.<release>.v<n> -n <namespace>
 
 ---
 
-*Last updated: March 2026. Model IDs and feature availability change — check
+_Last updated: March 2026. Model IDs and feature availability change — check
 [docs.github.com/copilot](https://docs.github.com/en/copilot/reference/ai-models/supported-models)
-for the current list.*
+for the current list._

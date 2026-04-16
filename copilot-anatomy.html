@@ -214,6 +214,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
   <div class="intro">
     <h2>Six primitives, one coherent system</h2>
     <p>Copilot's customisation stack works in layers: <strong>instructions</strong> are always on, <strong>skills</strong> load when relevant, <strong>prompts</strong> are invoked manually, <strong>chatmodes</strong> set a persona for a session, <strong>agents</strong> run autonomously in chains, and <strong>hooks</strong> enforce hard policies.</p>
+    <p>A <strong>governance layer</strong> — asset manifest, model compatibility matrix, CI evaluation gates, and changelog — ensures quality and ownership as the setup evolves.</p>
     <p>Every file below has a <strong>model: field</strong> in its frontmatter — this routes each task to the AI model best suited for it automatically, without you switching the picker. Click any row to see the full rationale.</p>
   </div>
   <div id="tree"></div>
@@ -245,7 +246,7 @@ const ITEMS = {
   chip: 'c-blue',
   model: null,
   trigger: { type: 'always', text: 'Always on — injected into every interaction in this repo' },
-  what: 'The single most important file. Injected into <strong>every</strong> Copilot interaction — inline completions, chat sessions, agents, skills, everything. Think of it as the team constitution that every model reads before doing anything in your repo.',
+  what: 'The single most important file. Injected into <strong>every</strong> Copilot interaction — inline completions, chat sessions, agents, skills, everything. Think of it as the team constitution that every model reads before doing anything in your repo. Includes a <strong>governance section</strong> requiring manifest entries, model compatibility checks, and changelog updates for all asset changes.',
   when: 'Automatically, before every request. There is no way to disable it per-session.',
   content: `name: none (no frontmatter needed)\n\n# What this project is\nA polyglot monorepo: Java 17/Spring Boot,\nGo CLIs, Python scripts, Terraform/OpenTofu.\nDeployed on EKS via Helm, built in Jenkins.\n\n# Available models\n- o3 → architecture, planning\n- claude-sonnet-4-5 → code quality\n- gemini-2.5-pro → large files\n...\n\n# Non-negotiables\n- No hardcoded credentials\n- Parameterised SQL only`,
   contentLabel: 'Example content',
@@ -831,6 +832,108 @@ const ITEMS = {
   tags: [{text:'pre/post hooks', color:'red'},{text:'policy gate', color:'red'},{text:'blocks secrets', color:'red'}]
 },
 
+// ── GOVERNANCE ────────────────────────────────────────────────────────────
+
+'copilot-changelog': {
+  path: 'COPILOT-CHANGELOG.md',
+  label: 'COPILOT-CHANGELOG.md',
+  chip: 'c-teal',
+  model: null,
+  trigger: { type: 'perm', text: 'Committed — updated with every PR that changes Copilot assets' },
+  what: 'Tracks all changes to Copilot assets (prompts, skills, agents, chatmodes, instructions, workflows, config) in <strong>Keep a Changelog</strong> format. Every PR that adds, changes, deprecates, or removes a Copilot asset must include an entry here.',
+  when: 'Updated manually as part of the PR process. The governance checklist in GOVERNANCE.md includes this as a required step.',
+  content: `# Copilot Assets Changelog\n\n## [Unreleased]\n\n### Added\n- Asset manifest\n- Model compatibility matrix\n- Evaluation harness (eval/)\n- Governance checklist\n\n### Changed\n- copilot-instructions.md — governance refs\n- COPILOT-CHEATSHEET.md — governance section`,
+  contentLabel: 'Example entries',
+  whyModel: null,
+  tips: [
+    '<strong>Every PR touching Copilot assets must include a changelog entry.</strong> This is enforced by the governance checklist.',
+    'Use the standard sections: Added, Changed, Deprecated, Removed, Security.',
+    'Deprecation entries must include a removal date (minimum 60-day grace period).',
+    'The [Unreleased] section is moved to a dated header when a release is cut.'
+  ],
+  tags: [{text:'committed', color:'green'},{text:'governance', color:'teal'},{text:'manual update', color:'gray'}]
+},
+
+'asset-manifest': {
+  path: '.github/copilot-asset-manifest.json',
+  label: 'copilot-asset-manifest.json',
+  chip: 'c-teal',
+  model: null,
+  trigger: { type: 'perm', text: 'Committed — validated by CI on every PR' },
+  what: 'Single source of truth for all Copilot assets shipped in this repo. Every prompt, skill, agent, chatmode, instruction, and workflow has an entry with: path, owner, classification (core/workflow/extension), generated flag, and description. CI validates that the manifest stays in sync with the filesystem.',
+  when: 'Referenced by the manifest-sync CI check. Updated whenever assets are added or removed.',
+  content: `{\n  "version": "1.0",\n  "assets": {\n    "prompts": [\n      {\n        "path": ".github/prompts/review.prompt.md",\n        "owner": "platform-team",\n        "classification": "core",\n        "generated": true,\n        "generatedBy": "copilot-setup.sh",\n        "model": "claude-sonnet-4-5",\n        "description": "5-lens code review"\n      }\n    ],\n    "instructions": [...],\n    "skills": [...],\n    "agents": [...]\n  }\n}`,
+  contentLabel: 'Manifest structure',
+  whyModel: null,
+  tips: [
+    '<strong>CI enforcement:</strong> The manifest-sync.sh check verifies every manifest path exists on disk, and every asset file on disk has a manifest entry.',
+    'The "generated" flag indicates whether the file is produced by copilot-setup.sh or hand-maintained — this affects the update workflow.',
+    'Classification (core/workflow/extension) helps prioritize which assets get the most rigorous review.',
+    'When adding a new asset, add the manifest entry in the same PR — the CI check will fail otherwise.'
+  ],
+  tags: [{text:'committed', color:'green'},{text:'CI validated', color:'teal'},{text:'governance', color:'teal'}]
+},
+
+'model-compatibility': {
+  path: '.github/model-compatibility.json',
+  label: 'model-compatibility.json',
+  chip: 'c-teal',
+  model: null,
+  trigger: { type: 'perm', text: 'Committed — referenced by model-refs CI check' },
+  what: 'Defines all available AI models with their capabilities, cost tiers, context windows, and named slots. Also defines the <strong>fallback policy</strong>: gated workflows (security, eval) fail-closed when a model is unavailable; advisory workflows (review, docs) use controlled fallback with reporting.',
+  when: 'Referenced by model-refs.sh CI check to validate that all model: fields in frontmatter reference a known model. Also serves as documentation for model selection decisions.',
+  content: `{\n  "models": [\n    {\n      "name": "o3",\n      "vendor": "openai",\n      "slot": "reason",\n      "capabilities": ["reasoning", "planning",\n        "architecture"],\n      "costTier": "premium",\n      "contextWindow": "200k"\n    }\n  ],\n  "fallbackPolicy": {\n    "gated": { "behavior": "fail-closed" },\n    "advisory": {\n      "behavior": "controlled-fallback",\n      "fallbacks": { "o3": ["gpt-4.1"] }\n    }\n  }\n}`,
+  contentLabel: 'Model matrix structure',
+  whyModel: null,
+  tips: [
+    '<strong>Gated vs advisory fallback:</strong> Security scans and eval checks fail-closed (no substitution). Code review and documentation allow controlled fallback with reporting.',
+    'The slot field (reason, code, thorough, etc.) maps to the named model slots in .vscode/settings.json.',
+    'When a new model becomes available, add it here first — the CI check will reject references to unknown models.',
+    'Cost tiers (standard/premium) help teams make informed model choices — premium models cost more per request.'
+  ],
+  tags: [{text:'committed', color:'green'},{text:'CI validated', color:'teal'},{text:'fallback policy', color:'amber'}]
+},
+
+'governance-md': {
+  path: '.github/GOVERNANCE.md',
+  label: 'GOVERNANCE.md',
+  chip: 'c-teal',
+  model: null,
+  trigger: { type: 'perm', text: 'Committed — reference checklist for all Copilot asset changes' },
+  what: 'The definitive checklist for adding, deprecating, or transferring ownership of Copilot assets. Covers: manifest entry, frontmatter validation, model reference, naming convention, changelog entry, and ownership declaration. Automated enforcement via CI is documented here.',
+  when: 'Consulted when adding new assets or modifying existing ones. The checklist items map 1:1 to CI checks that run automatically.',
+  content: `# Copilot Asset Governance\n\n## Adding New Assets\n\n- [ ] Manifest entry added\n- [ ] Frontmatter includes required fields\n- [ ] Model references valid model\n- [ ] Kebab-case naming followed\n- [ ] Changelog entry added\n- [ ] Owner declared\n\n## Deprecating Assets\n1. Add Deprecated entry (60-day min)\n2. Add notice to file\n3. Update manifest: deprecated: true\n4. After grace period: remove + log`,
+  contentLabel: 'Governance checklist',
+  whyModel: null,
+  tips: [
+    '<strong>Every checklist item has a matching CI check</strong> — naming.sh, frontmatter.sh, model-refs.sh, manifest-sync.sh.',
+    'Deprecation requires a 60-day minimum grace period — no surprise removals.',
+    'Ownership transfer must be documented: update the manifest owner field and add a changelog entry.',
+    'The governance doc is the authoritative source — if CI checks and this doc disagree, fix the CI check.'
+  ],
+  tags: [{text:'committed', color:'green'},{text:'governance', color:'teal'},{text:'checklist', color:'blue'}]
+},
+
+'copilot-eval-yml': {
+  path: '.github/workflows/copilot-eval.yml',
+  label: 'copilot-eval.yml',
+  chip: 'c-gray',
+  model: null,
+  trigger: { type: 'hook', text: 'Runs on PRs/pushes touching Copilot asset paths' },
+  what: 'CI workflow that validates Copilot assets on every PR. Runs four deterministic checks: <strong>naming</strong> (kebab-case), <strong>frontmatter</strong> (required YAML fields), <strong>model-refs</strong> (models exist in compatibility matrix), and <strong>manifest-sync</strong> (filesystem matches manifest). All checks must pass.',
+  when: 'Triggered by PRs or pushes that modify files in .github/prompts/, .github/agents/, .github/chatmodes/, .github/instructions/, .github/skills/, or governance config files.',
+  content: `name: Copilot Asset Evaluation\non:\n  pull_request:\n    paths:\n      - '.github/prompts/**'\n      - '.github/agents/**'\n      - '.github/chatmodes/**'\n      - '.github/instructions/**'\n      - '.github/skills/**'\n      - '.github/copilot-asset-manifest.json'\n      - '.github/model-compatibility.json'\n\njobs:\n  eval:\n    runs-on: ubuntu-latest\n    steps:\n      - Checkout\n      - naming.sh\n      - frontmatter.sh\n      - model-refs.sh\n      - manifest-sync.sh`,
+  contentLabel: 'Workflow structure',
+  whyModel: null,
+  tips: [
+    '<strong>All four checks must pass (100%).</strong> There is no "soft fail" for deterministic validation.',
+    'Rubric-based behavioral checks (using AI models) will be added in Phase 2 with a \u226580% pass threshold.',
+    'The path filter means this workflow only runs when Copilot asset files are touched — not on every PR.',
+    'If a check fails, read the output — it tells you exactly which file has which issue.'
+  ],
+  tags: [{text:'CI workflow', color:'green'},{text:'policy gate', color:'red'},{text:'deterministic', color:'teal'}]
+},
+
 // ── VSCODE ────────────────────────────────────────────────────────────────
 
 'settings-json': {
@@ -921,7 +1024,8 @@ const ITEMS = {
 const TREE = [
   { type:'section', label:'project root' },
   { id:'copilot-instructions', indent:1, cn:'├─', chip:'c-blue', label:'copilot-instructions.md', desc:'always on — team constitution', badges:[] },
-  { id:'copilotignore',        indent:1, cn:'└─', chip:'c-amber', label:'.copilotignore', desc:'exclude from AI context', badges:[] },
+  { id:'copilotignore',        indent:1, cn:'├─', chip:'c-amber', label:'.copilotignore', desc:'exclude from AI context', badges:[] },
+  { id:'copilot-changelog',    indent:1, cn:'└─', chip:'c-teal',  label:'COPILOT-CHANGELOG.md', desc:'tracks all Copilot asset changes', badges:[] },
 
   { type:'section', label:'.github/ — the control center' },
 
@@ -964,9 +1068,15 @@ const TREE = [
   { id:'longcontext-cm',     indent:2, cn:'├─', chip:'c-gray', label:'longcontext-reader.chatmode.md',desc:'entire codebases · 1M tokens', model:'m-gemini' },
   { id:'test-writer-cm',     indent:2, cn:'└─', chip:'c-gray', label:'test-writer.chatmode.md',     desc:'happy path · failure · boundary', model:'m-sonnet' },
 
-  { type:'folder', indent:1, cn:'└─', chip:'c-red', label:'workflows/', desc:'agent bootstrap + policy hooks', arrow:true, tbadge:'t-agent' },
+  { type:'folder', indent:1, cn:'├─', chip:'c-red', label:'workflows/', desc:'agent bootstrap + policy hooks + eval CI', arrow:true, tbadge:'t-agent' },
   { id:'copilot-setup-steps',indent:2, cn:'├─', chip:'c-gray', label:'copilot-setup-steps.yml', desc:'bootstraps full toolchain', tbadge:'t-agent' },
-  { id:'copilot-hooks',      indent:2, cn:'└─', chip:'c-gray', label:'copilot-hooks.yml',        desc:'blocks secrets · runs tests', tbadge:'t-hook' },
+  { id:'copilot-hooks',      indent:2, cn:'├─', chip:'c-gray', label:'copilot-hooks.yml',        desc:'blocks secrets · runs tests', tbadge:'t-hook' },
+  { id:'copilot-eval-yml',   indent:2, cn:'└─', chip:'c-gray', label:'copilot-eval.yml',         desc:'validates assets on PR', tbadge:'t-hook' },
+
+  { type:'folder', indent:1, cn:'├─', chip:'c-teal', label:'eval/', desc:'deterministic quality checks + rubric definitions', arrow:true },
+  { id:'asset-manifest',      indent:1, cn:'├─', chip:'c-teal',  label:'copilot-asset-manifest.json', desc:'single source of truth for all assets' },
+  { id:'model-compatibility',  indent:1, cn:'├─', chip:'c-teal',  label:'model-compatibility.json',    desc:'model capabilities + fallback policy' },
+  { id:'governance-md',        indent:1, cn:'└─', chip:'c-teal',  label:'GOVERNANCE.md',               desc:'checklist for adding/deprecating assets' },
 
   { type:'section', label:'.vscode/ — IDE + model config' },
   { id:'settings-json',  indent:1, cn:'├─', chip:'c-amber', label:'settings.json',       desc:'model slots · team defaults · committed', tbadge:'t-perm' },
