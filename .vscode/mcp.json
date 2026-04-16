@@ -1,0 +1,105 @@
+{
+  // MCP (Model Context Protocol) Tool Servers
+  // These give Copilot agent mode live access to external systems.
+  // All models can use these tools — model choice doesn't affect tool access.
+  //
+  // ACTIVATION: Tools load when Copilot enters agent mode (@ agent in chat).
+  // SECURITY: Each tool only has the permissions you grant via API keys/tokens.
+  // COST: MCP tool calls count toward premium request usage.
+
+  "servers": {
+
+    // ── GITHUB ────────────────────────────────────────────────────────────
+    // Reads issues, PRs, comments, repo structure, workflow runs.
+    // Lets Copilot say "let me check the issue for context" automatically.
+    // Required env var: GITHUB_TOKEN (personal access token with repo scope)
+    "github": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": { "GITHUB_PERSONAL_ACCESS_TOKEN": "${env:GITHUB_TOKEN}" }
+    },
+
+    // ── FILESYSTEM ────────────────────────────────────────────────────────
+    // Reads and writes files within the workspace root.
+    // Sandboxed to ${workspaceFolder} — cannot escape the project directory.
+    // Useful for agent mode to read files not in its active context.
+    "filesystem": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "${workspaceFolder}"]
+    },
+
+    // ── KUBERNETES / EKS ─────────────────────────────────────────────────
+    // Lists pods, reads logs, checks deployment status, views events.
+    // Read-only by default (kubectl get/describe/logs).
+    // Required env var: KUBECONFIG (path to your kubeconfig)
+    "kubernetes": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-kubernetes"],
+      "env": { "KUBECONFIG": "${env:KUBECONFIG}" }
+    },
+
+    // ── AWS ───────────────────────────────────────────────────────────────
+    // Searches AWS documentation and service references.
+    // Useful when writing Terraform or debugging AWS-specific errors.
+    // Required env vars: AWS_PROFILE, AWS_REGION
+    "aws-docs": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@aws/mcp-server-aws-documentation"],
+      "env": {
+        "AWS_PROFILE": "${env:AWS_PROFILE}",
+        "AWS_REGION":  "us-east-1"
+      }
+    },
+
+    // ── JFROG ARTIFACTORY ─────────────────────────────────────────────────
+    // Searches packages, checks build info, verifies artefact versions.
+    // Lets Copilot confirm "does version 2.3.1 exist in Artifactory?"
+    // Required env vars: ARTIFACTORY_URL, ARTIFACTORY_TOKEN
+    "artifactory": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@jfrog/mcp-server"],
+      "env": {
+        "JFROG_URL":          "${env:ARTIFACTORY_URL}",
+        "JFROG_ACCESS_TOKEN": "${env:ARTIFACTORY_TOKEN}"
+      }
+    },
+
+    // ── POSTGRES (read-only replica) ──────────────────────────────────────
+    // Queries the database schema and runs read-only queries.
+    // NEVER point at a production write replica.
+    // Required env var: DB_READONLY_URL (postgres connection string)
+    "postgres": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-postgres"],
+      "env": { "POSTGRES_CONNECTION_STRING": "${env:DB_READONLY_URL}" }
+    },
+
+    // ── WEB SEARCH ────────────────────────────────────────────────────────
+    // Searches the web for documentation, error messages, release notes.
+    // Especially useful for "what does this error mean?" questions.
+    // Required env var: BRAVE_API_KEY (free tier at brave.com/search/api)
+    "brave-search": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-brave-search"],
+      "env": { "BRAVE_API_KEY": "${env:BRAVE_API_KEY}" }
+    },
+
+    // ── MEMORY ────────────────────────────────────────────────────────────
+    // Persists key facts across Copilot sessions.
+    // Copilot can store "the staging DB is postgres-staging.internal" and
+    // recall it in future sessions without you repeating it.
+    // No required env vars — stores locally.
+    "memory": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-memory"]
+    }
+  }
+}

@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GitHub Copilot — Complete Folder Anatomy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:      #0d1117;
+  --bg2:     #161b22;
+  --bg3:     #21262d;
+  --border:  #30363d;
+  --border2: #3d444d;
+  --text:    #e6edf3;
+  --muted:   #7d8590;
+  --hint:    #484f58;
+  --mono:    'IBM Plex Mono', monospace;
+  --sans:    'Outfit', sans-serif;
+
+  --blue:    #58a6ff; --blue-bg:  #1f3a5f; --blue-dim: #0d2137;
+  --green:   #3fb950; --green-bg: #1a3a1f; --green-dim:#0d2112;
+  --amber:   #e3b341; --amber-bg: #3d2e0c; --amber-dim:#231a06;
+  --purple:  #bc8cff; --purple-bg:#2d1f5e; --purple-dim:#1a1035;
+  --orange:  #ffa657; --orange-bg:#3d2208; --orange-dim:#231305;
+  --pink:    #f778ba; --pink-bg:  #4a1535; --pink-dim:  #2b0b1e;
+  --teal:    #39d353; --teal-bg:  #0d3320; --teal-dim:  #071a10;
+  --red:     #f85149; --red-bg:   #3d0f0f; --red-dim:   #220808;
+  --coral:   #ff7b72; --coral-bg: #3d1a15; --coral-dim: #220e0b;
+
+  --model-o3:      #ffd60a; --model-o3-bg:   #2d2500;
+  --model-fast:    #3fb950; --model-fast-bg: #0d2112;
+  --model-bal:     #58a6ff; --model-bal-bg:  #0d2137;
+  --model-sonnet:  #bc8cff; --model-sonnet-bg:#1a1035;
+  --model-opus:    #f778ba; --model-opus-bg: #2b0b1e;
+  --model-gemini:  #00c8ff; --model-gemini-bg:#002d3d;
+  --model-flash:   #00e5cc; --model-flash-bg: #002d28;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;line-height:1.6;min-height:100vh}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--muted)}
+
+/* ── HEADER ── */
+.header{background:var(--bg2);border-bottom:1px solid var(--border);padding:18px 28px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;position:sticky;top:0;z-index:100}
+.header-left{display:flex;align-items:center;gap:12px}
+.octocat{width:32px;height:32px;flex-shrink:0}
+.header h1{font-size:17px;font-weight:600;color:var(--text);letter-spacing:-.3px}
+.header-sub{font-size:12px;color:var(--muted);margin-top:1px}
+.commit-badge{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-family:var(--mono);font-size:10px;color:var(--muted);white-space:nowrap}
+
+/* ── LEGEND ── */
+.legend{background:var(--bg2);border-bottom:1px solid var(--border);padding:10px 28px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.legend-label{font-size:10px;color:var(--hint);margin-right:4px;font-family:var(--mono)}
+.mbadge{display:inline-flex;align-items:center;gap:3px;font-family:var(--mono);font-size:9.5px;font-weight:500;padding:2px 7px;border-radius:10px;white-space:nowrap}
+.m-o3     {background:var(--model-o3-bg);    color:var(--model-o3)}
+.m-fast   {background:var(--model-fast-bg);  color:var(--model-fast)}
+.m-bal    {background:var(--model-bal-bg);   color:var(--model-bal)}
+.m-sonnet {background:var(--model-sonnet-bg);color:var(--model-sonnet)}
+.m-opus   {background:var(--model-opus-bg);  color:var(--model-opus)}
+.m-gemini {background:var(--model-gemini-bg);color:var(--model-gemini)}
+.m-flash  {background:var(--model-flash-bg); color:var(--model-flash)}
+.tbadge{font-size:9px;padding:2px 6px;border-radius:8px;font-weight:500;font-family:var(--mono);border:1px solid}
+.t-auto   {color:var(--amber); border-color:var(--amber);  background:var(--amber-dim)}
+.t-chain  {color:var(--purple);border-color:var(--purple); background:var(--purple-dim)}
+.t-iso    {color:var(--pink);  border-color:var(--pink);   background:var(--pink-dim)}
+.t-hook   {color:var(--red);   border-color:var(--red);    background:var(--red-dim)}
+.t-agent  {color:var(--green); border-color:var(--green);  background:var(--green-dim)}
+.t-perm   {color:var(--blue);  border-color:var(--blue);   background:var(--blue-dim)}
+
+/* ── MAIN ── */
+.main{max-width:900px;margin:0 auto;padding:28px 28px 80px}
+
+/* ── SECTION ── */
+.section{margin-bottom:4px}
+.section-hd{font-family:var(--mono);font-size:9.5px;font-weight:500;color:var(--hint);letter-spacing:.09em;text-transform:uppercase;margin:18px 0 6px;padding-left:2px}
+
+/* ── TREE ROW ── */
+.row{display:flex;align-items:center;min-height:30px;border-radius:6px;transition:background .12s;cursor:pointer;padding:2px 4px;gap:0;position:relative}
+.row:hover{background:var(--bg3)}
+.row.no-click{cursor:default}
+.row.no-click:hover{background:transparent}
+.connector{color:var(--hint);font-family:var(--mono);font-size:11px;margin-right:2px;flex-shrink:0;user-select:none}
+.folder-icon{flex-shrink:0;margin-right:3px}
+.chip{font-family:var(--mono);font-size:10.5px;font-weight:500;border-radius:4px;padding:2px 7px;white-space:nowrap;flex-shrink:0}
+.c-blue   {background:var(--blue-dim);  color:var(--blue);  border:1px solid #1f3a5f}
+.c-green  {background:var(--green-dim); color:var(--green); border:1px solid #1a3a1f}
+.c-amber  {background:var(--amber-dim); color:var(--amber); border:1px solid #3d2e0c}
+.c-gray   {background:var(--bg3);       color:var(--muted); border:1px solid var(--border)}
+.c-orange {background:var(--orange-dim);color:var(--orange);border:1px solid #3d2208}
+.c-purple {background:var(--purple-dim);color:var(--purple);border:1px solid #2d1f5e}
+.c-teal   {background:var(--teal-dim);  color:var(--teal);  border:1px solid #0d3320}
+.c-red    {background:var(--red-dim);   color:var(--red);   border:1px solid #3d0f0f}
+.c-pink   {background:var(--pink-dim);  color:var(--pink);  border:1px solid #4a1535}
+.dot-leader{flex:1;border-bottom:1px dotted var(--border2);margin:0 8px;min-width:8px}
+.row-desc{font-size:11px;color:var(--muted);white-space:nowrap;flex-shrink:0}
+.row-badges{display:flex;gap:3px;flex-shrink:0;margin-left:4px}
+.indent1{width:13px;flex-shrink:0}
+.indent2{width:26px;flex-shrink:0}
+.indent3{width:39px;flex-shrink:0}
+.arrow-hint{font-size:10px;color:var(--hint);margin-left:3px}
+
+/* ── OVERLAY ── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;opacity:0;pointer-events:none;transition:opacity .25s;backdrop-filter:blur(4px)}
+.overlay.open{opacity:1;pointer-events:all}
+
+/* ── PANEL ── */
+.panel{position:fixed;top:0;right:0;width:min(540px,100vw);height:100vh;background:var(--bg2);border-left:1px solid var(--border);z-index:300;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .28s cubic-bezier(.22,.68,0,1.05);overflow:hidden}
+.panel.open{transform:translateX(0)}
+.panel-header{background:var(--bg3);border-bottom:1px solid var(--border);padding:16px 20px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-shrink:0}
+.panel-path{font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:4px}
+.panel-title{font-size:16px;font-weight:600;color:var(--text);line-height:1.3}
+.close-btn{background:var(--bg2);border:1px solid var(--border);border-radius:6px;color:var(--muted);cursor:pointer;padding:5px 9px;font-size:16px;line-height:1;transition:all .15s;flex-shrink:0}
+.close-btn:hover{background:var(--bg3);color:var(--text);border-color:var(--border2)}
+.panel-body{flex:1;overflow-y:auto;padding:20px}
+
+/* ── PANEL SECTIONS ── */
+.ps{margin-bottom:20px}
+.ps-label{font-family:var(--mono);font-size:9.5px;font-weight:500;color:var(--hint);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px}
+.ps-content{font-size:13px;color:var(--muted);line-height:1.7}
+.ps-content strong{color:var(--text);font-weight:500}
+
+.model-box{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px 16px;display:flex;align-items:flex-start;gap:12px}
+.model-icon{font-size:22px;flex-shrink:0;margin-top:1px}
+.model-name{font-family:var(--mono);font-size:12px;font-weight:500;margin-bottom:3px}
+.model-why{font-size:12px;color:var(--muted);line-height:1.6}
+
+.trigger-box{background:var(--bg3);border-left:3px solid;border-radius:0 6px 6px 0;padding:10px 14px;font-size:12px;color:var(--muted);line-height:1.6}
+.trigger-box strong{color:var(--text)}
+
+.code-block{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:12px 14px;font-family:var(--mono);font-size:11px;line-height:1.7;color:#a5d6ff;overflow-x:auto;position:relative}
+.code-block .cm{color:var(--hint)} /* comment */
+.code-block .ck{color:#ff7b72}    /* key */
+.code-block .cv{color:#a5d6ff}    /* value */
+.code-block .cs{color:#79c0ff}    /* string */
+.code-block .ct{color:var(--amber)} /* type */
+.code-label{font-family:var(--mono);font-size:9px;color:var(--hint);background:var(--bg3);border:1px solid var(--border);border-radius:4px 4px 0 0;padding:3px 10px;display:inline-block;margin-bottom:-1px}
+
+.tip-list{list-style:none;display:flex;flex-direction:column;gap:6px}
+.tip-list li{display:flex;gap:8px;font-size:12px;color:var(--muted);line-height:1.6}
+.tip-list li::before{content:"›";color:var(--border2);flex-shrink:0;font-size:14px;line-height:1.4}
+.tip-list li strong{color:var(--text)}
+
+.tag-row{display:flex;flex-wrap:wrap;gap:5px}
+.tag{font-family:var(--mono);font-size:10px;padding:2px 7px;border-radius:4px;border:1px solid}
+
+/* ── INTRO CARD ── */
+.intro{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:24px}
+.intro h2{font-size:14px;font-weight:600;color:var(--text);margin-bottom:8px}
+.intro p{font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:6px}
+.intro p:last-child{margin-bottom:0}
+
+/* ── RESPONSIVE ── */
+@media(max-width:640px){
+  .header{padding:14px 16px}
+  .legend{padding:8px 16px}
+  .main{padding:18px 16px 60px}
+  .panel{width:100vw;height:85vh;top:auto;bottom:0;border-left:none;border-top:1px solid var(--border);border-radius:16px 16px 0 0;transform:translateY(100%)}
+  .panel.open{transform:translateY(0)}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <svg class="octocat" viewBox="0 0 32 32" fill="none">
+      <circle cx="16" cy="16" r="15" stroke="#30363d"/>
+      <ellipse cx="16" cy="14" rx="7" ry="6" fill="#6E40C9"/>
+      <circle cx="13.2" cy="14" r="2" fill="white"/>
+      <circle cx="18.8" cy="14" r="2" fill="white"/>
+      <circle cx="13.9" cy="13.3" r=".8" fill="#6E40C9"/>
+      <circle cx="19.5" cy="13.3" r=".8" fill="#6E40C9"/>
+      <rect x="13.2" y="20" width="5.6" height="4.5" rx="1.8" fill="#6E40C9"/>
+      <path d="M12.2 24 Q10 26 9 29" stroke="#6E40C9" stroke-width="1.4" stroke-linecap="round" fill="none"/>
+      <path d="M19.8 24 Q22 26 23 29" stroke="#6E40C9" stroke-width="1.4" stroke-linecap="round" fill="none"/>
+      <path d="M10 29 Q8.5 28 7 28" stroke="#6E40C9" stroke-width="1.4" stroke-linecap="round" fill="none"/>
+      <path d="M22 29 Q23.5 28 25 28" stroke="#6E40C9" stroke-width="1.4" stroke-linecap="round" fill="none"/>
+    </svg>
+    <div>
+      <h1>Complete Copilot folder anatomy — multi-model</h1>
+      <div class="header-sub">Click any file to see full details, model rationale, and examples</div>
+    </div>
+  </div>
+  <div class="commit-badge">commit .github/ to git</div>
+</div>
+
+<div class="legend">
+  <span class="legend-label">models →</span>
+  <span class="mbadge m-o3">o3 reasoning</span>
+  <span class="mbadge m-fast">o4-mini speed</span>
+  <span class="mbadge m-bal">gpt-4.1 balanced</span>
+  <span class="mbadge m-sonnet">claude-sonnet code</span>
+  <span class="mbadge m-opus">claude-opus thorough</span>
+  <span class="mbadge m-gemini">gemini-2.5 long-ctx</span>
+  <span class="mbadge m-flash">gemini-flash fast</span>
+  <span style="margin-left:6px" class="legend-label">triggers →</span>
+  <span class="tbadge t-auto">auto</span>
+  <span class="tbadge t-chain">chainable</span>
+  <span class="tbadge t-iso">isolated</span>
+  <span class="tbadge t-hook">hooks</span>
+  <span class="tbadge t-agent">agent</span>
+  <span class="tbadge t-perm">permissions</span>
+</div>
+
+<div class="main">
+  <div class="intro">
+    <h2>Six primitives, one coherent system</h2>
+    <p>Copilot's customisation stack works in layers: <strong>instructions</strong> are always on, <strong>skills</strong> load when relevant, <strong>prompts</strong> are invoked manually, <strong>chatmodes</strong> set a persona for a session, <strong>agents</strong> run autonomously in chains, and <strong>hooks</strong> enforce hard policies.</p>
+    <p>Every file below has a <strong>model: field</strong> in its frontmatter — this routes each task to the AI model best suited for it automatically, without you switching the picker. Click any row to see the full rationale.</p>
+  </div>
+  <div id="tree"></div>
+</div>
+
+<div class="overlay" id="overlay" onclick="closePanel()"></div>
+<div class="panel" id="panel">
+  <div class="panel-header">
+    <div>
+      <div class="panel-path" id="panel-path"></div>
+      <div class="panel-title" id="panel-title"></div>
+    </div>
+    <button class="close-btn" onclick="closePanel()">✕</button>
+  </div>
+  <div class="panel-body" id="panel-body"></div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════════════
+// DATA
+// ═══════════════════════════════════════════════════════════════════════════
+const ITEMS = {
+
+// ── ROOT ─────────────────────────────────────────────────────────────────
+
+'copilot-instructions': {
+  path: '.github/copilot-instructions.md',
+  label: 'copilot-instructions.md',
+  chip: 'c-blue',
+  model: null,
+  trigger: { type: 'always', text: 'Always on — injected into every interaction in this repo' },
+  what: 'The single most important file. Injected into <strong>every</strong> Copilot interaction — inline completions, chat sessions, agents, skills, everything. Think of it as the team constitution that every model reads before doing anything in your repo.',
+  when: 'Automatically, before every request. There is no way to disable it per-session.',
+  content: `name: none (no frontmatter needed)\n\n# What this project is\nA polyglot monorepo: Java 17/Spring Boot,\nGo CLIs, Python scripts, Terraform/OpenTofu.\nDeployed on EKS via Helm, built in Jenkins.\n\n# Available models\n- o3 → architecture, planning\n- claude-sonnet-4-5 → code quality\n- gemini-2.5-pro → large files\n...\n\n# Non-negotiables\n- No hardcoded credentials\n- Parameterised SQL only`,
+  contentLabel: 'Example content',
+  whyModel: null,
+  tips: [
+    '<strong>Keep it under ~200 lines.</strong> It costs context budget on every single request — every word here is repeated thousands of times across your team.',
+    '<strong>Write what applies to everything.</strong> Language-specific rules go in instructions/ files instead.',
+    '<strong>List your available models.</strong> Mentioning which models are available and what they\'re good for helps Copilot give better advice about tool choice.',
+    '<strong>Be opinionated.</strong> "Use constructor injection" is better than "consider using constructor injection".'
+  ],
+  tags: [{text:'always on', color:'blue'},{text:'committed', color:'green'},{text:'no frontmatter', color:'gray'}]
+},
+
+'copilotignore': {
+  path: '.copilotignore',
+  label: '.copilotignore',
+  chip: 'c-amber',
+  model: null,
+  trigger: { type: 'always', text: 'Applied before every context assembly — filters what Copilot reads' },
+  what: 'Tells Copilot which files to <strong>exclude from its context window</strong>. Uses the exact same syntax as .gitignore. Critically: this does NOT affect git — files are still tracked and committed normally. It only prevents them from being sent to AI models.',
+  when: 'Before every context assembly. Files matching patterns here are invisible to all AI operations.',
+  content: `# Build artefacts\ntarget/\nbuild/\n*.class\n*.jar\n\n# Secrets — NEVER send to any AI\n**/*.pem\n**/*.key\n**/*.jks\n.env.*\n!.env.example\n\n# Terraform state\n**/*.tfstate\n**/.terraform/\n\n# Generated code\n**/generated/\n**/*.pb.go`,
+  contentLabel: 'Key patterns to include',
+  whyModel: null,
+  tips: [
+    '<strong>Secrets first.</strong> Any .pem, .key, .jks, or .env file should be excluded. Sending keystores to external APIs is a security incident waiting to happen.',
+    '<strong>Build artefacts waste tokens.</strong> Compiled .class files contain no useful signal for code generation.',
+    '<strong>Keep in sync with .gitignore.</strong> Run a diff occasionally — anything in .gitignore that isn\'t here could leak into AI context.',
+    '<strong>Use ! to un-exclude.</strong> Add !*.tfvars.example to keep example files visible even if *.tfvars is excluded.'
+  ],
+  tags: [{text:'gitignored itself', color:'amber'},{text:'no frontmatter', color:'gray'},{text:'privacy filter', color:'red'}]
+},
+
+// ── PROMPTS ───────────────────────────────────────────────────────────────
+
+'review': {
+  path: '.github/prompts/review.prompt.md',
+  label: 'review.prompt.md',
+  chip: 'c-gray',
+  model: 'sonnet',
+  trigger: { type: 'manual', text: 'Manual — type /review in Copilot Chat' },
+  what: 'A structured 5-lens code review: correctness, security, performance, style, and tests. Run it on any file or selection. Outputs per-finding line ranges, one-sentence issues, and concrete fixes.',
+  when: 'When you type /review in the Copilot Chat input. Works on selected code or the active file if nothing is selected.',
+  content: `---\nagent: ask\nmodel: claude-sonnet-4-5\ndescription: "Code review: correctness, security, performance, style, tests"\n---\n\nReview the selected code (or active file).\nWork through these lenses in order:\n\n## 1. Correctness\n## 2. Security\n## 3. Performance\n## 4. Style\n## 5. Tests\n\nEnd with: LGTM / needs minor / needs major`,
+  contentLabel: 'Frontmatter + structure',
+  whyModel: 'claude-sonnet-4-5 is chosen because code review requires both deep code understanding <em>and</em> the ability to express nuanced feedback clearly. Claude Sonnet consistently produces specific, actionable review comments that follow multi-step review checklists reliably. It avoids both false positives (flagging non-issues) and false negatives.',
+  tips: [
+    '<strong>agent: ask</strong> means the command produces a chat response — it does not edit files.',
+    '<strong>Select code first</strong> before running /review to focus on a specific function or class.',
+    'The model: field <strong>overrides your active picker</strong> — you always get Sonnet here even if you\'re using GPT-4o.',
+    'Add your own lenses by editing the prompt file — e.g. add a "Logging" or "Observability" section.'
+  ],
+  tags: [{text:'/review', color:'blue'},{text:'agent: ask', color:'gray'},{text:'claude-sonnet-4-5', color:'purple'}]
+},
+
+'fix-issue': {
+  path: '.github/prompts/fix-issue.prompt.md',
+  label: 'fix-issue.prompt.md',
+  chip: 'c-gray',
+  model: 'sonnet',
+  trigger: { type: 'manual', text: 'Manual — type /fix-issue in Copilot Chat' },
+  what: 'A structured bug-fix workflow: state the problem, trace the root cause, apply the minimal fix, update or add a test, provide verification commands. Uses <strong>agent: edit</strong> so it actually modifies files.',
+  when: 'When you type /fix-issue. Open the file with the bug first, or select the problematic code.',
+  content: `---\nagent: edit\nmodel: claude-sonnet-4-5\ndescription: "Diagnose root cause and fix the bug"\n---\n\n## Step 1 — State the problem\n## Step 2 — Root cause\n(trace before writing code)\n## Step 3 — Apply the fix\n(minimal change only)\n## Step 4 — Add/update a test\n## Step 5 — Verification commands`,
+  contentLabel: 'Frontmatter + 5-step structure',
+  whyModel: 'Claude Sonnet excels at following multi-step diagnostic workflows and producing targeted edits. It avoids the common failure mode of "fix the symptom without understanding the root cause." The agent: edit field means it writes the changes directly rather than just showing them.',
+  tips: [
+    '<strong>agent: edit</strong> — unlike /review, this command modifies your files directly. Review the diff after.',
+    'Step 2 is the most important: stating the root cause before writing code prevents regression fixes.',
+    'If the bug has a JIRA ticket number, mention it in your prompt — the command is designed to acknowledge it.',
+    'The test naming convention is enforced: shouldReturn404WhenUserNotFound() in Java, test_raises_not_found_when_user_missing in Python.'
+  ],
+  tags: [{text:'/fix-issue', color:'blue'},{text:'agent: edit', color:'red'},{text:'modifies files', color:'red'}]
+},
+
+'deploy': {
+  path: '.github/prompts/deploy.prompt.md',
+  label: 'deploy.prompt.md',
+  chip: 'c-gray',
+  model: 'bal',
+  trigger: { type: 'manual', text: 'Manual — type /deploy in Copilot Chat' },
+  what: 'Reads the active file to identify service name, version, and target environment, then generates a <strong>complete deployment checklist</strong>: pre-flight, helm upgrade command, smoke tests, rollback procedure, and post-deploy checklist.',
+  when: 'When you type /deploy. Open the Helm values file or service config first so it can read the context.',
+  content: `---\nagent: ask\nmodel: gpt-4.1\ndescription: "Deployment checklist and Helm commands"\n---\n\n## 1. Pre-flight checklist\n## 2. Dry run (always first)\nhelm diff upgrade ...\n## 3. Live deploy\nhelm upgrade --install ... --atomic\n## 4. Smoke test\nkubectl rollout status ...\n## 5. Rollback\nhelm rollback ... 0`,
+  contentLabel: 'Frontmatter + checklist structure',
+  whyModel: 'GPT-4.1 is chosen over the heavier reasoning models because DevOps checklists are structured, reproducible tasks — not deep reasoning problems. GPT-4.1 reliably generates correct CLI commands and produces well-structured checklists faster than o3. Speed matters here — you often run /deploy when you\'re about to push to prod.',
+  tips: [
+    'The dry run step (helm diff) is <strong>mandatory</strong> in the template. Never skip it — stop if -/+ lines appear.',
+    '<strong>--atomic</strong> is included by default: Helm auto-rolls-back if health checks fail within 5 minutes.',
+    'All <placeholder> values are filled from your active file context — open the right file first.',
+    'For production deploys, the checklist includes a notification step for the on-call engineer.'
+  ],
+  tags: [{text:'/deploy', color:'blue'},{text:'agent: ask', color:'gray'},{text:'gpt-4.1', color:'blue'}]
+},
+
+'architect': {
+  path: '.github/prompts/architect.prompt.md',
+  label: 'architect.prompt.md',
+  chip: 'c-gray',
+  model: 'o3',
+  trigger: { type: 'manual', text: 'Manual — type /architect in Copilot Chat' },
+  what: 'Produces a structured architecture analysis: clarifying questions, multiple options with explicit trade-offs, a recommendation with conditions, and a formatted <strong>ADR (Architecture Decision Record)</strong>.',
+  when: 'When you type /architect. Describe the design problem in your prompt. Best used when starting a new service, choosing between technologies, or planning a major refactor.',
+  content: `---\nagent: ask\nmodel: o3\ndescription: "System design, trade-offs, and ADRs"\n---\n\n## Before proposing: clarify\n1. Expected load / scale\n2. Consistency vs availability\n3. Team operational maturity\n\n## Options considered\nOption N: ... | Optimises for: X | Costs: Y\n\n## ADR format\nContext → Decision → Consequences\n→ Alternatives considered`,
+  contentLabel: 'Frontmatter + output structure',
+  whyModel: 'o3 is the only model in the lineup specifically optimised for multi-step reasoning and weighing complex trade-offs. Architecture decisions involve second-order consequences, operational constraints, and team-specific factors that simpler models handle poorly. o3 systematically works through implications before committing to a recommendation.',
+  tips: [
+    '<strong>o3 is the most expensive model here.</strong> Use /architect for real design decisions, not quick questions.',
+    'The ADR format (Context → Decision → Consequences → Alternatives) is enforced in the template — commit the output as a file.',
+    'Describe your constraints explicitly: team size, existing infra, on-call maturity. o3 factors these in.',
+    'Re-run with different constraints to explore the option space before committing.'
+  ],
+  tags: [{text:'/architect', color:'blue'},{text:'agent: ask', color:'gray'},{text:'o3 reasoning', color:'amber'}]
+},
+
+'security-scan': {
+  path: '.github/prompts/security-scan.prompt.md',
+  label: 'security-scan.prompt.md',
+  chip: 'c-gray',
+  model: 'opus',
+  trigger: { type: 'manual', text: 'Manual — type /security-scan in Copilot Chat' },
+  what: 'A comprehensive threat-model audit covering: authentication, authorisation, injection, secrets exposure, supply chain, and infrastructure. Per finding: severity (Critical/High/Medium/Low), what, where (file:line), impact, fix, and OWASP/CWE reference.',
+  when: 'When you type /security-scan. Run before PRs that touch auth, permissions, new endpoints, or infrastructure changes.',
+  content: `---\nagent: ask\nmodel: claude-opus-4-5\ndescription: "Security audit — threat model, OWASP, CVEs"\n---\n\nSeverity: 🔴 Critical | 🟠 High | 🟡 Med | 🔵 Low\n\nChecks:\n- Auth & authorisation\n- SQL/command/log injection\n- Secrets & data exposure\n- Supply chain\n- Infrastructure (K8s, Terraform)\n\nPer finding: what · where · impact · fix · CWE`,
+  contentLabel: 'Frontmatter + audit structure',
+  whyModel: 'Claude Opus-4-5 is the most capable Claude model and is used here because security review has the highest cost of false negatives — a missed vulnerability is a production incident. Opus catches subtle issues that Sonnet misses: timing attacks, indirect injection vectors, privilege escalation paths. The extra cost is justified.',
+  tips: [
+    '<strong>This is the most expensive prompt in the setup.</strong> Run it on auth PRs and new endpoints, not every commit.',
+    'Stack-specific patterns are built in: Spring Boot actuator exposure, Go exec.Command injection, K8s privileged containers.',
+    'Each finding includes a CWE reference so you can link directly to the vulnerability description.',
+    'The severity ratings follow CVSS-inspired criteria — Critical means remotely exploitable with high impact.'
+  ],
+  tags: [{text:'/security-scan', color:'blue'},{text:'agent: ask', color:'gray'},{text:'claude-opus-4-5', color:'pink'}]
+},
+
+'document': {
+  path: '.github/prompts/document.prompt.md',
+  label: 'document.prompt.md',
+  chip: 'c-gray',
+  model: 'sonnet',
+  trigger: { type: 'manual', text: 'Manual — type /document in Copilot Chat' },
+  what: 'Generates or updates documentation for the selected code. Applies the correct format by language: Javadoc + SpringDoc for Java, GoDoc for Go, Google-style docstrings for Python, description fields for Terraform.',
+  when: 'When you type /document. Select the function, class, or file you want documented first.',
+  content: `---\nagent: edit\nmodel: claude-sonnet-4-5\ndescription: "Generate docs: Javadoc/GoDoc/docstrings/Terraform"\n---\n\nJava → Javadoc + @Operation (SpringDoc)\nGo → GoDoc on every exported symbol\nPython → Google-style: Args/Returns/Raises\nTerraform → description on variable+output\n\nRules:\n- Document WHAT and WHY, not HOW\n- Include usage examples for non-trivial APIs\n- Never restate the code`,
+  contentLabel: 'Frontmatter + language rules',
+  whyModel: 'Claude Sonnet is optimal for documentation because it produces <em>readable prose</em> alongside technical accuracy. Documentation needs to be something humans actually want to read, not just technically correct. Sonnet\'s natural language quality outperforms GPT-4.1 on prose generation tasks.',
+  tips: [
+    '<strong>agent: edit</strong> — this writes docs directly into your file. Review the diff.',
+    'For Spring Boot REST controllers, /document adds @Operation(summary=...) + @ApiResponse automatically.',
+    'GoDoc convention is enforced: first sentence ends with the symbol name, package doc goes in doc.go.',
+    'The rule "never restate the code" prevents `count++ // increment count` style noise.'
+  ],
+  tags: [{text:'/document', color:'blue'},{text:'agent: edit', color:'red'},{text:'claude-sonnet-4-5', color:'purple'}]
+},
+
+'explain-codebase': {
+  path: '.github/prompts/explain-codebase.prompt.md',
+  label: 'explain-codebase.prompt.md',
+  chip: 'c-gray',
+  model: 'gemini',
+  trigger: { type: 'manual', text: 'Manual — type /explain-codebase in Copilot Chat' },
+  what: 'Reads entire large files or complete codebases using Gemini\'s 1M token context window. Produces: what it does (plain language), key concepts, data flow trace, gotchas, and where to start if making a change.',
+  when: 'When you type /explain-codebase. Best for files over 2,000 lines, entire packages, or unfamiliar services. Use "Add files to context" in VS Code to attach multiple files before running.',
+  content: `---\nagent: ask\nmodel: gemini-2.5-pro\ndescription: "Explain large files/codebases — 1M token context"\n---\n\n## 1. What this does (2-3 sentences)\n## 2. Key concepts (3-5 things)\n## 3. Data flow / request lifecycle\n## 4. Non-obvious behaviour\n## 5. Where to start if making a change\n\nNote: Never truncate — that's the point.`,
+  contentLabel: 'Frontmatter + output structure',
+  whyModel: 'Gemini 2.5 Pro has a <strong>1 million token context window</strong> — the only model in this setup that can read an entire large service in a single call without chunking. A typical Spring Boot service with all its tests might be 50,000+ tokens. Other models would need to chunk it, losing the holistic view that makes this command valuable.',
+  tips: [
+    'Use VS Code\'s <strong>"Add files to context"</strong> (paperclip icon) before running /explain-codebase to attach all relevant files.',
+    'Gemini 2.5 Pro is premium tier — use this for genuine onboarding or deep code archaeology, not casual questions.',
+    'The output format is designed for printing or saving — consider pasting it into Confluence or Notion as a service reference.',
+    'Works equally well for unfamiliar libraries: attach the library source and ask Gemini to explain its architecture.'
+  ],
+  tags: [{text:'/explain-codebase', color:'blue'},{text:'1M tokens', color:'teal'},{text:'gemini-2.5-pro', color:'teal'}]
+},
+
+'test-gen': {
+  path: '.github/prompts/test-gen.prompt.md',
+  label: 'test-gen.prompt.md',
+  chip: 'c-gray',
+  model: 'sonnet',
+  trigger: { type: 'manual', text: 'Manual — type /test-gen in Copilot Chat' },
+  what: 'Generates comprehensive tests following project conventions: happy path, boundary/edge cases, primary failure path, and one integration-adjacent test. Enforces naming conventions and prevents test anti-patterns.',
+  when: 'When you type /test-gen. Open the file you want tested, or select a specific function.',
+  content: `---\nagent: edit\nmodel: claude-sonnet-4-5\ndescription: "Generate tests following project conventions"\n---\n\nGenerates:\n1. Happy path (valid inputs)\n2. Boundary/edge cases\n3. Primary failure path\n4. Integration-adjacent test\n\nNaming:\nJava: shouldReturn404WhenUserNotFound()\nGo: TestHandler/returns_404_when_not_found\nPython: test_raises_not_found_when_user_missing`,
+  contentLabel: 'Frontmatter + what gets generated',
+  whyModel: 'Claude Sonnet is consistently the best model for generating realistic, idiomatic tests. It produces tests that actually test behaviour (not implementation details), follows the project conventions from testing.instructions.md, and avoids the most common test anti-patterns: tests that only test mocks, and trivial assertions that always pass.',
+  tips: [
+    '<strong>agent: edit</strong> — test files are written or updated directly.',
+    'The template explicitly bans @SuppressWarnings on test assertions and Thread.sleep() — common shortcuts that mask real issues.',
+    'For Go, it always generates table-driven sub-tests rather than separate top-level functions.',
+    'Reads testing.instructions.md automatically — your project\'s test conventions are already applied.'
+  ],
+  tags: [{text:'/test-gen', color:'blue'},{text:'agent: edit', color:'red'},{text:'claude-sonnet-4-5', color:'purple'}]
+},
+
+// ── INSTRUCTIONS ─────────────────────────────────────────────────────────
+
+'code-style': {
+  path: '.github/instructions/code-style.instructions.md',
+  label: 'code-style.instructions.md',
+  chip: 'c-gray',
+  model: null,
+  trigger: { type: 'auto-glob', text: 'Auto-loaded when editing *.java, *.go, *.py, *.ts files' },
+  what: 'Enforces naming conventions, formatting, comment standards, and error handling patterns for Java, Go, Python, and TypeScript. Automatically injected whenever Copilot generates code for a matching file type.',
+  when: 'Automatically when you open or edit a file matching the applyTo: glob. Also loaded for chat if a matching file is in context.',
+  content: `---\napplyTo: "**/*.{java,go,py,ts}"\n---\n\n# Code style conventions\n\nNaming: PascalCase types, camelCase methods\nName variables after what they CONTAIN:\n// Bad:  List<User> userList\n// Good: List<User> activeAdmins\n\nError handling:\nJava → typed exceptions, never swallow\nGo → fmt.Errorf("context: %w", err)\nPython → specific types, no bare except:`,
+  contentLabel: 'Frontmatter + key rules',
+  whyModel: null,
+  tips: [
+    '<strong>applyTo: glob</strong> scopes this file to specific file types — it\'s never loaded for Terraform or YAML files.',
+    'The model is NOT set here — this is context, loaded by whatever model is currently active.',
+    'Register this in settings.json under codeGeneration.instructions — it\'s listed there already.',
+    'The variable naming rule ("name after what it contains") prevents generic names like userList, dataMap, resultObj.'
+  ],
+  tags: [{text:'auto-loaded', color:'green'},{text:'*.java *.go *.py *.ts', color:'blue'},{text:'no model', color:'gray'}]
+},
+
+'testing-ins': {
+  path: '.github/instructions/testing.instructions.md',
+  label: 'testing.instructions.md',
+  chip: 'c-gray',
+  model: null,
+  trigger: { type: 'auto-glob', text: 'Auto-loaded for *Test*, *_test*, test_* files only' },
+  what: 'Testing conventions: naming patterns, JUnit 5 slice preferences, Go table-driven test requirements, pytest fixture rules, and coverage targets. Scoped to test files only — never loaded during production code generation.',
+  when: 'Only for files matching *Test*.java, *_test.go, test_*.py etc. Smart scoping means these rules don\'t contaminate production code suggestions.',
+  content: `---\napplyTo: "**/*{Test,Spec,_test,test_}.{java,go,py}"\n---\n\n# Testing conventions\n\nCore rules:\n- Name tests after the SCENARIO not the method\n- One assertion concept per test\n- No Thread.sleep / real clocks\n- Mock only at integration boundaries\n\nCoverage targets:\nDomain: 90%+  Controllers: 80%+\nAdapters: 70%+  CLI: smoke only`,
+  contentLabel: 'Frontmatter + core rules',
+  whyModel: null,
+  tips: [
+    'The <strong>applyTo: glob targets test files only</strong> — this is intentional. Test naming conventions shouldn\'t affect production code.',
+    'The "no Thread.sleep" rule prevents flaky tests from being generated in the first place.',
+    'Coverage targets are defined here so they\'re consistent across all test generation, not just /test-gen.',
+    'WireMock for HTTP stubs and @Testcontainers for real databases are specified — Copilot will use the right tool.'
+  ],
+  tags: [{text:'auto-loaded', color:'green'},{text:'test files only', color:'amber'},{text:'no model', color:'gray'}]
+},
+
+'api-conventions': {
+  path: '.github/instructions/api-conventions.instructions.md',
+  label: 'api-conventions.instructions.md',
+  chip: 'c-gray',
+  model: null,
+  trigger: { type: 'auto-glob', text: 'Auto-loaded for controller/, handler/, router/, api/ directories' },
+  what: 'REST API design standards: plural resource nouns, HTTP status codes, RFC 9457 ProblemDetail error shape, UUID/ULID IDs, ISO 8601 timestamps, versioning strategy, and internal service communication rules.',
+  when: 'Only for files in controller/, handler/, router/, or api/ directories. Scoped so it only loads when writing API layer code.',
+  content: `---\napplyTo: "**/{controller,handler,router,api}/**/*.{java,go,py}"\n---\n\nResources: plural nouns, max 2 nesting levels\nErrors: RFC 9457 ProblemDetail with traceId\nIDs: UUID v4 or ULID (never auto-increment)\nTimestamps: ISO 8601 UTC only\nVersioning: /v1/ prefix, 90-day deprecation\n\nNever: 200 with an error body`,
+  contentLabel: 'Frontmatter + key rules',
+  whyModel: null,
+  tips: [
+    'The error shape (RFC 9457 ProblemDetail with traceId) is non-negotiable — traceId allows log correlation across services.',
+    '"Never return 200 with an error body" is enforced explicitly because this is a very common mistake that breaks clients.',
+    'The directory-based glob means a file named UserService.java that\'s not in a controller/ dir won\'t get these rules.',
+    'Deprecation window (90 days minimum) is specified so Copilot won\'t generate code that removes APIs immediately.'
+  ],
+  tags: [{text:'auto-loaded', color:'green'},{text:'controller/ handler/', color:'blue'},{text:'no model', color:'gray'}]
+},
+
+'infrastructure-ins': {
+  path: '.github/instructions/infrastructure.instructions.md',
+  label: 'infrastructure.instructions.md',
+  chip: 'c-gray',
+  model: null,
+  trigger: { type: 'auto-glob', text: 'Auto-loaded for *.tf, *.yaml, *.yml, Dockerfile files' },
+  what: 'Infrastructure conventions: Terraform resource tagging, for_each over count, Kubernetes probe requirements, Dockerfile multi-stage patterns, non-root USER, pinned digest base images, and CI/CD credential handling.',
+  when: 'For Terraform, YAML, and Dockerfile files. Ensures every piece of generated infrastructure code follows security-by-default patterns.',
+  content: `---\napplyTo: "**/*.{tf,tfvars,yml,yaml,Dockerfile}"\n---\n\nTerraform: tag all (project/env/owner),\n  for_each > count, HTTP backend\nK8s: requests+limits required,\n  probes required, secrets via ESO\nDockerfiles: multi-stage, pinned digests,\n  USER 1001, no secrets in ENV\nCI: pin SHAs, no echo $SECRET`,
+  contentLabel: 'Frontmatter + key rules',
+  whyModel: null,
+  tips: [
+    '"Resources requests+limits required" means Copilot won\'t generate K8s manifests without them — they\'d be rejected by OPA/Gatekeeper anyway.',
+    'Dockerfile: "pin base image digests" means `FROM eclipse-temurin:17-jre@sha256:abc...` not just a tag.',
+    '"No secrets in ENV" prevents a common Dockerfile mistake where credentials end up in docker inspect output.',
+    'The broad glob (*.yaml *.yml) catches GitHub Actions workflows — the CI secrets rule applies there too.'
+  ],
+  tags: [{text:'auto-loaded', color:'green'},{text:'*.tf *.yaml Dockerfile', color:'amber'},{text:'no model', color:'gray'}]
+},
+
+// ── SKILLS ────────────────────────────────────────────────────────────────
+
+'helm-upgrade': {
+  path: '.github/skills/helm-upgrade/SKILL.md',
+  label: 'SKILL.md',
+  chip: 'c-amber',
+  model: null,
+  trigger: { type: 'auto-desc', text: 'Auto-discovered when prompt matches: deploy · upgrade · rollback · helm release · image tag' },
+  what: 'A complete Helm deployment runbook: pre-flight verification, helm diff dry-run, upgrade command with --atomic, smoke test commands, rollback procedure, and a failure pattern lookup table (ImagePullBackOff, OOMKilled, etc.).',
+  when: 'Automatically when Copilot detects your prompt is about deploying, upgrading, or rolling back a service. Also invoke manually by typing the skill name in chat.',
+  content: `---\nname: helm-upgrade\ndescription: >\n  Use when asked to deploy, upgrade, roll back,\n  or release a service to Kubernetes. Also triggers\n  for Helm chart values, image tags, release history.\n---\n\n# Helm upgrade — project runbook\n## Pre-flight\n## Upgrade (--atomic)\n## Smoke test\n## Rollback\n## Failure patterns table`,
+  contentLabel: 'SKILL.md structure',
+  whyModel: null,
+  tips: [
+    '<strong>The description: field is the discovery trigger</strong> — Copilot reads ONLY name and description to decide relevance. Make it keyword-rich.',
+    'Skills can contain bundled resources: add a runbook.sh or checklist.md to the skill folder and reference it from SKILL.md.',
+    'Copy to ~/.copilot/skills/helm-upgrade/ to share this skill across all your projects, not just this repo.',
+    'The failure patterns table (ImagePullBackOff → cause → fix) is the most-used part — engineers reference it during incidents.'
+  ],
+  tags: [{text:'auto-discovered', color:'amber'},{text:'shared with Claude Code', color:'green'},{text:'no model', color:'gray'}]
+},
+
+'debug-eks': {
+  path: '.github/skills/debug-eks/SKILL.md',
+  label: 'SKILL.md',
+  chip: 'c-amber',
+  model: null,
+  trigger: { type: 'auto-desc', text: 'Auto-discovered when prompt matches: pod crash · OOMKilled · CrashLoopBackOff · kubectl debug' },
+  what: 'EKS debugging runbook with a mandatory triage order: pod status → logs → events. Covers CrashLoopBackOff, OOMKilled, ImagePullBackOff, and Pending pods with exact diagnostic commands and common causes specific to this project.',
+  when: 'Automatically when you mention a pod crashing, a deployment not starting, or Kubernetes errors. Also during incident triage.',
+  content: `---\nname: debug-eks\ndescription: >\n  Use when a pod is crashing, not starting,\n  or behaving unexpectedly in Kubernetes/EKS.\n  Also triggers for OOMKilled, ImagePullBackOff,\n  CrashLoopBackOff, or kubectl debugging.\n---\n\n# EKS debugging — triage order\n1. kubectl describe pod (read Events:)\n2. kubectl logs (+ --previous)\n3. kubectl get events`,
+  contentLabel: 'SKILL.md structure',
+  whyModel: null,
+  tips: [
+    '<strong>The triage ORDER matters.</strong> The skill enforces: describe → logs → events. Don\'t jump to solutions before triage.',
+    '"Always read the Events: section at the bottom of kubectl describe" is explicitly called out — it\'s where the actual error lives.',
+    'Project-specific causes are included: wrong JKS password, missing Vault secret, wrong imagePullSecrets — generic skills miss these.',
+    'The one-liners section (port-forward, exec, top pods) is useful to have pre-written during an incident.'
+  ],
+  tags: [{text:'auto-discovered', color:'amber'},{text:'incident use', color:'red'},{text:'no model', color:'gray'}]
+},
+
+'terraform-plan': {
+  path: '.github/skills/terraform-plan/SKILL.md',
+  label: 'SKILL.md',
+  chip: 'c-amber',
+  model: null,
+  trigger: { type: 'auto-desc', text: 'Auto-discovered when prompt matches: terraform plan · apply · tofu · state management · infra change' },
+  what: 'Terraform/OpenTofu safe-change workflow: workspace verification, init, plan to file, show plan, apply. Includes plan symbol legend (+ - ~ -/+), state management commands, and common error fixes (state lock, backend auth failure).',
+  when: 'Automatically when you mention planning or applying infrastructure changes. The "Golden rule: always plan before apply" is enforced as the first line.',
+  content: `---\nname: terraform-plan\ndescription: >\n  Use when asked to plan, apply, or review\n  Terraform/OpenTofu changes. Also for state\n  management, provider errors, workspace issues.\n---\n\n# Golden rule: plan before apply, verify workspace\n\nSymbols: + create | ~ modify | - destroy\n-/+ STOP: destroy + recreate (disruptive)\n\nRequired env vars: AWS_PROFILE, TF_HTTP_PASSWORD`,
+  contentLabel: 'SKILL.md structure',
+  whyModel: null,
+  tips: [
+    '<strong>The -/+ symbol table</strong> is the most critical part — engineers regularly miss that -/+ means destroy+recreate, not just modify.',
+    'The "confirm workspace before any command" rule prevents the most common Terraform disaster: applying to prod when you think you\'re in dev.',
+    'Bento state backend specifics are included — generic Terraform docs don\'t cover this backend.',
+    'tofu force-unlock is documented with an explicit warning: "only if you\'re CERTAIN no apply is in progress".'
+  ],
+  tags: [{text:'auto-discovered', color:'amber'},{text:'infra safety', color:'red'},{text:'no model', color:'gray'}]
+},
+
+'incident-triage': {
+  path: '.github/skills/incident-triage/SKILL.md',
+  label: 'SKILL.md',
+  chip: 'c-amber',
+  model: null,
+  trigger: { type: 'auto-desc', text: 'Auto-discovered when prompt matches: production incident · alert firing · postmortem · on-call · SLA' },
+  what: 'Structured incident response: severity definitions, triage checklist, timeline capture format, first-response commands (kubectl, helm history, git log), and a full postmortem template. Designed for use during live incidents.',
+  when: 'Automatically when you mention a production incident, a firing alert, or writing a postmortem. Designed to be fast — you don\'t want to search for runbooks during an outage.',
+  content: `---\nname: incident-triage\ndescription: >\n  Use during a production incident, when an alert\n  is firing, a service is down, or writing a\n  postmortem. Provides triage checklist, timeline\n  format, and postmortem template.\n---\n\nSev-1: Production down → Immediate\nSev-2: Degraded → < 30 min\nSev-3: Non-critical → Next business day`,
+  contentLabel: 'SKILL.md opening',
+  whyModel: null,
+  tips: [
+    'This skill is most valuable <strong>during</strong> an incident, not before — the auto-discovery means you get the runbook by simply describing what\'s wrong.',
+    'Timeline capture format is pre-built: "HH:MM - [event description]" — consistent timelines dramatically speed up postmortems.',
+    'The postmortem template (Context → Root cause → Contributing factors → Action items) produces a standard output that can be copy-pasted into Confluence.',
+    'Severity definitions (Sev-1/2/3) are project-specific — edit these to match your team\'s actual SLA definitions.'
+  ],
+  tags: [{text:'auto-discovered', color:'amber'},{text:'incident response', color:'red'},{text:'no model', color:'gray'}]
+},
+
+// ── AGENTS ────────────────────────────────────────────────────────────────
+
+'plan-agent': {
+  path: '.github/agents/plan.agent.md',
+  label: 'plan.agent.md',
+  chip: 'c-gray',
+  model: 'o3',
+  trigger: { type: 'chain', text: 'Manual start — chains to implement agent on approval' },
+  what: 'Planning agent: scopes a feature request into a structured implementation plan with file change list, ordered steps, test strategy, risk table, and explicit out-of-scope boundaries. Read-only — does not modify files. Hands off to implement agent.',
+  when: 'Activate manually when starting a new feature or bug fix. The plan agent thinks before implement touches any files.',
+  content: `---\nname: plan\nmodel: o3\ntools: [read_file, list_directory, search_code]\nhandoffs: [implement]\n---\n\nOutput:\n1. Understanding (confirm before proceeding)\n2. Files to change (table: path | action | reason)\n3. Implementation steps (ordered)\n4. Test strategy\n5. Risks and mitigations (table)\n6. Out of scope`,
+  contentLabel: 'Frontmatter + output structure',
+  whyModel: 'o3 is chosen for planning because architecture and planning require the same multi-step systematic reasoning as system design. o3 identifies second-order consequences, asks the right clarifying questions, and produces risk tables that Sonnet would miss. Read-only tool access enforces that this agent doesn\'t touch files — it only plans.',
+  tips: [
+    '<strong>Read-only tools</strong> are intentional — the plan agent can\'t modify files, preventing premature implementation.',
+    'The handoff button appears in VS Code after planning is complete — you must explicitly approve before implementation starts.',
+    'The "Out of scope" section prevents scope creep by making explicit what this change does NOT do.',
+    'If the plan is wrong, say so before clicking handoff — it\'s much cheaper to revise a plan than fix bad implementation.'
+  ],
+  tags: [{text:'chainable', color:'purple'},{text:'read-only', color:'gray'},{text:'o3', color:'amber'},{text:'handoffs: implement', color:'blue'}]
+},
+
+'implement-agent': {
+  path: '.github/agents/implement.agent.md',
+  label: 'implement.agent.md',
+  chip: 'c-gray',
+  model: 'sonnet',
+  trigger: { type: 'chain', text: 'Receives handoff from plan agent — chains to review agent when complete' },
+  what: 'Implementation agent: executes the plan step by step. Has full write access (read_file, write_file, create_file, run_terminal_command). Runs tests after each step. Has a validation checklist that must pass before handing off to review.',
+  when: 'Receives handoff from the plan agent after you approve the plan. Works autonomously until the checklist is complete.',
+  content: `---\nname: implement\nmodel: claude-sonnet-4-5\ntools: [read_file, write_file, create_file,\n        run_terminal_command, search_code]\nhandoffs: [review]\n---\n\nRules:\n- Follow plan steps in order (don\'t skip)\n- Run tests after each file change\n- Stop and flag if plan is wrong\n- Check copilot-instructions.md before coding\n\nValidation checklist before handoff →`,
+  contentLabel: 'Frontmatter + rules',
+  whyModel: 'Claude Sonnet-4-5 is chosen for implementation because code generation at scale requires reliable instruction-following (execute the plan step by step without improvising) and idiomatic code quality. Sonnet produces code that matches project conventions better than GPT-4.1 and is faster than Opus for the volume of code written here.',
+  tips: [
+    '<strong>Full write access</strong> — this agent modifies your files. Review the diff in the VS Code source control panel after.',
+    'The rule "stop and flag if plan is wrong" prevents the agent from inventing scope — it returns to the plan agent if needed.',
+    'The validation checklist (tests pass, no lint errors, no hardcoded secrets) must all pass before handoff to review.',
+    'run_terminal_command access means the agent can actually run `./mvnw test` and `go test ./...` to verify its own work.'
+  ],
+  tags: [{text:'chainable', color:'purple'},{text:'write access', color:'red'},{text:'claude-sonnet', color:'purple'},{text:'handoffs: review', color:'blue'}]
+},
+
+'review-agent': {
+  path: '.github/agents/review.agent.md',
+  label: 'review.agent.md',
+  chip: 'c-gray',
+  model: 'opus',
+  trigger: { type: 'chain', text: 'Receives handoff from implement agent — terminal step in chain' },
+  what: 'Review agent: performs structured code review with fresh eyes, then generates a complete PR description (summary, changes, testing, risk, checklist). Read-only. Issues a verdict: Ready / Minor issues / Major issues.',
+  when: 'Receives handoff from the implement agent. Terminal step — no further handoffs. Its output is the PR description you copy-paste into GitHub.',
+  content: `---\nname: review\nmodel: claude-opus-4-5\ntools: [read_file, search_code, list_directory]\n---\n\nReview checklist:\n☐ Failure path handled\n☐ No silent data-loss\n☐ Tests test behaviour (not mocks)\n☐ Conventions followed\n\nVerdicts:\n✅ Ready to merge\n🟡 Minor issues (list)\n🔴 Major → return to plan`,
+  contentLabel: 'Frontmatter + checklist',
+  whyModel: 'Claude Opus-4-5 is used for the final review because this is the last gate before a PR is opened — the cost of a missed issue here is a production bug. Opus catches things Sonnet misses: silent data-loss scenarios, subtle security issues, tests that appear to test behaviour but actually test implementation details.',
+  tips: [
+    '<strong>Read-only tools</strong> — the review agent doesn\'t modify files. It produces a report and verdict only.',
+    'The PR description format is designed to be copy-pasted directly into GitHub — summary, changes, testing, risk sections.',
+    'A 🔴 verdict routes back to the plan agent — the implement agent doesn\'t re-run without a revised plan.',
+    'The "fresh eyes" framing is intentional: the review agent is prompted to forget that it was the implement agent\'s output.'
+  ],
+  tags: [{text:'chainable', color:'purple'},{text:'read-only', color:'gray'},{text:'claude-opus', color:'pink'},{text:'terminal', color:'red'}]
+},
+
+// ── CHATMODES ─────────────────────────────────────────────────────────────
+
+'code-reviewer-cm': {
+  path: '.github/chatmodes/code-reviewer.chatmode.md',
+  label: 'code-reviewer.chatmode.md',
+  chip: 'c-gray',
+  model: 'sonnet',
+  trigger: { type: 'isolated', text: 'Manual — select from VS Code chat mode picker dropdown' },
+  what: 'Alex persona: direct, no hollow praise. Uses a 🔴/🟡/🔵 rating system (Blocker/Suggestion/Nit). Always checks: failure path, silent data-loss, 6-month readability, and whether tests actually test behaviour.',
+  when: 'Select "Code reviewer" from the chat mode dropdown in VS Code. Best for extended review sessions — PRs, entire files, multiple passes.',
+  content: `---\ndescription: "Code review — direct feedback, Claude Sonnet"\nmodel: claude-sonnet-4-5\n---\n\nYou are Alex, senior engineer (Java/Go, 12 yrs).\nDirect. No hollow praise.\n\n🔴 Blocker — must fix before merge\n🟡 Suggestion — should fix, won\'t block\n🔵 Nit — personal preference\n\nAlways check: failure path, data-loss,\n6-month readability, tests vs mocks.\nShow code when you\'d write it differently.`,
+  contentLabel: 'Full chatmode definition',
+  whyModel: 'Sonnet is chosen over Opus for the interactive reviewer because code review is a back-and-forth — you want fast responses as you discuss findings. Opus\'s extra capability isn\'t needed for individual-file review sessions. Use /security-scan (Opus) for deep security audits.',
+  tips: [
+    '<strong>Chatmode vs /review prompt:</strong> Use /review for one-shot structured review. Use the chatmode for extended review conversations where you want to discuss findings.',
+    'The persona (Alex) isn\'t decoration — it shapes tone and prevents over-hedged feedback like "you might consider...".',
+    'The model: field in the chatmode overrides your picker for the entire session.',
+    'Prerequisite: "github.copilot.chat.experimental.chatModes": true in settings.json (already set).'
+  ],
+  tags: [{text:'chatmode', color:'purple'},{text:'isolated session', color:'pink'},{text:'claude-sonnet', color:'purple'}]
+},
+
+'security-auditor-cm': {
+  path: '.github/chatmodes/security-auditor.chatmode.md',
+  label: 'security-auditor.chatmode.md',
+  chip: 'c-gray',
+  model: 'opus',
+  trigger: { type: 'isolated', text: 'Manual — select from VS Code chat mode picker dropdown' },
+  what: 'Morgan persona: AppSec engineer, thinks like an attacker. 🔴/🟠/🟡/🔵 severity ratings. Built-in pattern knowledge for Spring Boot actuator exposure, Go exec.Command injection, K8s privileged containers, Terraform S3 public-read, Docker root user.',
+  when: 'Select "Security auditor" from the chat mode dropdown. Best for security-focused review sessions on auth PRs, new endpoints, or infrastructure changes.',
+  content: `---\ndescription: "Security audit — Claude Opus (most thorough)"\nmodel: claude-opus-4-5\n---\n\nYou are Morgan, AppSec engineer.\nThink like an attacker, design like a defender.\n\n🔴 Critical | 🟠 High | 🟡 Medium | 🔵 Low\n\nPer finding: what · where (file:line)\n  · impact · fix · OWASP/CWE reference\n\nStack-specific: Spring Boot, Go, K8s,\nTerraform, Docker, Jenkins`,
+  contentLabel: 'Full chatmode definition',
+  whyModel: 'Opus is used here (vs Sonnet for the code reviewer) because security audit catches different classes of bugs — subtle injection vectors, timing attacks, privilege escalation — that require maximum reasoning capability. The extra cost per message is justified by what it catches.',
+  tips: [
+    '<strong>Why Opus here but Sonnet for code review?</strong> Security vulnerabilities are harder to find — subtle, context-dependent, require adversarial thinking. Opus\'s extra capability is genuinely used.',
+    'Stack-specific patterns are built into the prompt — the model knows your exact tech stack\'s common vulnerabilities.',
+    'Use this chatmode for extended security reviews. For quick one-off audits, /security-scan is faster.',
+    'The per-finding format (what · where · impact · fix · CWE) produces output that can go directly into a security ticket.'
+  ],
+  tags: [{text:'chatmode', color:'purple'},{text:'isolated session', color:'pink'},{text:'claude-opus', color:'pink'}]
+},
+
+'architect-cm': {
+  path: '.github/chatmodes/architect.chatmode.md',
+  label: 'architect.chatmode.md',
+  chip: 'c-gray',
+  model: 'o3',
+  trigger: { type: 'isolated', text: 'Manual — select from VS Code chat mode picker dropdown' },
+  what: 'Jordan persona: staff engineer, trade-offs over absolutes. Every recommendation states what it optimises for. Produces ADRs (Context → Decision → Consequences → Alternatives considered). Never recommends complexity the team can\'t operate on-call.',
+  when: 'Select "Architect" from the chat mode dropdown. Best for extended design discussions: new service architecture, technology decisions, major refactors.',
+  content: `---\ndescription: "System design and ADRs — o3 (best reasoning)"\nmodel: o3\n---\n\nYou are Jordan, staff engineer.\nTrade-offs, not absolutes.\n\nStructure: Option A | Optimises for: X | Costs: Y\n\nADR format:\nContext → Decision → Consequences\n→ Alternatives considered\n\nNever recommend complexity the team\ncannot operate on a pager.`,
+  contentLabel: 'Full chatmode definition',
+  whyModel: 'o3 is the only model worth using for extended architecture sessions. Architecture discussions involve chained reasoning across many constraints simultaneously — team capacity, existing systems, future scale, operational complexity. o3 holds all of this in context and reasons about interactions between factors that simpler models miss.',
+  tips: [
+    '<strong>Describe constraints explicitly:</strong> team size, existing infra, on-call burden, budget. Jordan factors all of these in.',
+    'The "trade-offs not absolutes" framing prevents "just use microservices" answers without considering operational complexity.',
+    'ADR output is designed to be committed as a markdown file in your repo — a living record of why decisions were made.',
+    'o3 is expensive for long sessions — use it when the decision genuinely matters, not for quick questions.'
+  ],
+  tags: [{text:'chatmode', color:'purple'},{text:'isolated session', color:'pink'},{text:'o3 reasoning', color:'amber'}]
+},
+
+'devops-cm': {
+  path: '.github/chatmodes/devops-assistant.chatmode.md',
+  label: 'devops-assistant.chatmode.md',
+  chip: 'c-gray',
+  model: 'bal',
+  trigger: { type: 'isolated', text: 'Manual — select from VS Code chat mode picker dropdown' },
+  what: 'Sam persona: senior DevOps engineer (EKS, Terraform/OpenTofu, Jenkins, Artifactory, AWS). Always provides exact commands with flags. Calls out footguns. Never recommends kubectl edit in prod. Never provides destructive commands without a confirmation step.',
+  when: 'Select "DevOps assistant" from the chat mode dropdown. Best for deployment issues, infrastructure debugging, pipeline questions, K8s troubleshooting.',
+  content: `---\ndescription: "DevOps / platform engineering — GPT-4.1"\nmodel: gpt-4.1\n---\n\nYou are Sam, senior DevOps engineer.\nEKS, Terraform/OpenTofu, Jenkins, Artifactory.\n\nAlways: exact commands with flags, safest path\nfirst, call out footguns explicitly.\n\nNever: kubectl edit in prod, destructive\ncommands without confirm step, apply\nwithout a reviewed plan.`,
+  contentLabel: 'Full chatmode definition',
+  whyModel: 'GPT-4.1 is chosen over Sonnet for DevOps because DevOps tasks are structured and reproducible — correct CLI commands, K8s manifests, Helm values. GPT-4.1 handles these reliably and faster than reasoning models. You often need quick answers during incidents, where response speed matters.',
+  tips: [
+    '<strong>Why GPT-4.1 over Claude for DevOps?</strong> Structured output (exact commands, checklists) is GPT-4.1\'s strong suit. Speed matters during incident response.',
+    'For K8s debugging: always provide the output of `kubectl describe pod` and `kubectl get events` — the model can\'t diagnose without them.',
+    'The "never kubectl edit in prod" rule is enforced in the persona — use this chatmode to reinforce good habits.',
+    'The model knows your specific stack: Bento state backend, JFrog Artifactory, EKS — not just generic cloud.'
+  ],
+  tags: [{text:'chatmode', color:'purple'},{text:'isolated session', color:'pink'},{text:'gpt-4.1', color:'blue'}]
+},
+
+'longcontext-cm': {
+  path: '.github/chatmodes/longcontext-reader.chatmode.md',
+  label: 'longcontext-reader.chatmode.md',
+  chip: 'c-gray',
+  model: 'gemini',
+  trigger: { type: 'isolated', text: 'Manual — select from VS Code chat mode picker dropdown' },
+  what: 'Dedicated Gemini 2.5 Pro mode for reading entire codebases or very large files. Produces: what it does (plain language), key concepts, data flow trace, non-obvious behaviour, and entry points for new contributors. Never truncates analysis.',
+  when: 'Select "Large codebase reader" from the chat mode dropdown. Use "Add files to context" (paperclip icon) before asking your question to attach multiple files at once.',
+  content: `---\ndescription: "Read entire codebases — Gemini 2.5 Pro (1M tokens)"\nmodel: gemini-2.5-pro\n---\n\n1M token context window. Read everything first.\n\nFor every analysis:\n1. What it does (2-3 sentences, plain language)\n2. Key concepts (3-5 things)\n3. Data flow trace (numbered steps)\n4. Non-obvious behaviour (surprises)\n5. Entry points for new contributors\n\nNever truncate — that's the point.`,
+  contentLabel: 'Full chatmode definition',
+  whyModel: 'Gemini 2.5 Pro\'s <strong>1 million token context window</strong> is why this chatmode exists. A typical Spring Boot service with all tests might be 50,000-100,000 tokens. Other models truncate or chunk it, losing the holistic view. Gemini reads the whole thing in one shot, enabling analysis that considers how all the pieces interact.',
+  tips: [
+    'Use <strong>"Add files to context"</strong> (📎 paperclip in VS Code chat) to attach all files in a module before asking.',
+    'Gemini 2.5 Pro is premium tier — use it for genuine onboarding or legacy archaeology sessions.',
+    'This chatmode is excellent for understanding a library you\'re unfamiliar with: attach the source and ask.',
+    'The output format (key concepts → data flow → gotchas) is designed to be saved as a wiki page for the service.'
+  ],
+  tags: [{text:'chatmode', color:'purple'},{text:'1M tokens', color:'teal'},{text:'gemini-2.5-pro', color:'teal'}]
+},
+
+'test-writer-cm': {
+  path: '.github/chatmodes/test-writer.chatmode.md',
+  label: 'test-writer.chatmode.md',
+  chip: 'c-gray',
+  model: 'sonnet',
+  trigger: { type: 'isolated', text: 'Manual — select from VS Code chat mode picker dropdown' },
+  what: 'Test-focused persona: generates happy path, primary failure path, boundary cases, and integration-adjacent tests. Enforces naming conventions. Explicitly prevents tests-that-only-test-mocks and Thread.sleep anti-patterns.',
+  when: 'Select "Test writer" from the chat mode dropdown. Best for TDD (write tests before implementation) or adding coverage to existing code.',
+  content: `---\ndescription: "Generate comprehensive tests — Claude Sonnet"\nmodel: claude-sonnet-4-5\n---\n\nFor every piece of code generate:\n1. Happy path (valid inputs)\n2. Primary failure path\n3. Boundary/edge cases\n4. Integration-adjacent test\n\nNaming:\nJava: shouldReturn404WhenUserNotFound()\nGo: TestHandler/returns_404_when_not_found\nPython: test_raises_not_found_when_user_missing\n\nNever: tests that only test mocks`,
+  contentLabel: 'Full chatmode definition',
+  whyModel: 'Claude Sonnet generates the most realistic, idiomatic tests of any model in this lineup. It understands the difference between testing behaviour and testing implementation, produces table-driven Go tests naturally, and follows the project\'s naming conventions from testing.instructions.md which is loaded automatically.',
+  tips: [
+    '<strong>Chatmode vs /test-gen prompt:</strong> Use /test-gen for one-shot generation. Use this chatmode for TDD sessions where you iterate on tests with feedback.',
+    'The "never tests that only test mocks" rule is the most important — it prevents a very common failure pattern.',
+    'This chatmode reads testing.instructions.md automatically (via codeGeneration.instructions in settings.json).',
+    'For Go: always produces table-driven sub-tests. For Java: always produces @Nested @DisplayName structures.'
+  ],
+  tags: [{text:'chatmode', color:'purple'},{text:'isolated session', color:'pink'},{text:'claude-sonnet', color:'purple'}]
+},
+
+// ── WORKFLOWS ─────────────────────────────────────────────────────────────
+
+'copilot-setup-steps': {
+  path: '.github/workflows/copilot-setup-steps.yml',
+  label: 'copilot-setup-steps.yml',
+  chip: 'c-gray',
+  model: null,
+  trigger: { type: 'agent', text: 'Runs automatically before the Copilot coding agent starts any task' },
+  what: 'Bootstraps the full development toolchain for the Copilot coding agent. Without this file, the agent would generate code it cannot compile or test. With it, the agent has a complete environment and verifies its own work.',
+  when: 'Triggered by `on: copilot:` — GitHub runs this before the coding agent starts working on any assigned issue or task.',
+  content: `name: "Copilot Setup Steps"\non:\n  copilot:\n\njobs:\n  copilot-setup-steps:\n    runs-on: ubuntu-latest\n    steps:\n      - Java 17 (temurin, Maven cache)\n      - Configure Maven (Artifactory mirror)\n      - Go 1.22 (with module cache)\n      - golangci-lint v1.57.0\n      - Python 3.11 (black, ruff, pytest)\n      - OpenTofu 1.7.0\n      - Helm 3.14.0 + kubectl 1.30.0\n      - Validate builds (compile + ruff)`,
+  contentLabel: 'Workflow summary',
+  whyModel: null,
+  tips: [
+    '<strong>Required repo secrets:</strong> ARTIFACTORY_URL, ARTIFACTORY_USER, ARTIFACTORY_TOKEN — the Maven mirror step uses these.',
+    'The `on: copilot:` trigger is special — it only fires for the Copilot coding agent, not for regular CI runs.',
+    'golangci-lint is pinned to v1.57.0 — update this when your team upgrades. Pin versions to avoid unexpected failures.',
+    'The final "Validate builds" step ensures the agent\'s environment actually works before it starts generating code.'
+  ],
+  tags: [{text:'on: copilot:', color:'green'},{text:'agent bootstrap', color:'green'},{text:'requires secrets', color:'red'}]
+},
+
+'copilot-hooks': {
+  path: '.github/workflows/copilot-hooks.yml',
+  label: 'copilot-hooks.yml',
+  chip: 'c-gray',
+  model: null,
+  trigger: { type: 'hook', text: 'copilot_pre_action (before) and copilot_post_action (after) every agent action' },
+  what: 'Policy gates that run before and after every Copilot coding agent action. Pre-action: blocks hardcoded credential patterns and terraform state commits. Post-action: runs tests and linters to validate agent output.',
+  when: 'Every time the coding agent takes an action (writes a file, creates a commit). These run regardless of which model or agent triggered the action.',
+  content: `name: "Copilot Hooks"\non:\n  copilot_pre_action:\n  copilot_post_action:\n\npre-action-checks:\n  - Block hardcoded credentials\n    (grep for password/token/secret=)\n  - Block terraform state commits\n    (git diff --cached *.tfstate)\n\npost-action-checks:\n  - Run go test ./... -race\n  - Run pytest --tb=short\n  - golangci-lint + ruff check`,
+  contentLabel: 'Workflow structure',
+  whyModel: null,
+  tips: [
+    '<strong>Hooks are model-agnostic</strong> — they enforce policy regardless of which AI generated the code.',
+    'The credential check pattern catches the most common mistakes: `password = "hardcoded"`, `token: "sk-..."`. Adjust the regex for your naming conventions.',
+    'Post-action tests are non-blocking (|| true) by default — they report failures without stopping the agent. Change to fail hard if you prefer.',
+    'This is your last line of defence. The credential check here should match what your SAST tool checks in CI.'
+  ],
+  tags: [{text:'pre/post hooks', color:'red'},{text:'policy gate', color:'red'},{text:'blocks secrets', color:'red'}]
+},
+
+// ── VSCODE ────────────────────────────────────────────────────────────────
+
+'settings-json': {
+  path: '.vscode/settings.json',
+  label: 'settings.json',
+  chip: 'c-amber',
+  model: null,
+  trigger: { type: 'perm', text: 'Committed — team defaults applied on repo open' },
+  what: 'Team-wide VS Code + Copilot configuration. Defines the <strong>named model slots</strong> used across all prompts, chatmodes, and agents. Registers instruction files for auto-loading. Enables the chatmodes feature.',
+  when: 'Applied automatically when anyone opens this repo in VS Code.',
+  content: `// Model routing slots:\n"github.copilot.chat.models": {\n  "fast":     { "model": "o4-mini" },\n  "reason":   { "model": "o3" },\n  "code":     { "model": "claude-sonnet-4-5" },\n  "thorough": { "model": "claude-opus-4-5" },\n  "longctx":  { "model": "gemini-2.5-pro" },\n  "balanced": { "model": "gpt-4.1" }\n},\n// Chatmodes enabled:\n"chat.experimental.chatModes": true,\n// Auto-load instructions:\n"codeGeneration.instructions": [...]`,
+  contentLabel: 'Key settings',
+  whyModel: null,
+  tips: [
+    '<strong>Model strings must match your picker exactly.</strong> Go to VS Code → Copilot Chat → model dropdown and verify each name.',
+    '"github.copilot.chat.experimental.chatModes": true is REQUIRED for chatmodes/ to work. Restart VS Code after changing.',
+    'codeGeneration.instructions registers which instruction files auto-load. Add new files here to activate them.',
+    'This file is committed — changes affect the whole team. Personal overrides go in settings.local.json.'
+  ],
+  tags: [{text:'committed', color:'green'},{text:'team defaults', color:'blue'},{text:'model routing', color:'amber'}]
+},
+
+'settings-local': {
+  path: '.vscode/settings.local.json',
+  label: 'settings.local.json',
+  chip: 'c-amber',
+  model: null,
+  trigger: { type: 'perm', text: 'Personal only — gitignored, never committed' },
+  what: 'Personal machine-specific overrides. Never committed to git. Use for personal model preferences, local toolchain paths, experimental settings, or increased timeouts when on a slow VPN.',
+  when: 'Applied on top of settings.json when you open VS Code. Add `.vscode/settings.local.json` to .gitignore.',
+  content: `{\n  // Override team model slots with personal prefs:\n  // "github.copilot.chat.models": {\n  //   "code": { "model": "claude-opus-4-5" }\n  // },\n\n  // Increase timeout on slow VPN:\n  "github.copilot.advanced": {\n    "timeout": 45000\n  },\n\n  // Local JDK path:\n  // "java.jdt.ls.java.home": "/opt/homebrew...",\n\n  "terminal.integrated.fontFamily": "MesloLGS NF"\n}`,
+  contentLabel: 'Common personal overrides',
+  whyModel: null,
+  tips: [
+    '<strong>Add to .gitignore:</strong> .vscode/settings.local.json — or a teammate will accidentally commit their local JDK path.',
+    'Override a model slot if you have a different subscription: set "code" to claude-opus if your plan includes it.',
+    'Increase timeout to 45000ms if o3 responses are timing out on corporate VPN.',
+    'Personal experimental features go here — enable next-edit suggestions without inflicting them on the team.'
+  ],
+  tags: [{text:'gitignored', color:'amber'},{text:'personal only', color:'gray'},{text:'never commit', color:'red'}]
+},
+
+'mcp-json': {
+  path: '.vscode/mcp.json',
+  label: 'mcp.json',
+  chip: 'c-purple',
+  model: null,
+  trigger: { type: 'auto', text: 'Auto-loaded in agent mode — tools available to all models' },
+  what: 'Defines MCP (Model Context Protocol) tool servers that give Copilot agent mode live access to external systems: GitHub issues, Kubernetes clusters, JFrog Artifactory, PostgreSQL, web search, and persistent memory.',
+  when: 'Tools load when Copilot enters agent mode. The agent calls them automatically when relevant — no explicit prompting needed.',
+  content: `{\n  "servers": {\n    "github":     { GitHub issues/PRs/runs },\n    "filesystem": { workspace read/write },\n    "kubernetes": { kubectl read-only },\n    "aws-docs":   { AWS documentation },\n    "artifactory":{ package search },\n    "postgres":   { read-only DB queries },\n    "brave-search":{ web search },\n    "memory":     { persist facts across sessions }\n  }\n}`,
+  contentLabel: 'Server list',
+  whyModel: null,
+  tips: [
+    '<strong>All models can use all tools</strong> — MCP access is not model-specific. Tool availability depends on agent mode, not model choice.',
+    'Required env vars: GITHUB_TOKEN, KUBECONFIG, ARTIFACTORY_URL, ARTIFACTORY_TOKEN, DB_READONLY_URL, BRAVE_API_KEY.',
+    'The postgres server points at a <strong>read-only replica</strong> — never connect it to a write-capable DB.',
+    'The memory server persists facts across sessions: "the staging DB is postgres-staging.internal" is remembered next time.'
+  ],
+  tags: [{text:'agent mode', color:'green'},{text:'auto-invoked', color:'amber'},{text:'requires env vars', color:'red'}]
+},
+
+'extensions-json': {
+  path: '.vscode/extensions.json',
+  label: 'extensions.json',
+  chip: 'c-teal',
+  model: null,
+  trigger: { type: 'perm', text: 'VS Code shows "install recommended extensions?" when repo is opened' },
+  what: 'Lists recommended VS Code extensions. When a teammate clones the repo, VS Code shows a one-click prompt to install all of them. Ensures everyone has the same toolchain without a setup wiki page.',
+  when: 'On repo open. VS Code reads this file and shows a notification if any recommended extensions aren\'t installed.',
+  content: `{\n  "recommendations": [\n    // Copilot (required for everything):\n    "github.copilot", "github.copilot-chat",\n    // Java: redhat.java, vscjava.vscode-maven,\n    //        vscjava.vscode-java-test\n    // Go: golang.go\n    // Python: ms-python.python,\n    //         ms-python.black-formatter, charliermarsh.ruff\n    // Infra: hashicorp.terraform, ms-k8s-tools...\n    // Quality: eamodio.gitlens, sonarsource.sonarlint-vscode\n  ]\n}`,
+  contentLabel: 'Extension categories',
+  whyModel: null,
+  tips: [
+    'Find an extension ID by right-clicking it in VS Code Extensions sidebar → "Copy Extension ID".',
+    '<strong>github.copilot and github.copilot-chat are required</strong> — without them, nothing in this setup works.',
+    'Add SonarLint here so developers get local SAST feedback before pushing, not just in CI.',
+    'The "unwantedRecommendations" list (empty by default) suppresses extensions that conflict with your setup.'
+  ],
+  tags: [{text:'committed', color:'green'},{text:'one-click install', color:'teal'},{text:'onboarding tool', color:'blue'}]
+}
+
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// TREE DEFINITION
+// ═══════════════════════════════════════════════════════════════════════════
+const TREE = [
+  { type:'section', label:'project root' },
+  { id:'copilot-instructions', indent:1, cn:'├─', chip:'c-blue', label:'copilot-instructions.md', desc:'always on — team constitution', badges:[] },
+  { id:'copilotignore',        indent:1, cn:'└─', chip:'c-amber', label:'.copilotignore', desc:'exclude from AI context', badges:[] },
+
+  { type:'section', label:'.github/ — the control center' },
+
+  { type:'folder', indent:1, cn:'├─', chip:'c-green', label:'prompts/', desc:'slash commands — type /name to invoke', arrow:true },
+  { id:'review',         indent:2, cn:'├─', chip:'c-gray', label:'review.prompt.md',          desc:'→ /review', model:'m-sonnet' },
+  { id:'fix-issue',      indent:2, cn:'├─', chip:'c-gray', label:'fix-issue.prompt.md',       desc:'→ /fix-issue · edits files', model:'m-sonnet' },
+  { id:'deploy',         indent:2, cn:'├─', chip:'c-gray', label:'deploy.prompt.md',          desc:'→ /deploy · helm checklist', model:'m-bal' },
+  { id:'architect',      indent:2, cn:'├─', chip:'c-gray', label:'architect.prompt.md',       desc:'→ /architect · trade-offs + ADR', model:'m-o3' },
+  { id:'security-scan',  indent:2, cn:'├─', chip:'c-gray', label:'security-scan.prompt.md',   desc:'→ /security-scan · OWASP', model:'m-opus' },
+  { id:'document',       indent:2, cn:'├─', chip:'c-gray', label:'document.prompt.md',        desc:'→ /document · Javadoc/GoDoc', model:'m-sonnet' },
+  { id:'explain-codebase',indent:2,cn:'├─', chip:'c-gray', label:'explain-codebase.prompt.md',desc:'→ /explain-codebase · 1M ctx', model:'m-gemini' },
+  { id:'test-gen',       indent:2, cn:'└─', chip:'c-gray', label:'test-gen.prompt.md',        desc:'→ /test-gen · realistic tests', model:'m-sonnet' },
+
+  { type:'folder', indent:1, cn:'├─', chip:'c-green', label:'instructions/', desc:'auto-loaded rules by file type', arrow:true },
+  { id:'code-style',       indent:2, cn:'├─', chip:'c-gray', label:'code-style.instructions.md',     desc:'*.java *.go *.py *.ts' },
+  { id:'testing-ins',      indent:2, cn:'├─', chip:'c-gray', label:'testing.instructions.md',        desc:'test files only' },
+  { id:'api-conventions',  indent:2, cn:'├─', chip:'c-gray', label:'api-conventions.instructions.md',desc:'controller/ handler/ api/' },
+  { id:'infrastructure-ins',indent:2,cn:'└─', chip:'c-gray', label:'infrastructure.instructions.md', desc:'*.tf *.yaml Dockerfile' },
+
+  { type:'folder', indent:1, cn:'├─', chip:'c-orange', label:'skills/', desc:'auto-discovered by description match', arrow:true, tbadge:'t-auto' },
+  { type:'subfolder', indent:2, cn:'├─', chip:'c-orange', label:'helm-upgrade/' },
+  { id:'helm-upgrade',   indent:3, cn:'└─', chip:'c-amber', label:'SKILL.md', desc:'deploy · upgrade · rollback · helm' },
+  { type:'subfolder', indent:2, cn:'├─', chip:'c-orange', label:'debug-eks/' },
+  { id:'debug-eks',      indent:3, cn:'└─', chip:'c-amber', label:'SKILL.md', desc:'OOMKilled · CrashLoopBackOff · kubectl' },
+  { type:'subfolder', indent:2, cn:'├─', chip:'c-orange', label:'terraform-plan/' },
+  { id:'terraform-plan', indent:3, cn:'└─', chip:'c-amber', label:'SKILL.md', desc:'tofu plan · apply · state' },
+  { type:'subfolder', indent:2, cn:'└─', chip:'c-orange', label:'incident-triage/' },
+  { id:'incident-triage',indent:3, cn:'└─', chip:'c-amber', label:'SKILL.md', desc:'production incident · postmortem' },
+
+  { type:'folder', indent:1, cn:'├─', chip:'c-pink', label:'agents/', desc:'autonomous — plan → implement → review', arrow:true, tbadge:'t-chain' },
+  { id:'plan-agent',      indent:2, cn:'├─', chip:'c-gray', label:'plan.agent.md',      desc:'scope · risks · handoff', model:'m-o3' },
+  { id:'implement-agent', indent:2, cn:'├─', chip:'c-gray', label:'implement.agent.md', desc:'code + tests · write access', model:'m-sonnet' },
+  { id:'review-agent',    indent:2, cn:'└─', chip:'c-gray', label:'review.agent.md',    desc:'checklist · PR description', model:'m-opus' },
+
+  { type:'folder', indent:1, cn:'├─', chip:'c-purple', label:'chatmodes/', desc:'VS Code persona sessions', arrow:true, tbadge:'t-iso' },
+  { id:'code-reviewer-cm',   indent:2, cn:'├─', chip:'c-gray', label:'code-reviewer.chatmode.md',   desc:'Alex · Blocker/Suggestion/Nit', model:'m-sonnet' },
+  { id:'security-auditor-cm',indent:2, cn:'├─', chip:'c-gray', label:'security-auditor.chatmode.md',desc:'Morgan · OWASP · deep audit', model:'m-opus' },
+  { id:'architect-cm',       indent:2, cn:'├─', chip:'c-gray', label:'architect.chatmode.md',       desc:'Jordan · trade-offs · ADRs', model:'m-o3' },
+  { id:'devops-cm',          indent:2, cn:'├─', chip:'c-gray', label:'devops-assistant.chatmode.md',desc:'Sam · EKS · Helm · Terraform', model:'m-bal' },
+  { id:'longcontext-cm',     indent:2, cn:'├─', chip:'c-gray', label:'longcontext-reader.chatmode.md',desc:'entire codebases · 1M tokens', model:'m-gemini' },
+  { id:'test-writer-cm',     indent:2, cn:'└─', chip:'c-gray', label:'test-writer.chatmode.md',     desc:'happy path · failure · boundary', model:'m-sonnet' },
+
+  { type:'folder', indent:1, cn:'└─', chip:'c-red', label:'workflows/', desc:'agent bootstrap + policy hooks', arrow:true, tbadge:'t-agent' },
+  { id:'copilot-setup-steps',indent:2, cn:'├─', chip:'c-gray', label:'copilot-setup-steps.yml', desc:'bootstraps full toolchain', tbadge:'t-agent' },
+  { id:'copilot-hooks',      indent:2, cn:'└─', chip:'c-gray', label:'copilot-hooks.yml',        desc:'blocks secrets · runs tests', tbadge:'t-hook' },
+
+  { type:'section', label:'.vscode/ — IDE + model config' },
+  { id:'settings-json',  indent:1, cn:'├─', chip:'c-amber', label:'settings.json',       desc:'model slots · team defaults · committed', tbadge:'t-perm' },
+  { id:'settings-local', indent:1, cn:'├─', chip:'c-amber', label:'settings.local.json', desc:'personal overrides · gitignored' },
+  { id:'mcp-json',       indent:1, cn:'├─', chip:'c-purple', label:'mcp.json',           desc:'GitHub · K8s · Artifactory · DB · search', tbadge:'t-auto' },
+  { id:'extensions-json',indent:1, cn:'└─', chip:'c-teal',  label:'extensions.json',    desc:'prompts teammates to install toolchain' },
+];
+
+const MODEL_LABELS = {
+  'o3':     { cls:'m-o3',     text:'o3' },
+  'fast':   { cls:'m-fast',   text:'o4-mini' },
+  'bal':    { cls:'m-bal',    text:'gpt-4.1' },
+  'sonnet': { cls:'m-sonnet', text:'claude-sonnet' },
+  'opus':   { cls:'m-opus',   text:'claude-opus' },
+  'gemini': { cls:'m-gemini', text:'gemini-2.5' },
+  'flash':  { cls:'m-flash',  text:'gemini-flash' },
+};
+
+// ═══════════════════════════════════════════════════════════════════════════
+// RENDER TREE
+// ═══════════════════════════════════════════════════════════════════════════
+function folderSVG(color) {
+  const c = color === 'c-green' ? '#3fb950' : color === 'c-orange' ? '#ffa657' :
+            color === 'c-purple' ? '#bc8cff' : color === 'c-pink' ? '#f778ba' :
+            color === 'c-red' ? '#f85149' : color === 'c-blue' ? '#58a6ff' :
+            color === 'c-teal' ? '#39d353' : '#7d8590';
+  return `<svg width="13" height="13" viewBox="0 0 13 13" style="flex-shrink:0;margin-right:3px"><path d="M1 3.5L1 11L12 11L12 4.5L6.5 4.5L5 3Z" fill="${c}" opacity=".6"/></svg>`;
+}
+function fileSVG() {
+  return `<svg width="11" height="11" viewBox="0 0 11 11" style="flex-shrink:0;margin-right:3px"><rect x="1" y="1" width="7.5" height="9" rx="1.5" fill="var(--muted)" opacity=".35"/><path d="M7.5 1L10.5 4" stroke="var(--muted)" stroke-width=".8" opacity=".5" fill="none"/></svg>`;
+}
+function skillSVG() {
+  return `<svg width="11" height="11" viewBox="0 0 11 11" style="flex-shrink:0;margin-right:3px"><path d="M5.5 1.2L6.8 4.2L10.2 4.7L7.8 7L8.4 10.4L5.5 8.8L2.6 10.4L3.2 7L.8 4.7L4.2 4.2Z" fill="var(--orange)" opacity=".5"/></svg>`;
+}
+
+const treeEl = document.getElementById('tree');
+let html = '';
+TREE.forEach(n => {
+  if (n.type === 'section') {
+    html += `<div class="section-hd">${n.label}</div>`;
+    return;
+  }
+  const ind = '&nbsp;'.repeat((n.indent-1) * 14 / 2);
+  const clickable = !!n.id;
+  const cls = `row${n.type === 'folder' || n.type === 'subfolder' || !n.id ? ' no-click' : ''}`;
+  const onclick = n.id ? `onclick="openPanel('${n.id}')"` : '';
+
+  let icon = '';
+  if (n.type === 'folder') icon = folderSVG(n.chip);
+  else if (n.chip === 'c-amber' && n.label === 'SKILL.md') icon = skillSVG();
+  else icon = fileSVG();
+
+  let badges = '';
+  if (n.model) {
+    const m = MODEL_LABELS[n.model.replace('m-','')];
+    if (m) badges += `<span class="mbadge ${m.cls}">${m.text}</span>`;
+  }
+  if (n.tbadge) {
+    const tb = {
+      't-auto':'<span class="tbadge t-auto">auto</span>',
+      't-chain':'<span class="tbadge t-chain">chainable</span>',
+      't-iso':'<span class="tbadge t-iso">isolated</span>',
+      't-hook':'<span class="tbadge t-hook">hooks</span>',
+      't-agent':'<span class="tbadge t-agent">agent</span>',
+      't-perm':'<span class="tbadge t-perm">permissions</span>',
+    }[n.tbadge] || '';
+    badges += tb;
+  }
+
+  html += `<div class="${cls}" ${onclick} style="padding-left:${(n.indent-1)*14}px">
+    <span class="connector">${n.cn}</span>
+    ${icon}
+    <span class="chip ${n.chip}">${n.label}</span>
+    ${n.arrow ? `<span class="arrow-hint">↓</span>` : ''}
+    ${n.desc ? `<span class="dot-leader"></span><span class="row-desc">${n.desc}</span>` : ''}
+    ${badges ? `<div class="row-badges">${badges}</div>` : ''}
+  </div>`;
+});
+treeEl.innerHTML = html;
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PANEL
+// ═══════════════════════════════════════════════════════════════════════════
+const TRIGGER_COLORS = {
+  always:    { border:'var(--blue)',   bg:'var(--blue-dim)' },
+  'auto-glob':{ border:'var(--green)', bg:'var(--green-dim)' },
+  'auto-desc':{ border:'var(--orange)',bg:'var(--orange-dim)' },
+  manual:    { border:'var(--purple)', bg:'var(--purple-dim)' },
+  chain:     { border:'var(--pink)',   bg:'var(--pink-dim)' },
+  isolated:  { border:'var(--pink)',   bg:'var(--pink-dim)' },
+  agent:     { border:'var(--green)',  bg:'var(--green-dim)' },
+  hook:      { border:'var(--red)',    bg:'var(--red-dim)' },
+  perm:      { border:'var(--blue)',   bg:'var(--blue-dim)' },
+  'auto':    { border:'var(--amber)',  bg:'var(--amber-dim)' },
+};
+
+function tagColor(c) {
+  return {
+    blue:  'border-color:#1f3a5f;background:var(--blue-dim);color:var(--blue)',
+    green: 'border-color:#1a3a1f;background:var(--green-dim);color:var(--green)',
+    amber: 'border-color:#3d2e0c;background:var(--amber-dim);color:var(--amber)',
+    gray:  'border-color:var(--border);background:var(--bg3);color:var(--muted)',
+    red:   'border-color:#3d0f0f;background:var(--red-dim);color:var(--red)',
+    purple:'border-color:#2d1f5e;background:var(--purple-dim);color:var(--purple)',
+    pink:  'border-color:#4a1535;background:var(--pink-dim);color:var(--pink)',
+    teal:  'border-color:#0d3320;background:var(--teal-dim);color:var(--teal)',
+  }[c] || '';
+}
+
+function openPanel(id) {
+  const d = ITEMS[id];
+  if (!d) return;
+
+  document.getElementById('panel-path').textContent = d.path;
+  document.getElementById('panel-title').textContent = d.label;
+
+  const tc = TRIGGER_COLORS[d.trigger.type] || TRIGGER_COLORS['always'];
+  const modelBox = d.model ? (() => {
+    const m = MODEL_LABELS[d.model];
+    const modelNames = {
+      o3: 'o3',
+      fast: 'o4-mini',
+      bal: 'gpt-4.1',
+      sonnet: 'claude-sonnet-4-5',
+      opus: 'claude-opus-4-5',
+      gemini: 'gemini-2.5-pro',
+      flash: 'gemini-2.0-flash',
+    };
+    return `<div class="ps">
+      <div class="ps-label">Model used</div>
+      <div class="model-box">
+        <div class="model-icon">🤖</div>
+        <div>
+          <div class="model-name"><span class="mbadge ${m.cls}" style="font-size:12px;padding:3px 9px">${modelNames[d.model]}</span></div>
+          <div class="model-why" style="margin-top:8px">${d.whyModel}</div>
+        </div>
+      </div>
+    </div>`;
+  })() : '';
+
+  const tipsHtml = d.tips.length ? `<div class="ps">
+    <div class="ps-label">Tips</div>
+    <ul class="tip-list">${d.tips.map(t=>`<li>${t}</li>`).join('')}</ul>
+  </div>` : '';
+
+  const tagsHtml = d.tags ? `<div class="ps">
+    <div class="ps-label">Tags</div>
+    <div class="tag-row">${d.tags.map(t=>`<span class="tag" style="font-family:var(--mono);font-size:10px;padding:2px 8px;border-radius:4px;${tagColor(t.color)}">${t.text}</span>`).join('')}</div>
+  </div>` : '';
+
+  document.getElementById('panel-body').innerHTML = `
+    <div class="ps">
+      <div class="ps-label">What it is</div>
+      <div class="ps-content">${d.what}</div>
+    </div>
+
+    <div class="ps">
+      <div class="ps-label">When loaded</div>
+      <div class="trigger-box" style="border-left-color:${tc.border};background:${tc.bg}">
+        <strong>${{
+          always:'Always on',
+          'auto-glob':'Auto-loaded',
+          'auto-desc':'Auto-discovered',
+          manual:'Manual slash command',
+          chain:'Agent handoff',
+          isolated:'Chat mode selection',
+          agent:'Agent workflow',
+          hook:'Policy hook',
+          perm:'Committed config',
+          auto:'Auto in agent mode',
+        }[d.trigger.type] || 'Triggered'}</strong> — ${d.trigger.text}
+      </div>
+    </div>
+
+    ${modelBox}
+
+    <div class="ps">
+      <div class="ps-label" style="margin-bottom:4px">${d.contentLabel}</div>
+      <div class="code-block"><pre>${escapeHtml(d.content)}</pre></div>
+    </div>
+
+    ${tipsHtml}
+    ${tagsHtml}
+  `;
+
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('panel').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closePanel() {
+  document.getElementById('overlay').classList.remove('open');
+  document.getElementById('panel').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function escapeHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closePanel(); });
+</script>
+</body>
+</html>

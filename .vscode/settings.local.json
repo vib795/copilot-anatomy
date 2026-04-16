@@ -1,0 +1,31 @@
+{
+  // ══════════════════════════════════════════════════════════════════════════
+  // PERSONAL OVERRIDES — DO NOT COMMIT
+  // Add this file to .gitignore: .vscode/settings.local.json
+  // ══════════════════════════════════════════════════════════════════════════
+
+  // Increase timeout if you're on a slow VPN or using large models like o3
+  "github.copilot.advanced": {
+    "timeout": 45000
+  },
+
+  // ── PERSONAL MODEL PREFERENCES ────────────────────────────────────────────
+  // Override team model slots with your own preferences.
+  // Useful if you have a different subscription tier than teammates.
+  // Example: prefer Claude Opus over Sonnet for all code tasks:
+  // "github.copilot.chat.models": {
+  //   "code": { "model": "claude-opus-4-5" }
+  // },
+
+  // ── LOCAL TOOLCHAIN ───────────────────────────────────────────────────────
+  // "java.jdt.ls.java.home": "/usr/local/opt/openjdk@17",
+  // "python.defaultInterpreterPath": "/opt/homebrew/bin/python3.11",
+
+  // ── TERMINAL ──────────────────────────────────────────────────────────────
+  "terminal.integrated.fontFamily": "MesloLGS NF",
+  "terminal.integrated.fontSize": 13,
+
+  // ── EXPERIMENTAL ──────────────────────────────────────────────────────────
+  // Enable bleeding-edge Copilot features not yet in team settings
+  // "github.copilot.nextEditSuggestions.enabled": true
+}

@@ -1,0 +1,58 @@
+# .copilotignore
+# Excludes files from Copilot's context window.
+# Same syntax as .gitignore. Does NOT affect git — files are still tracked.
+# Think of this as your AI privacy/efficiency filter.
+
+# ── Build artefacts (large, no signal for code generation) ──────────────────
+target/
+build/
+dist/
+out/
+*.class
+*.jar
+*.war
+*.ear
+
+# ── Terraform state (sensitive, not useful for code gen) ─────────────────────
+**/*.tfstate
+**/*.tfstate.backup
+**/.terraform/
+*.tfplan
+*.tfvars
+!*.tfvars.example       # ← keep examples (useful for understanding variables)
+
+# ── Secrets and credentials (NEVER send to any AI model) ─────────────────────
+**/*.pem
+**/*.key
+**/*.p12
+**/*.jks
+**/*.pfx
+**/*.env
+.env.*
+!.env.example
+**/secrets/
+**/credentials/
+
+# ── Generated code (low signal, high token cost) ─────────────────────────────
+**/generated/
+**/*_pb2.py             # Python protobuf generated
+**/*.pb.go              # Go protobuf generated
+
+# ── Vendor / dependencies (already known by models from training) ─────────────
+vendor/
+node_modules/
+
+# ── IDE and OS noise ──────────────────────────────────────────────────────────
+.idea/
+*.iml
+.DS_Store
+*.swp
+
+# ── Logs (runtime data, not useful for understanding code) ───────────────────
+*.log
+*.hprof
+hs_err_pid*.log
+
+# ── Sensitive test fixtures ───────────────────────────────────────────────────
+**/testdata/fixtures/prod-*
+**/testdata/snapshots/real-*

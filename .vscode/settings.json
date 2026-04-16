@@ -1,0 +1,123 @@
+{
+  // ══════════════════════════════════════════════════════════════════════════
+  // GITHUB COPILOT — TEAM SETTINGS
+  // This file is committed. Changes affect everyone. Personal overrides
+  // go in .vscode/settings.local.json (gitignored).
+  // ══════════════════════════════════════════════════════════════════════════
+
+  // Which file types get inline code completions.
+  // Set a type to false to disable completions there (e.g. plaintext).
+  "github.copilot.enable": {
+    "*":           true,
+    "plaintext":   false,
+    "markdown":    true,
+    "scminput":    false,
+    "yaml":        true,
+    "terraform":   true,
+    "dockerfile":  true
+  },
+
+  // ── MODEL ROUTING ─────────────────────────────────────────────────────────
+  // Named model slots used across prompts, chatmodes, and agents.
+  // The string values must match your Copilot model picker exactly.
+  // Check: VS Code → Copilot Chat panel → model dropdown → note the exact name.
+  //
+  // STRATEGY:
+  //   "fast"     → o4-mini    Speed: inline, boilerplate, trivial fixes
+  //   "reason"   → o3         Reasoning: architecture, planning, debugging
+  //   "code"     → claude-sonnet-4-5   Code quality: gen, review, tests, docs
+  //   "thorough" → claude-opus-4-5     Thoroughness: security, deep review
+  //   "longctx"  → gemini-2.5-pro     Long context: reading entire codebases
+  //   "balanced" → gpt-4.1    Balanced: devops, general tasks, good default
+  "github.copilot.chat.models": {
+    "fast":      { "model": "o4-mini" },
+    "reason":    { "model": "o3" },
+    "code":      { "model": "claude-sonnet-4-5" },
+    "thorough":  { "model": "claude-opus-4-5" },
+    "longctx":   { "model": "gemini-2.5-pro" },
+    "balanced":  { "model": "gpt-4.1" }
+  },
+
+  // ── INLINE COMPLETIONS ────────────────────────────────────────────────────
+  // The model used for grey-text autocomplete as you type.
+  // o4-mini is ideal: fast enough to not interrupt typing, good quality.
+  // For slower networks or machines, try gemini-2.0-flash instead.
+  "github.copilot.inlineSuggest.enable": true,
+  "github.copilot.inlineSuggest.syntaxMatchingLanguages": [
+    "java", "go", "python", "typescript", "terraform",
+    "hcl", "yaml", "dockerfile", "shellscript", "groovy"
+  ],
+
+  // ── FEATURE FLAGS ─────────────────────────────────────────────────────────
+  // Enable chatmodes/ — REQUIRED for .github/chatmodes/*.chatmode.md to work.
+  "github.copilot.chat.experimental.chatModes": true,
+  // Keeps Copilot responses in English regardless of OS locale.
+  "github.copilot.chat.localeOverride": "en",
+
+  // ── AUTO-LOADED INSTRUCTIONS ───────────────────────────────────────────────
+  // These instruction files are automatically injected into every code
+  // generation request (completions, edits, chat with code context).
+  // Order matters: files listed first are injected first.
+  // Each file uses applyTo: globs to scope itself to relevant file types.
+  "github.copilot.chat.codeGeneration.instructions": [
+    { "file": ".github/instructions/code-style.instructions.md" },
+    { "file": ".github/instructions/testing.instructions.md" },
+    { "file": ".github/instructions/api-conventions.instructions.md" },
+    { "file": ".github/instructions/infrastructure.instructions.md" }
+  ],
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // EDITOR — TEAM DEFAULTS
+  // ══════════════════════════════════════════════════════════════════════════
+  "editor.formatOnSave":           true,
+  "editor.rulers":                 [100],
+  "editor.tabSize":                2,
+  "files.trimTrailingWhitespace":  true,
+  "files.insertFinalNewline":      true,
+  "editor.bracketPairColorization.enabled": true,
+
+  // Language-specific overrides
+  "[java]": {
+    "editor.tabSize": 4,
+    "editor.defaultFormatter": "redhat.java"
+  },
+  "[go]": {
+    "editor.tabSize":  4,
+    "editor.defaultFormatter": "golang.go",
+    "editor.formatOnSave": true
+  },
+  "[python]": {
+    "editor.tabSize": 4,
+    "editor.defaultFormatter": "ms-python.black-formatter"
+  },
+  "[terraform]": {
+    "editor.tabSize": 2,
+    "editor.defaultFormatter": "hashicorp.terraform"
+  },
+  "[yaml]": {
+    "editor.tabSize": 2
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // LANGUAGE SERVERS
+  // ══════════════════════════════════════════════════════════════════════════
+  "java.compile.nullAnalysis.mode": "automatic",
+  "java.configuration.runtimes": [{ "name": "JavaSE-17", "default": true }],
+  "go.lintTool":          "golangci-lint",
+  "go.lintOnSave":        "package",
+  "go.testFlags":         ["-v", "-race"],
+  "go.useLanguageServer": true,
+  "python.analysis.typeCheckingMode": "basic",
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+  "terraform.languageServer.enable": true,
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // FILE ASSOCIATIONS
+  // ══════════════════════════════════════════════════════════════════════════
+  "files.associations": {
+    "*.tf":        "terraform",
+    "*.tfvars":    "terraform",
+    "*.hcl":       "hcl",
+    "Jenkinsfile": "groovy"
+  }
+}

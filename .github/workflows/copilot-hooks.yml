@@ -1,0 +1,78 @@
+# copilot-hooks.yml
+# ─────────────────────────────────────────────────────────────────────────────
+# PURPOSE: Policy gates that run before and after every Copilot agent action.
+#          These are non-negotiable guardrails enforced regardless of which
+#          model or agent triggered the action.
+#
+# HOOKS EXPLAINED:
+#   copilot_pre_action  → runs BEFORE the agent makes changes. Use to block
+#                         dangerous patterns before they're written.
+#   copilot_post_action → runs AFTER changes. Use to validate correctness.
+#
+# DOCS: https://docs.github.com/en/copilot/concepts/agents/coding-agent/about-hooks
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: "Copilot Hooks"
+on:
+  copilot_pre_action:
+  copilot_post_action:
+
+jobs:
+  # ── PRE-ACTION: Block dangerous patterns ─────────────────────────────────
+  pre-action-checks:
+    if: github.event_name == 'copilot_pre_action'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Block hardcoded credentials
+        # Fails the action if the agent is about to commit obvious secrets.
+        # Adjust the pattern to match your secret naming conventions.
+        run: |
+          if grep -rE \
+            '(password|secret|token|api_key|apikey)\s*[=:]\s*"[^$\{][^"]{6,}"' \
+            --include="*.java" --include="*.go" --include="*.py" \
+            --include="*.yaml" --include="*.yml" --include="*.properties" \
+            --exclude-dir=".git" --exclude-dir="vendor" --exclude-dir="node_modules" \
+            . 2>/dev/null; then
+            echo "ERROR: Hardcoded credential pattern detected. Blocking agent action."
+            echo "Use environment variables or secrets manager references instead."
+            exit 1
+          fi
+          echo "Credential check passed."
+
+      - name: Block terraform state commits
+        run: |
+          if git diff --cached --name-only 2>/dev/null | grep -E '\.tfstate'; then
+            echo "ERROR: Agent attempted to commit terraform state file. Blocking."
+            exit 1
+          fi
+          echo "Terraform state check passed."
+
+  # ── POST-ACTION: Validate correctness ────────────────────────────────────
+  post-action-checks:
+    if: github.event_name == 'copilot_post_action'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with: { go-version: "1.22" }
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.11" }
+
+      - name: Run tests after agent changes
+        # Non-blocking (|| true) — reports results but doesn't fail the pipeline.
+        # Change to `exit $?` if you want hard failures.
+        run: |
+          echo "── Go tests ──────────────────────────────────"
+          go test ./... -race 2>&1 | tail -20 || true
+          echo "── Python tests ──────────────────────────────"
+          python -m pytest --tb=short -q 2>&1 | tail -20 || true
+
+      - name: Lint check
+        run: |
+          echo "── Go lint ───────────────────────────────────"
+          which golangci-lint && golangci-lint run --timeout 2m 2>&1 | tail -20 || true
+          echo "── Python lint ───────────────────────────────"
+          pip install ruff --quiet && ruff check . 2>&1 | tail -20 || true
