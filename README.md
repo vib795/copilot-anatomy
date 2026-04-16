@@ -152,4 +152,4 @@ See [GOVERNANCE.md](.github/GOVERNANCE.md) for the full process.
 
 ## License
 
-MIT
+[MIT](LICENSE)
