@@ -1,0 +1,30 @@
+{
+  "timestamp": "2026-04-16T04:03:04Z",
+  "healthScore": 100,
+  "assets": {
+    "prompts": 8,
+    "agents": 53,
+    "skills": 64,
+    "chatmodes": 6,
+    "instructions": 4,
+    "total": 135,
+    "deprecated": 0
+  },
+  "evalChecks": {
+    "passed": 7,
+    "failed": 0,
+    "total": 7,
+    "results": {"naming":"pass","frontmatter":"pass","model-refs":"pass","manifest-sync":"pass","governance":"pass","doc-consistency":"pass","deprecation":"pass"}
+  },
+  "policyChecks": {
+    "totalWarnings": 9,
+    "results": {"destructive-commands":{"warnings":9},"broad-permissions":{"warnings":0},"secret-hygiene":{"warnings":0}}
+  },
+  "infrastructure": {
+    "manifest": true,
+    "modelMatrix": true,
+    "mcpProfiles": true,
+    "governance": true,
+    "changelog": true
+  }
+}

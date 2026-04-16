@@ -66,3 +66,10 @@ guided workflows. Type `/skills list` to see available skills.
 - Model references must exist in `.github/model-compatibility.json`.
 - Changes to Copilot assets must include a `COPILOT-CHANGELOG.md` entry.
 - See `.github/GOVERNANCE.md` for the full checklist.
+
+## MCP tool security posture
+
+- Default profile is **read-only** (context7 only). See `.github/copilot-mcp-profiles.json`.
+- **Standard** profile adds GitHub read operations — activate explicitly for context gathering.
+- **Elevated** profile enables all servers including write operations — required for deployments, PR creation, and infrastructure changes.
+- Never run with elevated profile unless the task requires write operations.

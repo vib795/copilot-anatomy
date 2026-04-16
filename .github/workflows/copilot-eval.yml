@@ -61,3 +61,12 @@ jobs:
 
     - name: Validate manifest ↔ filesystem sync
       run: bash .github/eval/checks/manifest-sync.sh
+
+    - name: Validate governance metadata
+      run: bash .github/eval/checks/governance.sh
+
+    - name: Validate documentation consistency
+      run: bash .github/eval/checks/doc-consistency.sh
+
+    - name: Validate deprecation lifecycle
+      run: bash .github/eval/checks/deprecation.sh

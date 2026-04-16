@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "Least-privilege MCP tool profiles. Default posture is read-only. Elevation requires explicit per-task activation.",
+  "version": "1.0.0",
+  "defaultProfile": "read-only",
+  "profiles": {
+    "read-only": {
+      "description": "Documentation and read-only operations. Active by default.",
+      "servers": {
+        "context7": {
+          "tools": ["*"],
+          "rationale": "Documentation-only SSE server with no write capability"
+        }
+      }
+    },
+    "standard": {
+      "description": "Read-only plus GitHub read operations. Requires explicit activation.",
+      "servers": {
+        "context7": {
+          "tools": ["*"],
+          "rationale": "Documentation-only SSE server with no write capability"
+        },
+        "github": {
+          "tools": [
+            "get_issue",
+            "get_file_contents",
+            "list_commits",
+            "search_code",
+            "list_issues",
+            "list_pull_requests",
+            "get_pull_request"
+          ],
+          "rationale": "Read-only GitHub operations for context gathering"
+        }
+      }
+    },
+    "elevated": {
+      "description": "Full access to all MCP servers including write operations. Requires explicit per-task activation.",
+      "servers": {
+        "context7": {
+          "tools": ["*"],
+          "rationale": "Documentation-only SSE server"
+        },
+        "github": {
+          "tools": ["*"],
+          "rationale": "Full GitHub operations including write (create issues, PRs, comments)"
+        },
+        "azure": {
+          "tools": ["*"],
+          "rationale": "Full Azure operations including resource provisioning"
+        },
+        "terraform": {
+          "tools": ["*"],
+          "rationale": "Full Terraform operations including plan and apply"
+        }
+      }
+    }
+  },
+  "activationInstructions": {
+    "read-only": "Active by default. No action required.",
+    "standard": "Set 'copilot.mcpProfile' to 'standard' in .vscode/settings.json or activate via /deploy skill.",
+    "elevated": "Set 'copilot.mcpProfile' to 'elevated' in .vscode/settings.json. Required for infrastructure changes, PR creation, and deployment operations."
+  }
+}

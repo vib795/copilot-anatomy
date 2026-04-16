@@ -56,3 +56,6 @@ The following checks run automatically via `.github/workflows/copilot-eval.yml`:
 | `frontmatter.sh`   | Required YAML frontmatter fields                   | Yes      |
 | `model-refs.sh`    | Model names exist in compatibility matrix          | Yes      |
 | `manifest-sync.sh` | Every file in manifest exists; no untracked assets | Yes      |
+| `governance.sh`    | Owner, classification, description in manifest     | Yes      |
+| `doc-consistency.sh`| Stale references, duplicate guidance, conflicts   | Warn     |
+| `deprecation.sh`   | 60-day grace period, expired asset detection       | Yes      |

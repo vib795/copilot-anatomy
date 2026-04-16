@@ -49,6 +49,15 @@ for f in .github/instructions/*.instructions.md; do
   fi
 done
 
+# Check agents
+for f in .github/agents/*.agent.md; do
+  [[ -e "$f" ]] || continue
+  if ! grep -q "\"$f\"" "$MANIFEST"; then
+    echo "DRIFT: File '$f' exists but is not in manifest"
+    ERRORS=$((ERRORS + 1))
+  fi
+done
+
 # Check chatmodes
 for f in .github/chatmodes/*.chatmode.md; do
   [[ -e "$f" ]] || continue
@@ -58,8 +67,19 @@ for f in .github/chatmodes/*.chatmode.md; do
   fi
 done
 
+# Check skills
+for d in .github/skills/*/; do
+  [[ -d "$d" ]] || continue
+  local_skill="${d}SKILL.md"
+  [[ -f "$local_skill" ]] || continue
+  if ! grep -q "\"$local_skill\"" "$MANIFEST"; then
+    echo "DRIFT: Skill '$local_skill' exists but is not in manifest"
+    ERRORS=$((ERRORS + 1))
+  fi
+done
+
 # Check core workflows
-for f in .github/workflows/copilot-setup-steps.yml .github/workflows/copilot-hooks.yml; do
+for f in .github/workflows/copilot-setup-steps.yml .github/workflows/copilot-hooks.yml .github/workflows/copilot-eval.yml; do
   [[ -e "$f" ]] || continue
   if ! grep -q "\"$f\"" "$MANIFEST"; then
     echo "DRIFT: File '$f' exists but is not in manifest"
