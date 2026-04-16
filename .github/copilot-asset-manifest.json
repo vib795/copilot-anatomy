@@ -1,0 +1,325 @@
+{
+  "$schema": ".github/eval/manifest-schema.json",
+  "version": "1.0.0",
+  "generated": false,
+  "description": "Single source of truth for shipped Copilot assets. Each entry declares ownership, classification, and generated-vs-committed status.",
+  "assets": {
+    "instructions": {
+      "team-instructions": {
+        "path": ".github/copilot-instructions.md",
+        "owner": "platform-team",
+        "classification": "core",
+        "generated": false,
+        "description": "Always-on team constitution injected into every Copilot interaction"
+      }
+    },
+    "instruction-files": {
+      "code-style": {
+        "path": ".github/instructions/code-style.instructions.md",
+        "owner": "platform-team",
+        "classification": "core",
+        "generated": true,
+        "generatedBy": "copilot-setup.sh",
+        "description": "Code style conventions for Java, Go, Python, TypeScript"
+      },
+      "testing": {
+        "path": ".github/instructions/testing.instructions.md",
+        "owner": "platform-team",
+        "classification": "core",
+        "generated": true,
+        "generatedBy": "copilot-setup.sh",
+        "description": "Testing patterns and conventions"
+      },
+      "api-conventions": {
+        "path": ".github/instructions/api-conventions.instructions.md",
+        "owner": "platform-team",
+        "classification": "core",
+        "generated": true,
+        "generatedBy": "copilot-setup.sh",
+        "description": "REST API design conventions"
+      },
+      "infrastructure": {
+        "path": ".github/instructions/infrastructure.instructions.md",
+        "owner": "platform-team",
+        "classification": "core",
+        "generated": true,
+        "generatedBy": "copilot-setup.sh",
+        "description": "Terraform, Kubernetes, Docker conventions"
+      }
+    },
+    "prompts": {
+      "review": {
+        "path": ".github/prompts/review.prompt.md",
+        "owner": "platform-team",
+        "classification": "core",
+        "generated": true,
+        "generatedBy": "copilot-setup.sh",
+        "model": "claude-sonnet-4-5",
+        "description": "Code review slash command"
+      },
+      "fix-issue": {
+        "path": ".github/prompts/fix-issue.prompt.md",
+        "owner": "platform-team",
+        "classification": "core",
+        "generated": true,
+        "generatedBy": "copilot-setup.sh",
+        "model": "claude-sonnet-4-5",
+        "description": "Bug fix slash command"
+      },
+      "deploy": {
+        "path": ".github/prompts/deploy.prompt.md",
+        "owner": "platform-team",
+        "classification": "core",
+        "generated": true,
+        "generatedBy": "copilot-setup.sh",
+        "model": "gpt-4.1",
+        "description": "Deployment checklist slash command"
+      },
+      "architect": {
+        "path": ".github/prompts/architect.prompt.md",
+        "owner": "platform-team",
+        "classification": "core",
+        "generated": true,
+        "generatedBy": "copilot-setup.sh",
+        "model": "o3",
+        "description": "Architecture design slash command"
+      },
+      "security-scan": {
+        "path": ".github/prompts/security-scan.prompt.md",
+        "owner": "security-team",
+        "classification": "core",
+        "generated": true,
+        "generatedBy": "copilot-setup.sh",
+        "model": "claude-opus-4-5",
+        "description": "Security audit slash command"
+      },
+      "document": {
+        "path": ".github/prompts/document.prompt.md",
+        "owner": "platform-team",
+        "classification": "core",
+        "generated": true,
+        "generatedBy": "copilot-setup.sh",
+        "model": "claude-sonnet-4-5",
+        "description": "Documentation generation slash command"
+      },
+      "explain-codebase": {
+        "path": ".github/prompts/explain-codebase.prompt.md",
+        "owner": "platform-team",
+        "classification": "core",
+        "generated": true,
+        "generatedBy": "copilot-setup.sh",
+        "model": "gemini-2.5-pro",
+        "description": "Large codebase explanation slash command"
+      },
+      "test-gen": {
+        "path": ".github/prompts/test-gen.prompt.md",
+        "owner": "platform-team",
+        "classification": "core",
+        "generated": true,
+        "generatedBy": "copilot-setup.sh",
+        "model": "claude-sonnet-4-5",
+        "description": "Test generation slash command"
+      }
+    },
+    "skills": {
+      "helm-upgrade": {
+        "path": ".github/skills/helm-upgrade/SKILL.md",
+        "owner": "platform-team",
+        "classification": "core",
+        "generated": true,
+        "generatedBy": "copilot-setup.sh",
+        "description": "Helm deployment and rollback workflows"
+      },
+      "debug-eks": {
+        "path": ".github/skills/debug-eks/SKILL.md",
+        "owner": "platform-team",
+        "classification": "core",
+        "generated": true,
+        "generatedBy": "copilot-setup.sh",
+        "description": "EKS pod debugging workflows"
+      },
+      "terraform-plan": {
+        "path": ".github/skills/terraform-plan/SKILL.md",
+        "owner": "platform-team",
+        "classification": "core",
+        "generated": true,
+        "generatedBy": "copilot-setup.sh",
+        "description": "Terraform/OpenTofu plan and apply workflows"
+      },
+      "incident-triage": {
+        "path": ".github/skills/incident-triage/SKILL.md",
+        "owner": "platform-team",
+        "classification": "core",
+        "generated": true,
+        "generatedBy": "copilot-setup.sh",
+        "description": "Production incident triage and postmortem"
+      },
+      "ce-brainstorm": {
+        "path": ".github/skills/ce-brainstorm/SKILL.md",
+        "owner": "platform-team",
+        "classification": "workflow",
+        "generated": false,
+        "description": "Collaborative brainstorming workflow"
+      },
+      "ce-plan": {
+        "path": ".github/skills/ce-plan/SKILL.md",
+        "owner": "platform-team",
+        "classification": "workflow",
+        "generated": false,
+        "description": "Implementation planning workflow"
+      },
+      "ce-review": {
+        "path": ".github/skills/ce-review/SKILL.md",
+        "owner": "platform-team",
+        "classification": "workflow",
+        "generated": false,
+        "description": "Structured code review workflow"
+      },
+      "ce-work": {
+        "path": ".github/skills/ce-work/SKILL.md",
+        "owner": "platform-team",
+        "classification": "workflow",
+        "generated": false,
+        "description": "Work execution workflow"
+      }
+    },
+    "agents": {
+      "plan": {
+        "path": ".github/agents/plan.agent.md",
+        "owner": "platform-team",
+        "classification": "core",
+        "generated": true,
+        "generatedBy": "copilot-setup.sh",
+        "model": "o3",
+        "description": "Planning agent for implementation plans"
+      },
+      "implement": {
+        "path": ".github/agents/implement.agent.md",
+        "owner": "platform-team",
+        "classification": "core",
+        "generated": true,
+        "generatedBy": "copilot-setup.sh",
+        "model": "claude-sonnet-4-5",
+        "description": "Implementation agent for code changes"
+      },
+      "review": {
+        "path": ".github/agents/review.agent.md",
+        "owner": "platform-team",
+        "classification": "core",
+        "generated": true,
+        "generatedBy": "copilot-setup.sh",
+        "model": "claude-opus-4-5",
+        "description": "Review agent for PR review"
+      }
+    },
+    "chatmodes": {
+      "architect": {
+        "path": ".github/chatmodes/architect.chatmode.md",
+        "owner": "platform-team",
+        "classification": "core",
+        "generated": true,
+        "generatedBy": "copilot-setup.sh",
+        "model": "o3",
+        "description": "Architecture discussion persona"
+      },
+      "code-reviewer": {
+        "path": ".github/chatmodes/code-reviewer.chatmode.md",
+        "owner": "platform-team",
+        "classification": "core",
+        "generated": true,
+        "generatedBy": "copilot-setup.sh",
+        "model": "claude-sonnet-4-5",
+        "description": "Code review discussion persona"
+      },
+      "devops-assistant": {
+        "path": ".github/chatmodes/devops-assistant.chatmode.md",
+        "owner": "platform-team",
+        "classification": "core",
+        "generated": true,
+        "generatedBy": "copilot-setup.sh",
+        "model": "gpt-4.1",
+        "description": "DevOps operations persona"
+      },
+      "longcontext-reader": {
+        "path": ".github/chatmodes/longcontext-reader.chatmode.md",
+        "owner": "platform-team",
+        "classification": "core",
+        "generated": true,
+        "generatedBy": "copilot-setup.sh",
+        "model": "gemini-2.5-pro",
+        "description": "Large codebase reading persona"
+      },
+      "security-auditor": {
+        "path": ".github/chatmodes/security-auditor.chatmode.md",
+        "owner": "platform-team",
+        "classification": "core",
+        "generated": true,
+        "generatedBy": "copilot-setup.sh",
+        "model": "claude-opus-4-5",
+        "description": "Security audit discussion persona"
+      },
+      "test-writer": {
+        "path": ".github/chatmodes/test-writer.chatmode.md",
+        "owner": "platform-team",
+        "classification": "core",
+        "generated": true,
+        "generatedBy": "copilot-setup.sh",
+        "model": "claude-sonnet-4-5",
+        "description": "Test writing discussion persona"
+      }
+    },
+    "workflows": {
+      "copilot-setup-steps": {
+        "path": ".github/workflows/copilot-setup-steps.yml",
+        "owner": "platform-team",
+        "classification": "core",
+        "generated": true,
+        "generatedBy": "copilot-setup.sh",
+        "description": "Agent bootstrap workflow"
+      },
+      "copilot-hooks": {
+        "path": ".github/workflows/copilot-hooks.yml",
+        "owner": "platform-team",
+        "classification": "core",
+        "generated": true,
+        "generatedBy": "copilot-setup.sh",
+        "description": "Pre/post action policy gates"
+      }
+    },
+    "config": {
+      "vscode-settings": {
+        "path": ".vscode/settings.json",
+        "owner": "platform-team",
+        "classification": "core",
+        "generated": true,
+        "generatedBy": "copilot-setup.sh",
+        "description": "Team VS Code and Copilot settings"
+      },
+      "mcp-config": {
+        "path": ".vscode/mcp.json",
+        "owner": "platform-team",
+        "classification": "core",
+        "generated": true,
+        "generatedBy": "copilot-setup.sh",
+        "description": "MCP tool server configuration"
+      },
+      "copilotignore": {
+        "path": ".copilotignore",
+        "owner": "platform-team",
+        "classification": "core",
+        "generated": true,
+        "generatedBy": "copilot-setup.sh",
+        "description": "AI context exclusion rules"
+      }
+    }
+  },
+  "classifications": {
+    "core": "Essential assets generated by copilot-setup.sh or maintained as team standards",
+    "workflow": "Compound Engineering workflow skills (ce-* series)",
+    "extension": "Community or third-party contributed assets"
+  },
+  "ownership": {
+    "platform-team": "Copilot platform maintainers responsible for core asset quality",
+    "security-team": "Security-focused asset owners"
+  }
+}

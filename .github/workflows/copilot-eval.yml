@@ -1,0 +1,63 @@
+# copilot-eval.yml
+# ─────────────────────────────────────────────────────────────────────────────
+# PURPOSE: Evaluation gates for Copilot assets.
+#          Runs deterministic checks on every PR that touches Copilot assets.
+#          Rubric-based checks are added incrementally in Phase 2+.
+#
+# TRACKS:
+#   Deterministic — structural validation (frontmatter, naming, manifest sync,
+#                   model references). Zero-flake. Must be 100% pass.
+#   Rubric        — behavioral evaluation with bounded retries (Phase 2+).
+#                   Must be ≥80% pass across the suite.
+# ─────────────────────────────────────────────────────────────────────────────
+
+name: "Copilot Asset Evaluation"
+on:
+  pull_request:
+    paths:
+    - '.github/prompts/**'
+    - '.github/instructions/**'
+    - '.github/skills/**'
+    - '.github/agents/**'
+    - '.github/chatmodes/**'
+    - '.github/workflows/copilot-*.yml'
+    - '.github/copilot-instructions.md'
+    - '.github/copilot-asset-manifest.json'
+    - '.github/model-compatibility.json'
+    - '.vscode/settings.json'
+    - '.vscode/mcp.json'
+    - '.copilotignore'
+  push:
+    branches: [ main ]
+    paths:
+    - '.github/prompts/**'
+    - '.github/instructions/**'
+    - '.github/skills/**'
+    - '.github/agents/**'
+    - '.github/chatmodes/**'
+    - '.github/workflows/copilot-*.yml'
+    - '.github/copilot-instructions.md'
+    - '.github/copilot-asset-manifest.json'
+    - '.github/model-compatibility.json'
+    - '.vscode/settings.json'
+    - '.vscode/mcp.json'
+    - '.copilotignore'
+
+jobs:
+  deterministic-checks:
+    name: "Deterministic Validation"
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Validate file naming conventions
+      run: bash .github/eval/checks/naming.sh
+
+    - name: Validate frontmatter schema
+      run: bash .github/eval/checks/frontmatter.sh
+
+    - name: Validate model references
+      run: bash .github/eval/checks/model-refs.sh
+
+    - name: Validate manifest ↔ filesystem sync
+      run: bash .github/eval/checks/manifest-sync.sh

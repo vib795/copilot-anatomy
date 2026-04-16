@@ -15,7 +15,8 @@
 5. [Decision guide — what to use when](#5-decision-guide--what-to-use-when)
 6. [How to add your own files](#6-how-to-add-your-own-files)
 7. [Admin setup (org/enterprise)](#7-admin-setup-orgenterprise)
-8. [Troubleshooting](#8-troubleshooting)
+8. [Governance and quality gates](#8-governance-and-quality-gates)
+9. [Troubleshooting](#9-troubleshooting)
 
 ---
 
@@ -634,7 +635,60 @@ model selection based on availability.
 
 ---
 
-## 8. Troubleshooting
+## 8. Governance and quality gates
+
+### Asset manifest
+
+Every Copilot asset is tracked in `.github/copilot-asset-manifest.json`. This is the
+single source of truth for what ships, who owns it, and whether it's generated or
+hand-maintained.
+
+**When you add a new asset**, add a corresponding entry to the manifest. The CI
+evaluation workflow (`copilot-eval.yml`) will fail if a file exists without a
+manifest entry or vice versa.
+
+### Model compatibility matrix
+
+`.github/model-compatibility.json` defines all available models, their capabilities,
+named slots (referenced in `settings.json`), and fallback behavior.
+
+**Fallback policy**:
+- **Gated workflows** (security scans, eval checks): **fail-closed** — if the
+  specified model is unavailable, the workflow blocks rather than silently falling back
+- **Advisory workflows** (code review, documentation): **controlled fallback** — may
+  use an alternative model, but must report which model was actually used
+
+### Evaluation gates
+
+PRs touching Copilot assets trigger `.github/workflows/copilot-eval.yml`, which runs:
+
+| Check | What it validates |
+|-------|-------------------|
+| `naming.sh` | Kebab-case file names, correct extensions |
+| `frontmatter.sh` | Required YAML frontmatter fields per asset type |
+| `model-refs.sh` | Model names exist in the compatibility matrix |
+| `manifest-sync.sh` | Every manifest path exists on disk; no untracked assets |
+
+All deterministic checks must pass (100%). Rubric-based behavioral checks will be
+added in Phase 2 with a ≥80% pass threshold.
+
+### Changelog
+
+All changes to Copilot assets are logged in `COPILOT-CHANGELOG.md` using
+[Keep a Changelog](https://keepachangelog.com/) format. Include an entry for every
+PR that adds, changes, deprecates, or removes a Copilot asset.
+
+### Governance checklist
+
+See `.github/GOVERNANCE.md` for the full checklist when adding, deprecating, or
+transferring ownership of assets. Key rules:
+- Every asset must have a declared owner
+- Deprecation requires 60-day minimum grace period
+- New assets must pass all eval checks before merge
+
+---
+
+## 9. Troubleshooting
 
 ### Chatmodes not appearing in VS Code
 Add to `.vscode/settings.json`:

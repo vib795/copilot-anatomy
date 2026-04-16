@@ -52,3 +52,9 @@ guided workflows. Type `/skills list` to see available skills.
 - Shell scripts: `set -euo pipefail` at top.
 - Dockerfiles: multi-stage builds, pinned digest base images, non-root USER.
 - Commits: `<type>(<scope>): <subject>` — feat/fix/chore/docs/refactor/test/ci/perf.
+
+## Copilot asset governance
+- New prompts/skills/agents/chatmodes require a manifest entry in `.github/copilot-asset-manifest.json`.
+- Model references must exist in `.github/model-compatibility.json`.
+- Changes to Copilot assets must include a `COPILOT-CHANGELOG.md` entry.
+- See `.github/GOVERNANCE.md` for the full checklist.
