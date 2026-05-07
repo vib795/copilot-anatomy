@@ -1,5 +1,5 @@
 ---
-agent: edit
+agent: agent
 model: claude-sonnet-4-5
 description: "Generate tests for the selected code following project conventions"
 ---
@@ -7,7 +7,7 @@ description: "Generate tests for the selected code following project conventions
 <!--
   SLASH COMMAND: /test-gen
   MODEL: claude-sonnet-4-5 — produces realistic, convention-following tests
-  AGENT: edit — adds test files or test cases
+  AGENT: agent — autonomous mode that adds test files or test cases
 -->
 
 Generate tests for the selected code. Follow `.github/instructions/testing.instructions.md`.

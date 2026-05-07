@@ -75,11 +75,14 @@ for f in .github/agents/*.agent.md; do
   check_model_ref "$f"
 done
 
-echo "── Checking chatmode model references ──"
-for f in .github/chatmodes/*.chatmode.md; do
-  [[ -e "$f" ]] || continue
-  check_model_ref "$f"
-done
+echo "── Checking chatmode model references (legacy) ──"
+# Chat modes deprecated in favor of Custom Agents (.agent.md).
+if [[ -d .github/chatmodes ]]; then
+  for f in .github/chatmodes/*.chatmode.md; do
+    [[ -e "$f" ]] || continue
+    check_model_ref "$f"
+  done
+fi
 
 if [[ $ERRORS -gt 0 ]]; then
   echo ""

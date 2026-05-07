@@ -28,6 +28,8 @@ done
 PROMPT_COUNT=$(find .github/prompts -name '*.prompt.md' 2>/dev/null | wc -l | tr -d ' ')
 AGENT_COUNT=$(find .github/agents -name '*.agent.md' 2>/dev/null | wc -l | tr -d ' ')
 SKILL_COUNT=$(find .github/skills -name 'SKILL.md' 2>/dev/null | wc -l | tr -d ' ')
+# Legacy: chat modes were renamed to Custom Agents (.agent.md). Kept here so
+# the dashboard still flags any stragglers if a `.chatmode.md` re-appears.
 CHATMODE_COUNT=$(find .github/chatmodes -name '*.chatmode.md' 2>/dev/null | wc -l | tr -d ' ')
 INSTRUCTION_COUNT=$(find .github/instructions -name '*.instructions.md' 2>/dev/null | wc -l | tr -d ' ')
 TOTAL_ASSETS=$((PROMPT_COUNT + AGENT_COUNT + SKILL_COUNT + CHATMODE_COUNT + INSTRUCTION_COUNT))

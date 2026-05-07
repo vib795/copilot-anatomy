@@ -1,5 +1,5 @@
 ---
-agent: edit
+agent: agent
 model: claude-sonnet-4-5
 description: "Generate or update documentation for the selected code"
 ---
@@ -7,7 +7,7 @@ description: "Generate or update documentation for the selected code"
 <!--
   SLASH COMMAND: /document
   MODEL: claude-sonnet-4-5 — natural prose + technical accuracy
-  AGENT: edit — updates documentation inline in the file
+  AGENT: agent — autonomous mode that updates documentation inline in the file
 -->
 
 Generate or update documentation for the selected code.

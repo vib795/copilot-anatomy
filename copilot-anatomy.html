@@ -213,7 +213,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
 <div class="main">
   <div class="intro">
     <h2>Six primitives, one coherent system</h2>
-    <p>Copilot's customisation stack works in layers: <strong>instructions</strong> are always on, <strong>skills</strong> load when relevant, <strong>prompts</strong> are invoked manually, <strong>chatmodes</strong> set a persona for a session, <strong>agents</strong> run autonomously in chains, and <strong>hooks</strong> enforce hard policies.</p>
+    <p>Copilot's customisation stack works in layers: <strong>instructions</strong> are always on, <strong>skills</strong> load when relevant, <strong>prompts</strong> are invoked manually, <strong>custom agents</strong> serve dual roles (persona agents for interactive sessions and task agents that run autonomously in chains), and <strong>hooks</strong> enforce hard policies.</p>
     <p>A <strong>governance layer</strong> — asset manifest, model compatibility matrix, CI evaluation gates, and changelog — ensures quality and ownership as the setup evolves.</p>
     <p>Every file below has a <strong>model: field</strong> in its frontmatter — this routes each task to the AI model best suited for it automatically, without you switching the picker. Click any row to see the full rationale.</p>
   </div>
@@ -308,18 +308,18 @@ const ITEMS = {
   chip: 'c-gray',
   model: 'sonnet',
   trigger: { type: 'manual', text: 'Manual — type /fix-issue in Copilot Chat' },
-  what: 'A structured bug-fix workflow: state the problem, trace the root cause, apply the minimal fix, update or add a test, provide verification commands. Uses <strong>agent: edit</strong> so it actually modifies files.',
+  what: 'A structured bug-fix workflow: state the problem, trace the root cause, apply the minimal fix, update or add a test, provide verification commands. Uses <strong>agent: agent</strong> so it actually modifies files.',
   when: 'When you type /fix-issue. Open the file with the bug first, or select the problematic code.',
-  content: `---\nagent: edit\nmodel: claude-sonnet-4-5\ndescription: "Diagnose root cause and fix the bug"\n---\n\n## Step 1 — State the problem\n## Step 2 — Root cause\n(trace before writing code)\n## Step 3 — Apply the fix\n(minimal change only)\n## Step 4 — Add/update a test\n## Step 5 — Verification commands`,
+  content: `---\nagent: agent\nmodel: claude-sonnet-4-5\ndescription: "Diagnose root cause and fix the bug"\n---\n\n## Step 1 — State the problem\n## Step 2 — Root cause\n(trace before writing code)\n## Step 3 — Apply the fix\n(minimal change only)\n## Step 4 — Add/update a test\n## Step 5 — Verification commands`,
   contentLabel: 'Frontmatter + 5-step structure',
-  whyModel: 'Claude Sonnet excels at following multi-step diagnostic workflows and producing targeted edits. It avoids the common failure mode of "fix the symptom without understanding the root cause." The agent: edit field means it writes the changes directly rather than just showing them.',
+  whyModel: 'Claude Sonnet excels at following multi-step diagnostic workflows and producing targeted edits. It avoids the common failure mode of "fix the symptom without understanding the root cause." The agent: agent field means it writes the changes directly rather than just showing them.',
   tips: [
-    '<strong>agent: edit</strong> — unlike /review, this command modifies your files directly. Review the diff after.',
+    '<strong>agent: agent</strong> — unlike /review, this command modifies your files directly. Review the diff after.',
     'Step 2 is the most important: stating the root cause before writing code prevents regression fixes.',
     'If the bug has a JIRA ticket number, mention it in your prompt — the command is designed to acknowledge it.',
     'The test naming convention is enforced: shouldReturn404WhenUserNotFound() in Java, test_raises_not_found_when_user_missing in Python.'
   ],
-  tags: [{text:'/fix-issue', color:'blue'},{text:'agent: edit', color:'red'},{text:'modifies files', color:'red'}]
+  tags: [{text:'/fix-issue', color:'blue'},{text:'agent: agent', color:'red'},{text:'modifies files', color:'red'}]
 },
 
 'deploy': {
@@ -390,16 +390,16 @@ const ITEMS = {
   trigger: { type: 'manual', text: 'Manual — type /document in Copilot Chat' },
   what: 'Generates or updates documentation for the selected code. Applies the correct format by language: Javadoc + SpringDoc for Java, GoDoc for Go, Google-style docstrings for Python, description fields for Terraform.',
   when: 'When you type /document. Select the function, class, or file you want documented first.',
-  content: `---\nagent: edit\nmodel: claude-sonnet-4-5\ndescription: "Generate docs: Javadoc/GoDoc/docstrings/Terraform"\n---\n\nJava → Javadoc + @Operation (SpringDoc)\nGo → GoDoc on every exported symbol\nPython → Google-style: Args/Returns/Raises\nTerraform → description on variable+output\n\nRules:\n- Document WHAT and WHY, not HOW\n- Include usage examples for non-trivial APIs\n- Never restate the code`,
+  content: `---\nagent: agent\nmodel: claude-sonnet-4-5\ndescription: "Generate docs: Javadoc/GoDoc/docstrings/Terraform"\n---\n\nJava → Javadoc + @Operation (SpringDoc)\nGo → GoDoc on every exported symbol\nPython → Google-style: Args/Returns/Raises\nTerraform → description on variable+output\n\nRules:\n- Document WHAT and WHY, not HOW\n- Include usage examples for non-trivial APIs\n- Never restate the code`,
   contentLabel: 'Frontmatter + language rules',
   whyModel: 'Claude Sonnet is optimal for documentation because it produces <em>readable prose</em> alongside technical accuracy. Documentation needs to be something humans actually want to read, not just technically correct. Sonnet\'s natural language quality outperforms GPT-4.1 on prose generation tasks.',
   tips: [
-    '<strong>agent: edit</strong> — this writes docs directly into your file. Review the diff.',
+    '<strong>agent: agent</strong> — this writes docs directly into your file. Review the diff.',
     'For Spring Boot REST controllers, /document adds @Operation(summary=...) + @ApiResponse automatically.',
     'GoDoc convention is enforced: first sentence ends with the symbol name, package doc goes in doc.go.',
     'The rule "never restate the code" prevents `count++ // increment count` style noise.'
   ],
-  tags: [{text:'/document', color:'blue'},{text:'agent: edit', color:'red'},{text:'claude-sonnet-4-5', color:'purple'}]
+  tags: [{text:'/document', color:'blue'},{text:'agent: agent', color:'red'},{text:'claude-sonnet-4-5', color:'purple'}]
 },
 
 'explain-codebase': {
@@ -430,16 +430,16 @@ const ITEMS = {
   trigger: { type: 'manual', text: 'Manual — type /test-gen in Copilot Chat' },
   what: 'Generates comprehensive tests following project conventions: happy path, boundary/edge cases, primary failure path, and one integration-adjacent test. Enforces naming conventions and prevents test anti-patterns.',
   when: 'When you type /test-gen. Open the file you want tested, or select a specific function.',
-  content: `---\nagent: edit\nmodel: claude-sonnet-4-5\ndescription: "Generate tests following project conventions"\n---\n\nGenerates:\n1. Happy path (valid inputs)\n2. Boundary/edge cases\n3. Primary failure path\n4. Integration-adjacent test\n\nNaming:\nJava: shouldReturn404WhenUserNotFound()\nGo: TestHandler/returns_404_when_not_found\nPython: test_raises_not_found_when_user_missing`,
+  content: `---\nagent: agent\nmodel: claude-sonnet-4-5\ndescription: "Generate tests following project conventions"\n---\n\nGenerates:\n1. Happy path (valid inputs)\n2. Boundary/edge cases\n3. Primary failure path\n4. Integration-adjacent test\n\nNaming:\nJava: shouldReturn404WhenUserNotFound()\nGo: TestHandler/returns_404_when_not_found\nPython: test_raises_not_found_when_user_missing`,
   contentLabel: 'Frontmatter + what gets generated',
   whyModel: 'Claude Sonnet is consistently the best model for generating realistic, idiomatic tests. It produces tests that actually test behaviour (not implementation details), follows the project conventions from testing.instructions.md, and avoids the most common test anti-patterns: tests that only test mocks, and trivial assertions that always pass.',
   tips: [
-    '<strong>agent: edit</strong> — test files are written or updated directly.',
+    '<strong>agent: agent</strong> — test files are written or updated directly.',
     'The template explicitly bans @SuppressWarnings on test assertions and Thread.sleep() — common shortcuts that mask real issues.',
     'For Go, it always generates table-driven sub-tests rather than separate top-level functions.',
     'Reads testing.instructions.md automatically — your project\'s test conventions are already applied.'
   ],
-  tags: [{text:'/test-gen', color:'blue'},{text:'agent: edit', color:'red'},{text:'claude-sonnet-4-5', color:'purple'}]
+  tags: [{text:'/test-gen', color:'blue'},{text:'agent: agent', color:'red'},{text:'claude-sonnet-4-5', color:'purple'}]
 },
 
 // ── INSTRUCTIONS ─────────────────────────────────────────────────────────
@@ -668,58 +668,58 @@ const ITEMS = {
   tags: [{text:'chainable', color:'purple'},{text:'read-only', color:'gray'},{text:'claude-opus', color:'pink'},{text:'terminal', color:'red'}]
 },
 
-// ── CHATMODES ─────────────────────────────────────────────────────────────
+// ── PERSONA AGENTS (formerly CHATMODES) ──────────────────────────────────
 
 'code-reviewer-cm': {
-  path: '.github/chatmodes/code-reviewer.chatmode.md',
-  label: 'code-reviewer.chatmode.md',
+  path: '.github/agents/code-reviewer.agent.md',
+  label: 'code-reviewer.agent.md',
   chip: 'c-gray',
   model: 'sonnet',
-  trigger: { type: 'isolated', text: 'Manual — select from VS Code chat mode picker dropdown' },
+  trigger: { type: 'isolated', text: 'Manual — select from VS Code chat agent picker dropdown' },
   what: 'Alex persona: direct, no hollow praise. Uses a 🔴/🟡/🔵 rating system (Blocker/Suggestion/Nit). Always checks: failure path, silent data-loss, 6-month readability, and whether tests actually test behaviour.',
   when: 'Select "Code reviewer" from the chat mode dropdown in VS Code. Best for extended review sessions — PRs, entire files, multiple passes.',
   content: `---\ndescription: "Code review — direct feedback, Claude Sonnet"\nmodel: claude-sonnet-4-5\n---\n\nYou are Alex, senior engineer (Java/Go, 12 yrs).\nDirect. No hollow praise.\n\n🔴 Blocker — must fix before merge\n🟡 Suggestion — should fix, won\'t block\n🔵 Nit — personal preference\n\nAlways check: failure path, data-loss,\n6-month readability, tests vs mocks.\nShow code when you\'d write it differently.`,
-  contentLabel: 'Full chatmode definition',
+  contentLabel: 'Full custom agent definition',
   whyModel: 'Sonnet is chosen over Opus for the interactive reviewer because code review is a back-and-forth — you want fast responses as you discuss findings. Opus\'s extra capability isn\'t needed for individual-file review sessions. Use /security-scan (Opus) for deep security audits.',
   tips: [
-    '<strong>Chatmode vs /review prompt:</strong> Use /review for one-shot structured review. Use the chatmode for extended review conversations where you want to discuss findings.',
+    '<strong>Persona agent vs /review prompt:</strong> Use /review for one-shot structured review. Use the persona agent for extended review conversations where you want to discuss findings.',
     'The persona (Alex) isn\'t decoration — it shapes tone and prevents over-hedged feedback like "you might consider...".',
-    'The model: field in the chatmode overrides your picker for the entire session.',
+    'The model: field in the persona agent overrides your picker for the entire session.',
     'Prerequisite: "github.copilot.chat.experimental.chatModes": true in settings.json (already set).'
   ],
-  tags: [{text:'chatmode', color:'purple'},{text:'isolated session', color:'pink'},{text:'claude-sonnet', color:'purple'}]
+  tags: [{text:'persona agent', color:'purple'},{text:'isolated session', color:'pink'},{text:'claude-sonnet', color:'purple'}]
 },
 
 'security-auditor-cm': {
-  path: '.github/chatmodes/security-auditor.chatmode.md',
-  label: 'security-auditor.chatmode.md',
+  path: '.github/agents/security-auditor.agent.md',
+  label: 'security-auditor.agent.md',
   chip: 'c-gray',
   model: 'opus',
-  trigger: { type: 'isolated', text: 'Manual — select from VS Code chat mode picker dropdown' },
+  trigger: { type: 'isolated', text: 'Manual — select from VS Code chat agent picker dropdown' },
   what: 'Morgan persona: AppSec engineer, thinks like an attacker. 🔴/🟠/🟡/🔵 severity ratings. Built-in pattern knowledge for Spring Boot actuator exposure, Go exec.Command injection, K8s privileged containers, Terraform S3 public-read, Docker root user.',
   when: 'Select "Security auditor" from the chat mode dropdown. Best for security-focused review sessions on auth PRs, new endpoints, or infrastructure changes.',
   content: `---\ndescription: "Security audit — Claude Opus (most thorough)"\nmodel: claude-opus-4-5\n---\n\nYou are Morgan, AppSec engineer.\nThink like an attacker, design like a defender.\n\n🔴 Critical | 🟠 High | 🟡 Medium | 🔵 Low\n\nPer finding: what · where (file:line)\n  · impact · fix · OWASP/CWE reference\n\nStack-specific: Spring Boot, Go, K8s,\nTerraform, Docker, Jenkins`,
-  contentLabel: 'Full chatmode definition',
+  contentLabel: 'Full custom agent definition',
   whyModel: 'Opus is used here (vs Sonnet for the code reviewer) because security audit catches different classes of bugs — subtle injection vectors, timing attacks, privilege escalation — that require maximum reasoning capability. The extra cost per message is justified by what it catches.',
   tips: [
     '<strong>Why Opus here but Sonnet for code review?</strong> Security vulnerabilities are harder to find — subtle, context-dependent, require adversarial thinking. Opus\'s extra capability is genuinely used.',
     'Stack-specific patterns are built into the prompt — the model knows your exact tech stack\'s common vulnerabilities.',
-    'Use this chatmode for extended security reviews. For quick one-off audits, /security-scan is faster.',
+    'Use this persona agent for extended security reviews. For quick one-off audits, /security-scan is faster.',
     'The per-finding format (what · where · impact · fix · CWE) produces output that can go directly into a security ticket.'
   ],
-  tags: [{text:'chatmode', color:'purple'},{text:'isolated session', color:'pink'},{text:'claude-opus', color:'pink'}]
+  tags: [{text:'persona agent', color:'purple'},{text:'isolated session', color:'pink'},{text:'claude-opus', color:'pink'}]
 },
 
 'architect-cm': {
-  path: '.github/chatmodes/architect.chatmode.md',
-  label: 'architect.chatmode.md',
+  path: '.github/agents/architect.agent.md',
+  label: 'architect.agent.md',
   chip: 'c-gray',
   model: 'o3',
-  trigger: { type: 'isolated', text: 'Manual — select from VS Code chat mode picker dropdown' },
+  trigger: { type: 'isolated', text: 'Manual — select from VS Code chat agent picker dropdown' },
   what: 'Jordan persona: staff engineer, trade-offs over absolutes. Every recommendation states what it optimises for. Produces ADRs (Context → Decision → Consequences → Alternatives considered). Never recommends complexity the team can\'t operate on-call.',
   when: 'Select "Architect" from the chat mode dropdown. Best for extended design discussions: new service architecture, technology decisions, major refactors.',
   content: `---\ndescription: "System design and ADRs — o3 (best reasoning)"\nmodel: o3\n---\n\nYou are Jordan, staff engineer.\nTrade-offs, not absolutes.\n\nStructure: Option A | Optimises for: X | Costs: Y\n\nADR format:\nContext → Decision → Consequences\n→ Alternatives considered\n\nNever recommend complexity the team\ncannot operate on a pager.`,
-  contentLabel: 'Full chatmode definition',
+  contentLabel: 'Full custom agent definition',
   whyModel: 'o3 is the only model worth using for extended architecture sessions. Architecture discussions involve chained reasoning across many constraints simultaneously — team capacity, existing systems, future scale, operational complexity. o3 holds all of this in context and reasons about interactions between factors that simpler models miss.',
   tips: [
     '<strong>Describe constraints explicitly:</strong> team size, existing infra, on-call burden, budget. Jordan factors all of these in.',
@@ -727,67 +727,67 @@ const ITEMS = {
     'ADR output is designed to be committed as a markdown file in your repo — a living record of why decisions were made.',
     'o3 is expensive for long sessions — use it when the decision genuinely matters, not for quick questions.'
   ],
-  tags: [{text:'chatmode', color:'purple'},{text:'isolated session', color:'pink'},{text:'o3 reasoning', color:'amber'}]
+  tags: [{text:'persona agent', color:'purple'},{text:'isolated session', color:'pink'},{text:'o3 reasoning', color:'amber'}]
 },
 
 'devops-cm': {
-  path: '.github/chatmodes/devops-assistant.chatmode.md',
-  label: 'devops-assistant.chatmode.md',
+  path: '.github/agents/devops-assistant.agent.md',
+  label: 'devops-assistant.agent.md',
   chip: 'c-gray',
   model: 'bal',
-  trigger: { type: 'isolated', text: 'Manual — select from VS Code chat mode picker dropdown' },
+  trigger: { type: 'isolated', text: 'Manual — select from VS Code chat agent picker dropdown' },
   what: 'Sam persona: senior DevOps engineer (EKS, Terraform/OpenTofu, Jenkins, Artifactory, AWS). Always provides exact commands with flags. Calls out footguns. Never recommends kubectl edit in prod. Never provides destructive commands without a confirmation step.',
   when: 'Select "DevOps assistant" from the chat mode dropdown. Best for deployment issues, infrastructure debugging, pipeline questions, K8s troubleshooting.',
   content: `---\ndescription: "DevOps / platform engineering — GPT-4.1"\nmodel: gpt-4.1\n---\n\nYou are Sam, senior DevOps engineer.\nEKS, Terraform/OpenTofu, Jenkins, Artifactory.\n\nAlways: exact commands with flags, safest path\nfirst, call out footguns explicitly.\n\nNever: kubectl edit in prod, destructive\ncommands without confirm step, apply\nwithout a reviewed plan.`,
-  contentLabel: 'Full chatmode definition',
+  contentLabel: 'Full custom agent definition',
   whyModel: 'GPT-4.1 is chosen over Sonnet for DevOps because DevOps tasks are structured and reproducible — correct CLI commands, K8s manifests, Helm values. GPT-4.1 handles these reliably and faster than reasoning models. You often need quick answers during incidents, where response speed matters.',
   tips: [
     '<strong>Why GPT-4.1 over Claude for DevOps?</strong> Structured output (exact commands, checklists) is GPT-4.1\'s strong suit. Speed matters during incident response.',
     'For K8s debugging: always provide the output of `kubectl describe pod` and `kubectl get events` — the model can\'t diagnose without them.',
-    'The "never kubectl edit in prod" rule is enforced in the persona — use this chatmode to reinforce good habits.',
+    'The "never kubectl edit in prod" rule is enforced in the persona — use this persona agent to reinforce good habits.',
     'The model knows your specific stack: Bento state backend, JFrog Artifactory, EKS — not just generic cloud.'
   ],
-  tags: [{text:'chatmode', color:'purple'},{text:'isolated session', color:'pink'},{text:'gpt-4.1', color:'blue'}]
+  tags: [{text:'persona agent', color:'purple'},{text:'isolated session', color:'pink'},{text:'gpt-4.1', color:'blue'}]
 },
 
 'longcontext-cm': {
-  path: '.github/chatmodes/longcontext-reader.chatmode.md',
-  label: 'longcontext-reader.chatmode.md',
+  path: '.github/agents/longcontext-reader.agent.md',
+  label: 'longcontext-reader.agent.md',
   chip: 'c-gray',
   model: 'gemini',
-  trigger: { type: 'isolated', text: 'Manual — select from VS Code chat mode picker dropdown' },
+  trigger: { type: 'isolated', text: 'Manual — select from VS Code chat agent picker dropdown' },
   what: 'Dedicated Gemini 2.5 Pro mode for reading entire codebases or very large files. Produces: what it does (plain language), key concepts, data flow trace, non-obvious behaviour, and entry points for new contributors. Never truncates analysis.',
   when: 'Select "Large codebase reader" from the chat mode dropdown. Use "Add files to context" (paperclip icon) before asking your question to attach multiple files at once.',
   content: `---\ndescription: "Read entire codebases — Gemini 2.5 Pro (1M tokens)"\nmodel: gemini-2.5-pro\n---\n\n1M token context window. Read everything first.\n\nFor every analysis:\n1. What it does (2-3 sentences, plain language)\n2. Key concepts (3-5 things)\n3. Data flow trace (numbered steps)\n4. Non-obvious behaviour (surprises)\n5. Entry points for new contributors\n\nNever truncate — that's the point.`,
-  contentLabel: 'Full chatmode definition',
-  whyModel: 'Gemini 2.5 Pro\'s <strong>1 million token context window</strong> is why this chatmode exists. A typical Spring Boot service with all tests might be 50,000-100,000 tokens. Other models truncate or chunk it, losing the holistic view. Gemini reads the whole thing in one shot, enabling analysis that considers how all the pieces interact.',
+  contentLabel: 'Full custom agent definition',
+  whyModel: 'Gemini 2.5 Pro\'s <strong>1 million token context window</strong> is why this persona agent exists. A typical Spring Boot service with all tests might be 50,000-100,000 tokens. Other models truncate or chunk it, losing the holistic view. Gemini reads the whole thing in one shot, enabling analysis that considers how all the pieces interact.',
   tips: [
     'Use <strong>"Add files to context"</strong> (📎 paperclip in VS Code chat) to attach all files in a module before asking.',
     'Gemini 2.5 Pro is premium tier — use it for genuine onboarding or legacy archaeology sessions.',
-    'This chatmode is excellent for understanding a library you\'re unfamiliar with: attach the source and ask.',
+    'This persona agent is excellent for understanding a library you\'re unfamiliar with: attach the source and ask.',
     'The output format (key concepts → data flow → gotchas) is designed to be saved as a wiki page for the service.'
   ],
-  tags: [{text:'chatmode', color:'purple'},{text:'1M tokens', color:'teal'},{text:'gemini-2.5-pro', color:'teal'}]
+  tags: [{text:'persona agent', color:'purple'},{text:'1M tokens', color:'teal'},{text:'gemini-2.5-pro', color:'teal'}]
 },
 
 'test-writer-cm': {
-  path: '.github/chatmodes/test-writer.chatmode.md',
-  label: 'test-writer.chatmode.md',
+  path: '.github/agents/test-writer.agent.md',
+  label: 'test-writer.agent.md',
   chip: 'c-gray',
   model: 'sonnet',
-  trigger: { type: 'isolated', text: 'Manual — select from VS Code chat mode picker dropdown' },
+  trigger: { type: 'isolated', text: 'Manual — select from VS Code chat agent picker dropdown' },
   what: 'Test-focused persona: generates happy path, primary failure path, boundary cases, and integration-adjacent tests. Enforces naming conventions. Explicitly prevents tests-that-only-test-mocks and Thread.sleep anti-patterns.',
   when: 'Select "Test writer" from the chat mode dropdown. Best for TDD (write tests before implementation) or adding coverage to existing code.',
   content: `---\ndescription: "Generate comprehensive tests — Claude Sonnet"\nmodel: claude-sonnet-4-5\n---\n\nFor every piece of code generate:\n1. Happy path (valid inputs)\n2. Primary failure path\n3. Boundary/edge cases\n4. Integration-adjacent test\n\nNaming:\nJava: shouldReturn404WhenUserNotFound()\nGo: TestHandler/returns_404_when_not_found\nPython: test_raises_not_found_when_user_missing\n\nNever: tests that only test mocks`,
-  contentLabel: 'Full chatmode definition',
+  contentLabel: 'Full custom agent definition',
   whyModel: 'Claude Sonnet generates the most realistic, idiomatic tests of any model in this lineup. It understands the difference between testing behaviour and testing implementation, produces table-driven Go tests naturally, and follows the project\'s naming conventions from testing.instructions.md which is loaded automatically.',
   tips: [
-    '<strong>Chatmode vs /test-gen prompt:</strong> Use /test-gen for one-shot generation. Use this chatmode for TDD sessions where you iterate on tests with feedback.',
+    '<strong>Persona agent vs /test-gen prompt:</strong> Use /test-gen for one-shot generation. Use this persona agent for TDD sessions where you iterate on tests with feedback.',
     'The "never tests that only test mocks" rule is the most important — it prevents a very common failure pattern.',
-    'This chatmode reads testing.instructions.md automatically (via codeGeneration.instructions in settings.json).',
+    'This persona agent reads testing.instructions.md automatically (via codeGeneration.instructions in settings.json).',
     'For Go: always produces table-driven sub-tests. For Java: always produces @Nested @DisplayName structures.'
   ],
-  tags: [{text:'chatmode', color:'purple'},{text:'isolated session', color:'pink'},{text:'claude-sonnet', color:'purple'}]
+  tags: [{text:'persona agent', color:'purple'},{text:'isolated session', color:'pink'},{text:'claude-sonnet', color:'purple'}]
 },
 
 // ── WORKFLOWS ─────────────────────────────────────────────────────────────
@@ -840,7 +840,7 @@ const ITEMS = {
   chip: 'c-teal',
   model: null,
   trigger: { type: 'perm', text: 'Committed — updated with every PR that changes Copilot assets' },
-  what: 'Tracks all changes to Copilot assets (prompts, skills, agents, chatmodes, instructions, workflows, config) in <strong>Keep a Changelog</strong> format. Every PR that adds, changes, deprecates, or removes a Copilot asset must include an entry here.',
+  what: 'Tracks all changes to Copilot assets (prompts, skills, agents, instructions, workflows, config) in <strong>Keep a Changelog</strong> format. Every PR that adds, changes, deprecates, or removes a Copilot asset must include an entry here.',
   when: 'Updated manually as part of the PR process. The governance checklist in GOVERNANCE.md includes this as a required step.',
   content: `# Copilot Assets Changelog\n\n## [Unreleased]\n\n### Added\n- Asset manifest\n- Model compatibility matrix\n- Evaluation harness (eval/)\n- Governance checklist\n\n### Changed\n- copilot-instructions.md — governance refs\n- COPILOT-CHEATSHEET.md — governance section`,
   contentLabel: 'Example entries',
@@ -860,7 +860,7 @@ const ITEMS = {
   chip: 'c-teal',
   model: null,
   trigger: { type: 'perm', text: 'Committed — validated by CI on every PR' },
-  what: 'Single source of truth for all Copilot assets shipped in this repo. Every prompt, skill, agent, chatmode, instruction, and workflow has an entry with: path, owner, classification (core/workflow/extension), generated flag, and description. CI validates that the manifest stays in sync with the filesystem.',
+  what: 'Single source of truth for all Copilot assets shipped in this repo. Every prompt, skill, custom agent, instruction, and workflow has an entry with: path, owner, classification (core/workflow/extension), generated flag, and description. CI validates that the manifest stays in sync with the filesystem.',
   when: 'Referenced by the manifest-sync CI check. Updated whenever assets are added or removed.',
   content: `{\n  "version": "1.0",\n  "assets": {\n    "prompts": [\n      {\n        "path": ".github/prompts/review.prompt.md",\n        "owner": "platform-team",\n        "classification": "core",\n        "generated": true,\n        "generatedBy": "copilot-setup.sh",\n        "model": "claude-sonnet-4-5",\n        "description": "5-lens code review"\n      }\n    ],\n    "instructions": [...],\n    "skills": [...],\n    "agents": [...]\n  }\n}`,
   contentLabel: 'Manifest structure',
@@ -921,8 +921,8 @@ const ITEMS = {
   model: null,
   trigger: { type: 'hook', text: 'Runs on PRs/pushes touching Copilot asset paths' },
   what: 'CI workflow that validates Copilot assets on every PR. Runs four deterministic checks: <strong>naming</strong> (kebab-case), <strong>frontmatter</strong> (required YAML fields), <strong>model-refs</strong> (models exist in compatibility matrix), and <strong>manifest-sync</strong> (filesystem matches manifest). All checks must pass.',
-  when: 'Triggered by PRs or pushes that modify files in .github/prompts/, .github/agents/, .github/chatmodes/, .github/instructions/, .github/skills/, or governance config files.',
-  content: `name: Copilot Asset Evaluation\non:\n  pull_request:\n    paths:\n      - '.github/prompts/**'\n      - '.github/agents/**'\n      - '.github/chatmodes/**'\n      - '.github/instructions/**'\n      - '.github/skills/**'\n      - '.github/copilot-asset-manifest.json'\n      - '.github/model-compatibility.json'\n\njobs:\n  eval:\n    runs-on: ubuntu-latest\n    steps:\n      - Checkout\n      - naming.sh\n      - frontmatter.sh\n      - model-refs.sh\n      - manifest-sync.sh`,
+  when: 'Triggered by PRs or pushes that modify files in .github/prompts/, .github/agents/, .github/agents/, .github/instructions/, .github/skills/, or governance config files.',
+  content: `name: Copilot Asset Evaluation\non:\n  pull_request:\n    paths:\n      - '.github/prompts/**'\n      - '.github/agents/**'\n      - '.github/agents/**'\n      - '.github/instructions/**'\n      - '.github/skills/**'\n      - '.github/copilot-asset-manifest.json'\n      - '.github/model-compatibility.json'\n\njobs:\n  eval:\n    runs-on: ubuntu-latest\n    steps:\n      - Checkout\n      - naming.sh\n      - frontmatter.sh\n      - model-refs.sh\n      - manifest-sync.sh`,
   contentLabel: 'Workflow structure',
   whyModel: null,
   tips: [
@@ -942,14 +942,14 @@ const ITEMS = {
   chip: 'c-amber',
   model: null,
   trigger: { type: 'perm', text: 'Committed — team defaults applied on repo open' },
-  what: 'Team-wide VS Code + Copilot configuration. Defines the <strong>named model slots</strong> used across all prompts, chatmodes, and agents. Registers instruction files for auto-loading. Enables the chatmodes feature.',
+  what: 'Team-wide VS Code + Copilot configuration. Defines the <strong>named model slots</strong> used across all prompts and custom agents. Registers instruction files for auto-loading. Enables the in-IDE agent mode and Custom Agents discovery (chat.agentFilesLocations).',
   when: 'Applied automatically when anyone opens this repo in VS Code.',
   content: `// Model routing slots:\n"github.copilot.chat.models": {\n  "fast":     { "model": "o4-mini" },\n  "reason":   { "model": "o3" },\n  "code":     { "model": "claude-sonnet-4-5" },\n  "thorough": { "model": "claude-opus-4-5" },\n  "longctx":  { "model": "gemini-2.5-pro" },\n  "balanced": { "model": "gpt-4.1" }\n},\n// Chatmodes enabled:\n"chat.experimental.chatModes": true,\n// Auto-load instructions:\n"codeGeneration.instructions": [...]`,
   contentLabel: 'Key settings',
   whyModel: null,
   tips: [
     '<strong>Model strings must match your picker exactly.</strong> Go to VS Code → Copilot Chat → model dropdown and verify each name.',
-    '"github.copilot.chat.experimental.chatModes": true is REQUIRED for chatmodes/ to work. Restart VS Code after changing.',
+    '"chat.agentFilesLocations": { ".github/agents": true } and "chat.agent.enabled": true are REQUIRED for Custom Agents to work. Restart VS Code after changing. (The legacy "github.copilot.chat.experimental.chatModes" setting only matters if .chatmode.md files still exist.)',
     'codeGeneration.instructions registers which instruction files auto-load. Add new files here to activate them.',
     'This file is committed — changes affect the whole team. Personal overrides go in settings.local.json.'
   ],
@@ -1055,18 +1055,16 @@ const TREE = [
   { type:'subfolder', indent:2, cn:'└─', chip:'c-orange', label:'incident-triage/' },
   { id:'incident-triage',indent:3, cn:'└─', chip:'c-amber', label:'SKILL.md', desc:'production incident · postmortem' },
 
-  { type:'folder', indent:1, cn:'├─', chip:'c-pink', label:'agents/', desc:'autonomous — plan → implement → review', arrow:true, tbadge:'t-chain' },
-  { id:'plan-agent',      indent:2, cn:'├─', chip:'c-gray', label:'plan.agent.md',      desc:'scope · risks · handoff', model:'m-o3' },
-  { id:'implement-agent', indent:2, cn:'├─', chip:'c-gray', label:'implement.agent.md', desc:'code + tests · write access', model:'m-sonnet' },
-  { id:'review-agent',    indent:2, cn:'└─', chip:'c-gray', label:'review.agent.md',    desc:'checklist · PR description', model:'m-opus' },
-
-  { type:'folder', indent:1, cn:'├─', chip:'c-purple', label:'chatmodes/', desc:'VS Code persona sessions', arrow:true, tbadge:'t-iso' },
-  { id:'code-reviewer-cm',   indent:2, cn:'├─', chip:'c-gray', label:'code-reviewer.chatmode.md',   desc:'Alex · Blocker/Suggestion/Nit', model:'m-sonnet' },
-  { id:'security-auditor-cm',indent:2, cn:'├─', chip:'c-gray', label:'security-auditor.chatmode.md',desc:'Morgan · OWASP · deep audit', model:'m-opus' },
-  { id:'architect-cm',       indent:2, cn:'├─', chip:'c-gray', label:'architect.chatmode.md',       desc:'Jordan · trade-offs · ADRs', model:'m-o3' },
-  { id:'devops-cm',          indent:2, cn:'├─', chip:'c-gray', label:'devops-assistant.chatmode.md',desc:'Sam · EKS · Helm · Terraform', model:'m-bal' },
-  { id:'longcontext-cm',     indent:2, cn:'├─', chip:'c-gray', label:'longcontext-reader.chatmode.md',desc:'entire codebases · 1M tokens', model:'m-gemini' },
-  { id:'test-writer-cm',     indent:2, cn:'└─', chip:'c-gray', label:'test-writer.chatmode.md',     desc:'happy path · failure · boundary', model:'m-sonnet' },
+  { type:'folder', indent:1, cn:'├─', chip:'c-pink', label:'agents/', desc:'Custom Agents — task chains + persona sessions', arrow:true, tbadge:'t-chain' },
+  { id:'plan-agent',      indent:2, cn:'├─', chip:'c-gray', label:'plan.agent.md',      desc:'task: scope · risks · handoff', model:'m-o3' },
+  { id:'implement-agent', indent:2, cn:'├─', chip:'c-gray', label:'implement.agent.md', desc:'task: code + tests · write access', model:'m-sonnet' },
+  { id:'review-agent',    indent:2, cn:'├─', chip:'c-gray', label:'review.agent.md',    desc:'task: checklist · PR description', model:'m-opus' },
+  { id:'code-reviewer-cm',   indent:2, cn:'├─', chip:'c-gray', label:'code-reviewer.agent.md',   desc:'persona: Alex · Blocker/Suggestion/Nit', model:'m-sonnet' },
+  { id:'security-auditor-cm',indent:2, cn:'├─', chip:'c-gray', label:'security-auditor.agent.md',desc:'persona: Morgan · OWASP · deep audit', model:'m-opus' },
+  { id:'architect-cm',       indent:2, cn:'├─', chip:'c-gray', label:'architect.agent.md',       desc:'persona: Jordan · trade-offs · ADRs', model:'m-o3' },
+  { id:'devops-cm',          indent:2, cn:'├─', chip:'c-gray', label:'devops-assistant.agent.md',desc:'persona: Sam · EKS · Helm · Terraform', model:'m-bal' },
+  { id:'longcontext-cm',     indent:2, cn:'├─', chip:'c-gray', label:'longcontext-reader.agent.md',desc:'persona: entire codebases · 1M tokens', model:'m-gemini' },
+  { id:'test-writer-cm',     indent:2, cn:'└─', chip:'c-gray', label:'test-writer.agent.md',     desc:'persona: happy path · failure · boundary', model:'m-sonnet' },
 
   { type:'folder', indent:1, cn:'├─', chip:'c-red', label:'workflows/', desc:'agent bootstrap + policy hooks + eval CI', arrow:true, tbadge:'t-agent' },
   { id:'copilot-setup-steps',indent:2, cn:'├─', chip:'c-gray', label:'copilot-setup-steps.yml', desc:'bootstraps full toolchain', tbadge:'t-agent' },

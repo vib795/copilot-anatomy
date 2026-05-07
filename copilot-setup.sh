@@ -15,7 +15,7 @@
 #   .github/instructions/             ← Auto-loaded rules scoped by file type
 #   .github/skills/                   ← Auto-discovered task workflows (SKILL.md)
 #   .github/agents/                   ← Chainable specialist agents
-#   .github/chatmodes/                ← VS Code persona sessions
+#   .github/agents/                   ← VS Code persona agents (formerly chatmodes)
 #   .github/workflows/                ← Agent bootstrap + policy hooks
 #   .copilotignore                    ← Files excluded from context
 #   .vscode/settings.json             ← Model routing + IDE config
@@ -29,12 +29,12 @@
 #   gpt-4.1        → General: devops commands, balanced tasks, default fallback
 #   claude-sonnet-4-5 → Code quality: generation, review, docs, tests
 #   claude-opus-4-5   → Thoroughness: security audits, complex review
-#   claude-haiku-4-5  → Speed + cost: chatmodes needing fast iteration
+#   claude-haiku-4-5  → Speed + cost: persona agents needing fast iteration
 #   gemini-2.5-pro    → Long context: reading large codebases, entire repos
 #   gemini-2.0-flash  → Fast long context: quick analysis of many files
 #
 # NOTE ON model: IN FRONTMATTER:
-#   Setting `model:` in .prompt.md / .chatmode.md / .agent.md files tells
+#   Setting `model:` in .prompt.md / .agent.md files tells
 #   Copilot which model to use when that file is activated. This is the
 #   primary per-task routing mechanism. Not all features support it yet —
 #   where it doesn't apply, the user's active model picker selection is used.
@@ -59,7 +59,6 @@ mkdir -p \
   "$ROOT/.github/skills/terraform-plan" \
   "$ROOT/.github/skills/incident-triage" \
   "$ROOT/.github/agents" \
-  "$ROOT/.github/chatmodes" \
   "$ROOT/.github/workflows" \
   "$ROOT/.vscode"
 
@@ -135,7 +134,7 @@ guided workflows. Type `/skills list` to see available skills.
 - Commits: \`<type>(<scope>): <subject>\` — feat/fix/chore/docs/refactor/test/ci/perf.
 
 ## Copilot asset governance
-- New prompts/skills/agents/chatmodes require a manifest entry in \`.github/copilot-asset-manifest.json\`.
+- New prompts/skills/agents require a manifest entry in \`.github/copilot-asset-manifest.json\`.
 - Model references must exist in \`.github/model-compatibility.json\`.
 - Changes to Copilot assets must include a \`COPILOT-CHANGELOG.md\` entry.
 - See \`.github/GOVERNANCE.md\` for the full checklist.
@@ -222,15 +221,19 @@ HEREDOC
 #
 # KEY SETTINGS EXPLAINED:
 #   github.copilot.enable        → which file types get inline completions
-#   github.copilot.chat.models   → named model slots; used in chatmodes/agents
-#                                  via the "model:" frontmatter field
-#   codeGeneration.instructions  → which instruction files load automatically
-#   chat.experimental.chatModes  → enables the chatmodes/ feature (needed!)
+#   github.copilot.chat.models   → named model slots; referenced by prompt/agent
+#                                  frontmatter via the "model:" field
+#   codeGeneration.instructions  → optional explicit instruction-file load order
+#                                  (modern: instruction files self-scope via
+#                                   `applyTo:` and don't need explicit listing)
+#   chat.agentFilesLocations     → tells VS Code where Custom Agents live
+#   chat.agentSkillsLocations    → tells VS Code where Skills live
+#   chat.agent.enabled           → enables the in-IDE agent mode
 #
 # MODEL ROUTING IN SETTINGS:
 #   The named slots below ("fast", "reason", "longctx", etc.) are labels we
-#   define here so prompt/chatmode/agent files can reference them. The actual
-#   model string must match what appears in your Copilot model picker.
+#   define here so prompt/agent files can reference them. The actual model
+#   string must match what appears in your Copilot model picker.
 #   Go to VS Code → Copilot Chat → model dropdown to verify exact names.
 # ─────────────────────────────────────────────────────────────────────────────
 cat > "$ROOT/.vscode/settings.json" << 'HEREDOC'
@@ -254,7 +257,7 @@ cat > "$ROOT/.vscode/settings.json" << 'HEREDOC'
   },
 
   // ── MODEL ROUTING ─────────────────────────────────────────────────────────
-  // Named model slots used across prompts, chatmodes, and agents.
+  // Named model slots used across prompts and agents.
   // The string values must match your Copilot model picker exactly.
   // Check: VS Code → Copilot Chat panel → model dropdown → note the exact name.
   //
@@ -285,10 +288,21 @@ cat > "$ROOT/.vscode/settings.json" << 'HEREDOC'
   ],
 
   // ── FEATURE FLAGS ─────────────────────────────────────────────────────────
-  // Enable chatmodes/ — REQUIRED for .github/chatmodes/*.chatmode.md to work.
-  "github.copilot.chat.experimental.chatModes": true,
+  // Enable Copilot in-IDE agent mode (the chat agent picker).
+  "chat.agent.enabled": true,
+  // Honor `hooks:` frontmatter declared in custom agents.
+  "chat.useCustomAgentHooks": true,
+  // Allow VS Code to discover MCP servers from other apps (Claude Desktop etc.).
+  "chat.mcp.discovery.enabled": true,
   // Keeps Copilot responses in English regardless of OS locale.
   "github.copilot.chat.localeOverride": "en",
+
+  // ── ASSET DISCOVERY LOCATIONS (current canonical keys) ───────────────────
+  // Replace the legacy `chat.modeFilesLocations` / `experimental.chatModes`.
+  "chat.agentFilesLocations":        { ".github/agents":       true },
+  "chat.agentSkillsLocations":       { ".github/skills":       true },
+  "chat.promptFilesLocations":       { ".github/prompts":      true },
+  "chat.instructionsFilesLocations": { ".github/instructions": true },
 
   // ── AUTO-LOADED INSTRUCTIONS ───────────────────────────────────────────────
   // These instruction files are automatically injected into every code
@@ -586,7 +600,12 @@ HEREDOC
 #
 # FILE NAMING: Must end in .prompt.md and live in .github/prompts/.
 # FRONTMATTER FIELDS:
-#   agent:        "ask" (just chat) or "edit" (modifies files directly)
+#   agent:       which chat agent runs the command. One of:
+#                  ask    — read-only chat response (no file edits)
+#                  agent  — autonomous mode, modifies files directly
+#                  plan   — produces a plan only, no edits
+#                  <custom-agent-name>  — invokes an agent from .github/agents/
+#                NOTE: replaces the deprecated `mode: ask|edit|agent` field.
 #   model:       which AI model to use for THIS specific command
 #   description: shown in the /command picker list
 #
@@ -655,11 +674,11 @@ HEREDOC
 # ─── fix-issue.prompt.md ─────────────────────────────────────────────────────
 # WHY claude-sonnet-4-5: Excellent at following multi-step diagnostic workflows
 # and producing minimal targeted edits. Avoids over-engineering the fix.
-# agent: edit — this actually modifies files.
+# agent: agent — autonomous mode that actually modifies files.
 # ─────────────────────────────────────────────────────────────────────────────
 cat > "$ROOT/.github/prompts/fix-issue.prompt.md" << 'HEREDOC'
 ---
-agent: edit
+agent: agent
 model: claude-sonnet-4-5
 description: "Diagnose root cause and fix the bug in the active file"
 ---
@@ -667,7 +686,7 @@ description: "Diagnose root cause and fix the bug in the active file"
 <!--
   SLASH COMMAND: /fix-issue
   MODEL: claude-sonnet-4-5 — reliable at targeted code edits
-  AGENT: edit — modifies files directly
+  AGENT: agent — autonomous mode that modifies files directly
 -->
 
 Fix the bug or implement the small feature. Follow these steps exactly:
@@ -917,7 +936,7 @@ HEREDOC
 # ─────────────────────────────────────────────────────────────────────────────
 cat > "$ROOT/.github/prompts/document.prompt.md" << 'HEREDOC'
 ---
-agent: edit
+agent: agent
 model: claude-sonnet-4-5
 description: "Generate or update documentation for the selected code"
 ---
@@ -925,7 +944,7 @@ description: "Generate or update documentation for the selected code"
 <!--
   SLASH COMMAND: /document
   MODEL: claude-sonnet-4-5 — natural prose + technical accuracy
-  AGENT: edit — updates documentation inline in the file
+  AGENT: agent — autonomous mode that updates documentation inline in the file
 -->
 
 Generate or update documentation for the selected code.
@@ -1023,7 +1042,7 @@ HEREDOC
 # ─────────────────────────────────────────────────────────────────────────────
 cat > "$ROOT/.github/prompts/test-gen.prompt.md" << 'HEREDOC'
 ---
-agent: edit
+agent: agent
 model: claude-sonnet-4-5
 description: "Generate tests for the selected code following project conventions"
 ---
@@ -1031,7 +1050,7 @@ description: "Generate tests for the selected code following project conventions
 <!--
   SLASH COMMAND: /test-gen
   MODEL: claude-sonnet-4-5 — produces realistic, convention-following tests
-  AGENT: edit — adds test files or test cases
+  AGENT: agent — autonomous mode that adds test files or test cases
 -->
 
 Generate tests for the selected code. Follow `.github/instructions/testing.instructions.md`.
@@ -1072,7 +1091,7 @@ HEREDOC
 #   Also loaded for chat if you have a matching file open/selected.
 #
 # MODEL: Not set here — these are context, not commands. The model is
-#   determined by whatever command or chatmode is active.
+#   determined by whatever command or persona agent is active.
 #
 # REGISTERED IN: .vscode/settings.json → codeGeneration.instructions
 # =============================================================================
@@ -1276,7 +1295,7 @@ HEREDOC
 #   ~/.copilot/skills/<name>/SKILL.md ← personal, works across all projects
 #
 # MODEL: Not set in SKILL.md — skills are context, not commands.
-#   The active model (or chatmode model) processes the skill's instructions.
+#   The active model (or persona agent's model) processes the skill's instructions.
 # =============================================================================
 
 # ─── helm-upgrade/SKILL.md ────────────────────────────────────────────────────
@@ -1578,7 +1597,7 @@ HEREDOC
 # SECTION 6: AGENTS — Chainable specialist agents
 # =============================================================================
 # WHAT THESE ARE: Agents are autonomous workers with defined tool access and
-#   the ability to hand off to the next agent in a chain. Unlike chatmodes
+#   the ability to hand off to the next agent in a chain. Unlike persona agents
 #   (interactive conversations), agents can run tasks autonomously — reading
 #   files, writing code, running commands — without step-by-step guidance.
 #
@@ -1767,22 +1786,31 @@ Produce a complete PR description:
 HEREDOC
 
 # =============================================================================
-# SECTION 7: CHATMODES — VS Code interactive persona sessions
+# SECTION 7: PERSONA AGENTS — VS Code interactive persona sessions
 # =============================================================================
-# WHAT THESE ARE: Chatmodes create named conversation modes with a persistent
-#   persona and model. You activate one from the chat mode picker in VS Code.
-#   The conversation stays in that mode until you switch.
+# WHAT THESE ARE: Custom Agents (`.agent.md`) that act as named conversation
+#   modes with a persistent persona and model. You activate one from the chat
+#   agent picker in VS Code. The conversation stays in that persona until
+#   you switch.
 #
-# DIFFERENCE FROM AGENTS:
-#   Chatmodes = interactive back-and-forth with a persona (you drive the conversation)
-#   Agents = autonomous workers that execute tasks and hand off to other agents
+# MIGRATION NOTE (May 2026): These were previously "chat modes" (`.chatmode.md`
+#   under `.github/chatmodes/`). The Copilot schema deprecated chat modes in
+#   favor of Custom Agents — same role, richer frontmatter. This generator
+#   writes them straight into `.github/agents/` with the new schema.
 #
-# FILE NAMING: Must end in .chatmode.md and live in .github/chatmodes/.
-# FRONTMATTER:
-#   description: shown in the mode picker (make it specific and actionable)
-#   model:       which model powers this persona
+# DIFFERENCE FROM TASK AGENTS (plan/implement/review):
+#   Persona agents = interactive back-and-forth with a persona (you drive)
+#   Task agents    = autonomous workers that execute tasks and hand off
 #
-# MODEL ROUTING IN CHATMODES:
+# FILE NAMING: Must end in .agent.md and live in .github/agents/.
+# FRONTMATTER (Custom Agent schema):
+#   name:              required, kebab-case, ≤64 chars
+#   description:       shown in the agent picker (specific, actionable)
+#   model:             which model powers this persona
+#   user-invocable:    true (default) — picker visibility
+#   target:            vscode | github-copilot
+#
+# MODEL ROUTING:
 #   Each persona picks the model that matches its job:
 #   - Security audit → claude-opus-4-5 (most thorough)
 #   - Architecture → o3 (best reasoning)
@@ -1790,18 +1818,22 @@ HEREDOC
 #   - General coding → claude-sonnet-4-5 (best code quality)
 #   - DevOps commands → gpt-4.1 (fast, structured output)
 #
-# PREREQUISITE: "github.copilot.chat.experimental.chatModes": true in settings.json
+# PREREQUISITE: `chat.agentFilesLocations: { ".github/agents": true }` plus
+#               `chat.agent.enabled: true` in settings.json.
 # =============================================================================
 
-cat > "$ROOT/.github/chatmodes/code-reviewer.chatmode.md" << 'HEREDOC'
+cat > "$ROOT/.github/agents/code-reviewer.agent.md" << 'HEREDOC'
 ---
+name: code-reviewer
 description: "Code review — direct feedback, concrete fixes, Claude Sonnet"
 model: claude-sonnet-4-5
+user-invocable: true
+target: vscode
 ---
 <!--
   MODEL: claude-sonnet-4-5 — best balance of code understanding + clear feedback
   WHEN TO USE: Daily code review, PR comments, before pushing a branch
-  HOW TO ACTIVATE: Chat mode picker → "Code review"
+  HOW TO ACTIVATE: Chat agent picker → "Code review"
 -->
 
 You are **Alex**, a senior engineer (Java/Go, distributed systems, 12 years).
@@ -1824,15 +1856,18 @@ When you'd write it differently, show the code. A snippet beats a paragraph.
 Start reviewing immediately when code is pasted. No preamble.
 HEREDOC
 
-cat > "$ROOT/.github/chatmodes/security-auditor.chatmode.md" << 'HEREDOC'
+cat > "$ROOT/.github/agents/security-auditor.agent.md" << 'HEREDOC'
 ---
+name: security-auditor
 description: "Security audit — threat model, OWASP, CVEs — Claude Opus (most thorough)"
 model: claude-opus-4-5
+user-invocable: true
+target: vscode
 ---
 <!--
   MODEL: claude-opus-4-5 — most capable Claude model, catches subtle issues
   WHEN TO USE: Before security reviews, PRs touching auth/permissions, new endpoints
-  HOW TO ACTIVATE: Chat mode picker → "Security audit"
+  HOW TO ACTIVATE: Chat agent picker → "Security audit"
 -->
 
 You are **Morgan**, an application security engineer (cloud-native, Java/Go).
@@ -1857,17 +1892,20 @@ Think like an attacker. Design like a defender.
 Start auditing immediately. No preamble.
 HEREDOC
 
-cat > "$ROOT/.github/chatmodes/architect.chatmode.md" << 'HEREDOC'
+cat > "$ROOT/.github/agents/architect.agent.md" << 'HEREDOC'
 ---
+name: architect
 description: "System design and ADRs — trade-off analysis — o3 (best reasoning)"
 model: o3
+user-invocable: true
+target: vscode
 ---
 <!--
   MODEL: o3 — chosen specifically because architecture decisions require the
   deepest reasoning. o3 thinks through multi-step trade-offs, second-order
   consequences, and operational constraints better than any other model.
   WHEN TO USE: New service design, major refactors, technology decisions
-  HOW TO ACTIVATE: Chat mode picker → "Architect"
+  HOW TO ACTIVATE: Chat agent picker → "Architect"
 -->
 
 You are **Jordan**, a staff engineer focused on system design.
@@ -1892,16 +1930,19 @@ Context → Decision → Consequences (positive + negative) → Alternatives con
 Start designing when given a problem statement.
 HEREDOC
 
-cat > "$ROOT/.github/chatmodes/devops-assistant.chatmode.md" << 'HEREDOC'
+cat > "$ROOT/.github/agents/devops-assistant.agent.md" << 'HEREDOC'
 ---
+name: devops-assistant
 description: "DevOps / platform engineering — EKS, Helm, Terraform, Jenkins — GPT-4.1"
 model: gpt-4.1
+user-invocable: true
+target: vscode
 ---
 <!--
   MODEL: gpt-4.1 — reliable for structured DevOps output, CLI commands,
   and Kubernetes/Terraform workflows. Fast enough for back-and-forth debugging.
   WHEN TO USE: Deployment issues, infra debugging, pipeline questions
-  HOW TO ACTIVATE: Chat mode picker → "DevOps assistant"
+  HOW TO ACTIVATE: Chat agent picker → "DevOps assistant"
 -->
 
 You are **Sam**, a senior DevOps engineer (EKS, Terraform/OpenTofu, Jenkins, Artifactory).
@@ -1921,10 +1962,13 @@ Pragmatic and production-focused.
 Start helping immediately when given a problem, command output, or config.
 HEREDOC
 
-cat > "$ROOT/.github/chatmodes/longcontext-reader.chatmode.md" << 'HEREDOC'
+cat > "$ROOT/.github/agents/longcontext-reader.agent.md" << 'HEREDOC'
 ---
+name: longcontext-reader
 description: "Read entire codebases or large files — Gemini 2.5 Pro (1M tokens)"
 model: gemini-2.5-pro
+user-invocable: true
+target: vscode
 ---
 <!--
   MODEL: gemini-2.5-pro — 1M token context window. The ONLY model that can
@@ -1932,7 +1976,7 @@ model: gemini-2.5-pro
   say "the file is too large" or give incomplete answers about a codebase.
   WHEN TO USE: Onboarding to a new service, understanding legacy code,
                analysing an entire module, cross-file refactoring questions.
-  HOW TO ACTIVATE: Chat mode picker → "Large codebase reader"
+  HOW TO ACTIVATE: Chat agent picker → "Large codebase reader"
 
   TIP: Before asking your question, use VS Code's "Add files to context"
   to attach all relevant files. Gemini 2.5 Pro can handle them all at once.
@@ -1959,17 +2003,20 @@ Never truncate your analysis because the codebase is large.
 That's the whole point of using this model.
 HEREDOC
 
-cat > "$ROOT/.github/chatmodes/test-writer.chatmode.md" << 'HEREDOC'
+cat > "$ROOT/.github/agents/test-writer.agent.md" << 'HEREDOC'
 ---
+name: test-writer
 description: "Generate comprehensive tests following project conventions — Claude Sonnet"
 model: claude-sonnet-4-5
+user-invocable: true
+target: vscode
 ---
 <!--
   MODEL: claude-sonnet-4-5 — consistently best at generating realistic,
   idiomatic tests that follow project conventions. Produces scenarios
   that actually test behaviour, not just structure.
   WHEN TO USE: Adding tests to existing code, TDD for new features
-  HOW TO ACTIVATE: Chat mode picker → "Test writer"
+  HOW TO ACTIVATE: Chat agent picker → "Test writer"
 -->
 
 You are a test-focused senior engineer who writes tests that actually catch bugs.
@@ -2174,8 +2221,9 @@ echo ""
 echo "3. Add repo secrets (for the Copilot coding agent workflow):"
 echo "   ARTIFACTORY_URL, ARTIFACTORY_USER, ARTIFACTORY_TOKEN"
 echo ""
-echo "4. Enable chatmodes in VS Code:"
-echo "   Already set in settings.json. Restart VS Code if needed."
+echo "4. Enable in-IDE agents and Custom Agent file discovery in VS Code:"
+echo "   Already set in settings.json (chat.agent.enabled, chat.agentFilesLocations)."
+echo "   Restart VS Code if needed."
 echo ""
 echo "5. To share skills personally across all projects:"
 echo "   mkdir -p ~/.copilot/skills"

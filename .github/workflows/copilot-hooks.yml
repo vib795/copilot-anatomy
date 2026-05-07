@@ -1,33 +1,50 @@
 # copilot-hooks.yml
 # ─────────────────────────────────────────────────────────────────────────────
-# PURPOSE: Policy gates that run before and after every Copilot agent action.
-#          These are non-negotiable guardrails enforced regardless of which
-#          model or agent triggered the action.
+# PURPOSE: PR-time policy gates. Runs the same scripts that
+#          `.github/hooks/copilot-hooks.json` invokes locally during
+#          coding-agent sessions, so the policies are enforced both
+#          interactively (locally) and in CI (here).
 #
-# HOOKS EXPLAINED:
-#   copilot_pre_action  → runs BEFORE the agent makes changes. Use to block
-#                         dangerous patterns before they're written.
-#   copilot_post_action → runs AFTER changes. Use to validate correctness.
+# IMPORTANT — DEPRECATED TRIGGERS REMOVED:
+#   Earlier revisions of this file used `on: copilot_pre_action` /
+#   `copilot_post_action`. Those triggers DO NOT EXIST in GitHub Actions.
+#   The real Copilot coding-agent hook mechanism lives in
+#   `.github/hooks/<name>/hooks.json` with the six events:
+#     sessionStart, sessionEnd, userPromptSubmitted,
+#     preToolUse, postToolUse, errorOccurred
+#   See: https://docs.github.com/en/copilot/how-tos/use-copilot-agents/coding-agent/use-hooks
 #
-# DOCS: https://docs.github.com/en/copilot/concepts/agents/coding-agent/about-hooks
+#   This workflow is the CI mirror of those policies. The local hook config
+#   is the canonical source; this file ensures PR reviewers see the same
+#   warnings.
 # ─────────────────────────────────────────────────────────────────────────────
 
-name: "Copilot Hooks"
-on:
-  copilot_pre_action:
-  copilot_post_action:
+name: "Copilot Policy Checks (CI)"
 
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '**/*.java'
+      - '**/*.go'
+      - '**/*.py'
+      - '**/*.tf'
+      - '**/*.yaml'
+      - '**/*.yml'
+      - '**/Dockerfile'
+      - '.github/hooks/**'
+      - '.github/workflows/copilot-hooks.yml'
 
 jobs:
-  # ── PRE-ACTION: Block dangerous patterns ─────────────────────────────────
-  pre-action-checks:
-    if: github.event_name == 'copilot_pre_action'
+  # ── Pre-write policies (block dangerous patterns) ────────────────────────
+  policy-pre-write:
+    name: "Pre-write policy checks"
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
 
     - name: Block hardcoded credentials
-      # Fails the action if the agent is about to commit obvious secrets.
+      # Fails CI if obvious secrets are about to be merged.
       # Adjust the pattern to match your secret naming conventions.
       run: |
         if grep -rE \
@@ -36,7 +53,7 @@ jobs:
           --include="*.yaml" --include="*.yml" --include="*.properties" \
           --exclude-dir=".git" --exclude-dir="vendor" --exclude-dir="node_modules" \
           . 2>/dev/null; then
-          echo "ERROR: Hardcoded credential pattern detected. Blocking agent action."
+          echo "ERROR: Hardcoded credential pattern detected."
           echo "Use environment variables or secrets manager references instead."
           exit 1
         fi
@@ -44,8 +61,8 @@ jobs:
 
     - name: Block terraform state commits
       run: |
-        if git diff --cached --name-only 2>/dev/null | grep -E '\.tfstate'; then
-          echo "ERROR: Agent attempted to commit terraform state file. Blocking."
+        if git diff origin/${{ github.base_ref }}...HEAD --name-only 2>/dev/null | grep -E '\.tfstate'; then
+          echo "ERROR: PR attempts to commit terraform state file."
           exit 1
         fi
         echo "Terraform state check passed."
@@ -59,9 +76,9 @@ jobs:
     - name: "Policy: secret hygiene (warn-only)"
       run: bash .github/hooks/scripts/secret-hygiene.sh
 
-  # ── POST-ACTION: Validate correctness ────────────────────────────────────
-  post-action-checks:
-    if: github.event_name == 'copilot_post_action'
+  # ── Post-write validation (lint + test sanity) ───────────────────────────
+  policy-post-write:
+    name: "Post-write validation"
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -71,7 +88,7 @@ jobs:
     - uses: actions/setup-python@v5
       with: { python-version: "3.11" }
 
-    - name: Run tests after agent changes
+    - name: Run tests
       # Non-blocking (|| true) — reports results but doesn't fail the pipeline.
       # Change to `exit $?` if you want hard failures.
       run: |

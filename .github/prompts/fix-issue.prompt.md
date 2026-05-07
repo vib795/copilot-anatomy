@@ -1,5 +1,5 @@
 ---
-agent: edit
+agent: agent
 model: claude-sonnet-4-5
 description: "Diagnose root cause and fix the bug in the active file"
 ---
@@ -7,7 +7,7 @@ description: "Diagnose root cause and fix the bug in the active file"
 <!--
   SLASH COMMAND: /fix-issue
   MODEL: claude-sonnet-4-5 — reliable at targeted code edits
-  AGENT: edit — modifies files directly
+  AGENT: agent — autonomous mode that modifies files directly
 -->
 
 Fix the bug or implement the small feature. Follow these steps exactly:

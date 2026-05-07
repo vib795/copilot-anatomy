@@ -1,33 +1,76 @@
 {
-  // MCP (Model Context Protocol) Tool Servers
+  // MCP (Model Context Protocol) Tool Servers — VS Code workspace config.
   // These give Copilot agent mode live access to external systems.
   // All models can use these tools — model choice doesn't affect tool access.
   //
   // ACTIVATION: Tools load when Copilot enters agent mode (@ agent in chat).
-  // SECURITY: Each tool only has the permissions you grant via API keys/tokens.
-  // COST: MCP tool calls count toward premium request usage.
+  // SECURITY:   Each tool only has the permissions you grant via API keys.
+  //             VS Code asks for trust the first time it runs an MCP server.
+  // COST:       MCP tool calls count toward premium request usage.
+  //
+  // SCHEMA REFERENCE: https://code.visualstudio.com/docs/copilot/reference/mcp-configuration
+  //
+  // SUPPORTED SERVER TYPES:
+  //   stdio            — local subprocess over stdin/stdout (most common)
+  //   http             — remote HTTP server (request/response)
+  //   sse              — remote Server-Sent Events stream
+  //   streamable-http  — newer bidirectional HTTP stream (preferred for new remote servers)
+  //
+  // PER-SERVER OPTIONAL FIELDS:
+  //   env              — environment variables passed to the server
+  //   envFile          — path to a dotenv file loaded into env
+  //   dev: { watch }   — restart the server when matching files change (stdio only)
+  //   sandboxEnabled   — true to run under VS Code's MCP sandbox (macOS/Linux)
+  //   sandbox          — { filesystem, network } rules when sandboxEnabled is true
+  //   headers          — for http/sse/streamable-http server types
+  //
+  // NOTE: This file is for the IN-IDE Copilot agent. The cloud GitHub
+  //       coding agent uses a DIFFERENT schema with top-level `mcpServers`
+  //       and a mandatory per-server `tools:` allow-list — see
+  //       .github/copilot-mcp-config.json for that example.
 
   "servers": {
 
-    // ── GITHUB ────────────────────────────────────────────────────────────
+    // ── CONTEXT7 (remote streamable-http) ─────────────────────────────────
+    // Library/framework documentation lookup. Uses the newer
+    // streamable-http transport — preferred for new remote servers.
+    "context7": {
+      "type": "streamable-http",
+      "url": "https://mcp.context7.com/mcp"
+    },
+
+    // ── GITHUB (with envFile + dev watch) ─────────────────────────────────
     // Reads issues, PRs, comments, repo structure, workflow runs.
     // Lets Copilot say "let me check the issue for context" automatically.
     // Required env var: GITHUB_TOKEN (personal access token with repo scope)
+    //
+    // `envFile` lets you keep the token in a gitignored .env.mcp file.
+    // `dev.watch` restarts the server when its source changes (only useful
+    // when developing your own MCP server, not for npm-installed servers).
     "github": {
       "type": "stdio",
       "command": "npx",
       "args": ["-y", "@modelcontextprotocol/server-github"],
+      "envFile": "${workspaceFolder}/.env.mcp",
       "env": { "GITHUB_PERSONAL_ACCESS_TOKEN": "${env:GITHUB_TOKEN}" }
     },
 
-    // ── FILESYSTEM ────────────────────────────────────────────────────────
+    // ── FILESYSTEM (sandboxed) ────────────────────────────────────────────
     // Reads and writes files within the workspace root.
-    // Sandboxed to ${workspaceFolder} — cannot escape the project directory.
-    // Useful for agent mode to read files not in its active context.
+    // `sandboxEnabled` activates VS Code's MCP sandbox (macOS/Linux only).
+    // The `sandbox` block restricts filesystem and network access explicitly.
     "filesystem": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@modelcontextprotocol/server-filesystem", "${workspaceFolder}"]
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "${workspaceFolder}"],
+      "sandboxEnabled": true,
+      "sandbox": {
+        "filesystem": {
+          "read":  ["${workspaceFolder}"],
+          "write": ["${workspaceFolder}"]
+        },
+        "network": "deny"
+      }
     },
 
     // ── KUBERNETES / EKS ─────────────────────────────────────────────────

@@ -1,18 +1,35 @@
 # copilot-setup-steps.yml
 # ─────────────────────────────────────────────────────────────────────────────
-# PURPOSE: Bootstraps the toolchain for the GitHub Copilot coding agent.
-# WHEN RUNS: Automatically before the Copilot coding agent starts any task.
-#            This ensures the agent can build, test, and lint the code it generates.
-# DOCS: https://docs.github.com/en/copilot/using-github-copilot/using-copilot-coding-agent
+# PURPOSE: Bootstraps the toolchain for the GitHub Copilot coding agent
+#          (the cloud agent that works on assigned GitHub issues).
+# WHEN RUNS: Automatically before the Copilot coding agent starts any task —
+#            GitHub discovers this workflow by the REQUIRED job name
+#            `copilot-setup-steps` and runs it before agent execution.
+#            Also runs on workflow_dispatch and on PRs that modify this file
+#            so a broken bootstrap is caught at PR time, not at agent-task time.
+# DOCS: https://docs.github.com/en/copilot/how-tos/use-copilot-agents/coding-agent/customize-the-agent-environment
+#
+# NOTE: There is NO `on: copilot:` trigger. The coding agent invokes this
+#       workflow internally; the `on:` block below is only for self-validation
+#       in normal CI.
 # ─────────────────────────────────────────────────────────────────────────────
 
 name: "Copilot Setup Steps"
+
 on:
-  copilot:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+  pull_request:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
 
 jobs:
+  # The job name `copilot-setup-steps` is REQUIRED by the coding agent.
   copilot-setup-steps:
     runs-on: ubuntu-latest
+    timeout-minutes: 30  # coding-agent hard limit is 59 minutes
     steps:
       - uses: actions/checkout@v4
 

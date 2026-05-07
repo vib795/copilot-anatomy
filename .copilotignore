@@ -1,7 +1,22 @@
 # .copilotignore
-# Excludes files from Copilot's context window.
-# Same syntax as .gitignore. Does NOT affect git — files are still tracked.
-# Think of this as your AI privacy/efficiency filter.
+#
+# ⚠ NOTE — UNOFFICIAL FILE
+# `.copilotignore` is NOT a documented GitHub Copilot feature; it is widely
+# used as a community convention but is not parsed by the official Copilot
+# extension. See: https://github.com/orgs/community/discussions/10305
+#
+# The OFFICIAL mechanism for excluding files from Copilot is:
+#   • Repository / Organization → Settings → Copilot → Content exclusion (UI)
+#   • REST API (public preview, Feb 2026):
+#     https://docs.github.com/en/copilot/concepts/context/content-exclusion
+#
+# This file is kept here as a defense-in-depth signal for tooling that DOES
+# honor it (some third-party AI coding extensions, internal proxies, etc.)
+# and as a checked-in inventory of what the team considers off-limits.
+# For real enforcement, configure content exclusion at repo/org level too.
+#
+# Syntax is the same as .gitignore. Does NOT affect git — files are still
+# tracked.
 
 # ── Build artefacts (large, no signal for code generation) ──────────────────
 target/

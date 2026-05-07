@@ -1,4 +1,19 @@
 {
+  "_comment": [
+    "MCP configuration for the GitHub Copilot CLOUD CODING AGENT (the one",
+    "that picks up assigned issues on github.com). NOT for the in-IDE agent.",
+    "",
+    "Cloud-agent schema differences vs VS Code .vscode/mcp.json:",
+    "  • Top-level key is `mcpServers` (not `servers`)",
+    "  • Each server MUST declare a `tools:` allow-list (e.g. ['*'] or",
+    "    ['get_issue','search_code']) — there is no implicit allow-all",
+    "  • No `inputs:` block — secrets come from `env:` only, supplied",
+    "    through the repo's Copilot agent settings as `COPILOT_MCP_*` vars",
+    "  • Configured through GitHub.com → Settings → Copilot → Cloud agent;",
+    "    this file is a reference template, not the source of truth",
+    "",
+    "DOCS: https://docs.github.com/en/copilot/customizing-copilot/extending-copilot-coding-agent-with-mcp"
+  ],
   "mcpServers": {
     "context7": {
       "type": "sse",

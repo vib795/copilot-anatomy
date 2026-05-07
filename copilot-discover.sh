@@ -53,15 +53,15 @@ TASK_INDEX=(
   "implement|agent|implement|Execute plans step by step with code changes"
   "code|agent|implement|Execute plans step by step with code changes"
   "review agent|agent|review|Thorough code review and PR description"
-  "chat|chatmode|code-reviewer|Back-and-forth code review conversation"
-  "conversation|chatmode|code-reviewer|Back-and-forth code review conversation"
-  "security chat|chatmode|security-auditor|Deep security analysis session"
-  "audit|chatmode|security-auditor|Deep security analysis session"
-  "devops|chatmode|devops-engineer|Infrastructure and deployment help"
-  "ops|chatmode|devops-engineer|Infrastructure and deployment help"
-  "architect chat|chatmode|architect|System design conversation session"
-  "codebase|chatmode|large-codebase-reader|Read and understand large codebases"
-  "large file|chatmode|large-codebase-reader|Read and understand large codebases"
+  "chat|agent|code-reviewer|Back-and-forth code review conversation"
+  "conversation|agent|code-reviewer|Back-and-forth code review conversation"
+  "security chat|agent|security-auditor|Deep security analysis session"
+  "audit|agent|security-auditor|Deep security analysis session"
+  "devops|agent|devops-engineer|Infrastructure and deployment help"
+  "ops|agent|devops-engineer|Infrastructure and deployment help"
+  "architect chat|agent|architect|System design conversation session"
+  "codebase|agent|large-codebase-reader|Read and understand large codebases"
+  "large file|agent|large-codebase-reader|Read and understand large codebases"
   "brainstorm|skill|brainstorming|Explore approaches before implementing"
   "think through|skill|brainstorming|Explore approaches before implementing"
   "debug|skill|gstack-investigate|Systematic debugging with root cause analysis"
@@ -97,7 +97,6 @@ search_assets() {
         prompt)   echo -e "  ${GREEN}[prompt]${NC}    ${BOLD}${name}${NC} — ${desc}" ;;
         skill)    echo -e "  ${BLUE}[skill]${NC}     ${BOLD}${name}${NC} — ${desc}" ;;
         agent)    echo -e "  ${YELLOW}[agent]${NC}     ${BOLD}${name}${NC} — ${desc}" ;;
-        chatmode) echo -e "  ${BOLD}[chatmode]${NC}  ${BOLD}${name}${NC} — ${desc}" ;;
       esac
       found=$((found + 1))
     fi
@@ -113,12 +112,11 @@ search_assets() {
 list_assets() {
   echo -e "\n${BOLD}All available Copilot assets:${NC}"
 
-  for asset_type in prompt skill agent chatmode; do
+  for asset_type in prompt skill agent; do
     case "$asset_type" in
       prompt)   echo -e "\n  ${GREEN}${BOLD}Prompts (slash commands):${NC}" ;;
       skill)    echo -e "\n  ${BLUE}${BOLD}Skills (auto-discovered):${NC}" ;;
-      agent)    echo -e "\n  ${YELLOW}${BOLD}Agents (autonomous workflows):${NC}" ;;
-      chatmode) echo -e "\n  ${BOLD}Chat modes (persona sessions):${NC}" ;;
+      agent)    echo -e "\n  ${YELLOW}${BOLD}Agents (autonomous + personas):${NC}" ;;
     esac
 
     local listed=""

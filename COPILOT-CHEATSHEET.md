@@ -4,6 +4,31 @@
 > AI models (OpenAI, Anthropic, Google). This guide explains what every file in the
 > `.github/` setup does, when to use it, and which model to reach for.
 
+> **⚠ Schema currency note (May 2026)**
+>
+> GitHub Copilot's customization schema has evolved since this guide was first
+> written. Two changes affect this document:
+>
+> 1. **Chat modes → Custom Agents.** `.chatmode.md` files have been replaced by
+>    `.agent.md` files in `.github/agents/`. Setting `chat.modeFilesLocations`
+>    is replaced by `chat.agentFilesLocations`. Custom agents support richer
+>    frontmatter (`agents`, `handoffs`, `user-invocable`,
+>    `disable-model-invocation`, `target`, `mcp-servers`, `hooks`).
+>    **In this repo the migration completed on 2026-05-07** — the
+>    `.github/chatmodes/` directory was removed and the 6 persona files
+>    were rewritten as Custom Agents.
+>
+> 2. **Prompt frontmatter `mode:` → `agent:`.** Valid values:
+>    `ask | agent | plan | <custom-agent-name>`. Already migrated in this repo.
+>
+> 3. **`.copilotignore` is unofficial.** Use repo/org **Content Exclusion**
+>    (Settings UI + REST API public preview, Feb 2026) for real enforcement.
+>
+> 4. **Cloud coding-agent MCP is a different schema** from in-IDE MCP — see
+>    [§ MCP](#vscodemcp-json) below. Top-level key is `mcpServers` (not
+>    `servers`), each server requires a `tools:` allow-list, and the file
+>    isn't committed (it's repo-Settings UI).
+
 ---
 
 ## Table of contents
@@ -20,27 +45,32 @@
 
 ---
 
-## 1. Mental model — the six primitives
+## 1. Mental model — the five primitives
 
-Copilot has six customisation primitives. Each solves a different problem:
+Copilot has five customisation primitives. Each solves a different problem:
 
 | Primitive              | Where                            | Trigger                        | Best for                             |
 | ---------------------- | -------------------------------- | ------------------------------ | ------------------------------------ |
 | **Team instructions**  | `copilot-instructions.md`        | Always, automatically          | Project overview, non-negotiables    |
-| **Instructions files** | `instructions/*.instructions.md` | Auto, scoped by file type      | Language/framework conventions       |
+| **Instructions files** | `instructions/*.instructions.md` | Auto, scoped by `applyTo:` glob| Language/framework conventions       |
 | **Prompt files**       | `prompts/*.prompt.md`            | Manual (`/command`)            | Repeatable slash commands            |
 | **Skills**             | `skills/*/SKILL.md`              | Auto-discovered by description | Task runbooks (helm, terraform, K8s) |
-| **Chat modes**         | `chatmodes/*.chatmode.md`        | Manual (mode picker)           | Persona-driven conversation sessions |
-| **Agents**             | `agents/*.agent.md`              | Manual or chained              | Autonomous multi-step workflows      |
+| **Custom Agents**      | `agents/*.agent.md`              | Agent picker, chained, autonomous | Personas (formerly chatmodes) AND task agents (plan→implement→review) |
+
+> The earlier "Chat modes" primitive (`.chatmode.md`) was deprecated in 2026
+> and folded into Custom Agents. Persona agents (architecture, code review,
+> security audit, etc.) and task agents now share the same `.agent.md`
+> schema. The `.github/chatmodes/` directory was removed in this repo on
+> 2026-05-07.
 
 Think of it as layers, innermost to outermost:
 
 ```
-Always on:   [team instructions] + [instruction files scoped to current file type]
+Always on:   [team instructions] + [instruction files scoped to applyTo: glob]
 On demand:   [slash command prompts] ← you type /review
 Auto-loaded: [skills] ← Copilot decides based on what you're asking
-Interactive: [chat modes] ← you pick the persona from the dropdown
-Autonomous:  [agents] ← runs a full workflow, can chain to other agents
+Interactive: [persona custom agents] ← you pick the persona from the agent picker
+Autonomous:  [task custom agents] ← runs a full workflow, can chain via handoffs:
 ```
 
 ---
@@ -59,7 +89,7 @@ Autonomous:  [agents] ← runs a full workflow, can chain to other agents
 | `gpt-4.1`           | Balanced, reliable                   | Medium    | DevOps commands, general tasks, good default |
 | `claude-sonnet-4-5` | Code quality + instruction following | Medium    | Code gen, review, docs, tests                |
 | `claude-opus-4-5`   | Maximum thoroughness                 | High      | Security audit, nuanced analysis             |
-| `claude-haiku-4-5`  | Speed + cost                         | Low       | Fast chatmodes, light review                 |
+| `claude-haiku-4-5`  | Speed + cost                         | Low       | Fast persona agents, light review            |
 | `gemini-2.5-pro`    | 1M token context window              | High      | Reading entire codebases, large files        |
 | `gemini-2.0-flash`  | Fast long context                    | Medium    | Quick multi-file analysis                    |
 
@@ -79,17 +109,17 @@ Autonomous:  [agents] ← runs a full workflow, can chain to other agents
 | Plan agent (planning phase)                 | `o3`                | Systematic planning and risk analysis         |
 | Implement agent (coding phase)              | `claude-sonnet-4-5` | Code generation at scale                      |
 | Review agent (final review)                 | `claude-opus-4-5`   | Maximum scrutiny before merge                 |
-| Code reviewer chatmode                      | `claude-sonnet-4-5` | Balanced speed + quality for back-and-forth   |
-| Security auditor chatmode                   | `claude-opus-4-5`   | Most thorough for deep sessions               |
-| Architect chatmode                          | `o3`                | Extended reasoning conversations              |
-| DevOps chatmode                             | `gpt-4.1`           | Fast, reliable for command lookups            |
-| Large codebase reader chatmode              | `gemini-2.5-pro`    | 1M token window                               |
+| Code reviewer persona agent                 | `claude-sonnet-4-5` | Balanced speed + quality for back-and-forth   |
+| Security auditor persona agent              | `claude-opus-4-5`   | Most thorough for deep sessions               |
+| Architect persona agent                     | `o3`                | Extended reasoning conversations              |
+| DevOps persona agent                        | `gpt-4.1`           | Fast, reliable for command lookups            |
+| Large codebase reader persona agent         | `gemini-2.5-pro`    | 1M token window                               |
 
 ### How model selection works
 
 There are three mechanisms, in priority order:
 
-1. **Frontmatter `model:` field** — a prompt/chatmode/agent file specifies the model explicitly.
+1. **Frontmatter `model:` field** — a prompt or agent file specifies the model explicitly.
    This overrides everything. Example: `model: claude-opus-4-5` in `security-scan.prompt.md`.
 
 2. **Model picker selection** — whatever model you've selected in the VS Code chat panel.
@@ -99,7 +129,7 @@ There are three mechanisms, in priority order:
    on availability and your subscription. Gives a 10% premium request discount.
 
 > **Tip**: For everyday work, set your picker to `Auto`. Switch manually to `gemini-2.5-pro`
-> only when you need to read large files. The slash commands and chatmodes will override
+> only when you need to read large files. The slash commands and custom agents will override
 > your picker anyway.
 
 ---
@@ -138,18 +168,19 @@ your-project/
 │   │   ├── incident-triage/SKILL.md     → triggers on: production incident, alert, postmortem
 │   │   └── [your-skill]/SKILL.md        → triggers on: whatever you write in description:
 │   │
-│   ├── agents/                           ← AUTONOMOUS WORKERS. Chain plan→implement→review.
-│   │   ├── plan.agent.md                → model: o3              (reasoning)
-│   │   ├── implement.agent.md           → model: claude-sonnet-4-5 (coding)
-│   │   └── review.agent.md              → model: claude-opus-4-5  (thorough review)
-│   │
-│   ├── chatmodes/                        ← INTERACTIVE PERSONAS. Pick from VS Code dropdown.
-│   │   ├── code-reviewer.chatmode.md    → model: claude-sonnet-4-5
-│   │   ├── security-auditor.chatmode.md → model: claude-opus-4-5
-│   │   ├── architect.chatmode.md        → model: o3
-│   │   ├── devops-assistant.chatmode.md → model: gpt-4.1
-│   │   ├── longcontext-reader.chatmode.md → model: gemini-2.5-pro
-│   │   └── test-writer.chatmode.md      → model: claude-sonnet-4-5
+│   ├── agents/                           ← CUSTOM AGENTS. Two flavors share this dir:
+│   │   │                                    (a) TASK AGENTS — chain plan→implement→review
+│   │   │                                    (b) PERSONA AGENTS — formerly chatmodes
+│   │   ├── plan.agent.md                → model: o3              (task: reasoning)
+│   │   ├── implement.agent.md           → model: claude-sonnet-4-5 (task: coding)
+│   │   ├── review.agent.md              → model: claude-opus-4-5  (task: thorough review)
+│   │   ├── code-reviewer.agent.md       → model: claude-sonnet-4-5 (persona)
+│   │   ├── security-auditor.agent.md    → model: claude-opus-4-5  (persona)
+│   │   ├── architect.agent.md           → model: o3              (persona)
+│   │   ├── devops-assistant.agent.md    → model: gpt-4.1         (persona)
+│   │   ├── longcontext-reader.agent.md  → model: gemini-2.5-pro  (persona)
+│   │   ├── test-writer.agent.md         → model: claude-sonnet-4-5 (persona)
+│   │   └── ... (50+ specialist reviewer agents)
 │   │
 │   └── workflows/
 │       ├── copilot-setup-steps.yml      ← Bootstraps agent toolchain (Java, Go, Python, K8s)
@@ -220,9 +251,9 @@ Everyone on the team gets these defaults when they clone the repo.
 **Key things it controls**:
 
 - `github.copilot.enable` — which file types get inline completions
-- `github.copilot.chat.models` — named model slots used by prompts/chatmodes
+- `github.copilot.chat.models` — named model slots used by prompts/agents
 - `codeGeneration.instructions` — which instruction files auto-load
-- `chat.experimental.chatModes` — enables the chatmodes/ feature
+- `chat.agentFilesLocations` — where Custom Agents live (replaces the legacy `chat.modeFilesLocations` / `experimental.chatModes`)
 
 **Named model slots** (defined here, referenced in frontmatter):
 
@@ -255,16 +286,30 @@ preferences, experimental settings, your own model preferences.
 
 ### `.vscode/mcp.json`
 
-**What it is**: Defines MCP (Model Context Protocol) tool servers. These give
-Copilot agent mode live access to external systems during task execution.
+**What it is**: Defines MCP (Model Context Protocol) tool servers for the
+**in-IDE** Copilot agent. These give agent mode live access to external
+systems during task execution.
 
 **How it works**: When you ask Copilot to "fix the bug from issue #42", it can
 call the GitHub MCP server to _actually read issue #42_ rather than asking you
 to paste it. Tools are called automatically when relevant.
 
+**Schema essentials** (current as of May 2026):
+
+- Top-level keys: `servers` and `inputs`.
+- Server `type:` — `stdio` | `http` | `sse` | `streamable-http`.
+  Prefer `streamable-http` for new remote servers.
+- Per-server optional fields: `env`, `envFile` (dotenv path), `headers`,
+  `sandboxEnabled`, `sandbox: { filesystem, network }`, `dev: { watch }`.
+- `inputs[]` schema: `{ type: "promptString", id, description, password }`,
+  referenced from server config as `${input:id}`.
+- Trust is interactive (VS Code asks on first run). No `autoApprove` key.
+- Reference: https://code.visualstudio.com/docs/copilot/reference/mcp-configuration
+
 **Servers in this setup**:
 | Server | What it does | Env var needed |
 |--------|-------------|----------------|
+| `context7` | Library/framework docs lookup (streamable-http) | None |
 | `github` | Read issues, PRs, workflow runs | `GITHUB_TOKEN` |
 | `filesystem` | Read/write project files (sandboxed) | None |
 | `kubernetes` | List pods, read logs, check events | `KUBECONFIG` |
@@ -275,6 +320,26 @@ to paste it. Tools are called automatically when relevant.
 | `memory` | Persist facts across sessions | None |
 
 **All models can use all tools** — MCP access is not model-specific.
+
+---
+
+### `.github/copilot-mcp-config.json` (cloud coding agent MCP)
+
+**What it is**: MCP configuration for the **GitHub Copilot cloud coding
+agent** (the agent that picks up assigned issues on github.com). This is a
+**different schema** from `.vscode/mcp.json`:
+
+| Field             | VS Code (`.vscode/mcp.json`) | Cloud agent (`copilot-mcp-config.json`) |
+| ----------------- | ---------------------------- | --------------------------------------- |
+| Top-level key     | `servers`                    | `mcpServers`                            |
+| `tools:` per server | optional (defaults open)   | **required** allow-list (e.g. `["*"]`)  |
+| Secrets           | `inputs:` block              | `env:` only, sourced from repo Settings |
+| Source of truth   | committed file               | **GitHub.com → Settings → Copilot**     |
+| Env-var prefix    | n/a                          | `COPILOT_MCP_*`                         |
+
+The committed file is a reference template — the actual configuration is
+applied through the repo's GitHub Settings UI.
+Reference: https://docs.github.com/en/copilot/customizing-copilot/extending-copilot-coding-agent-with-mcp
 
 ---
 
@@ -301,11 +366,18 @@ your active model picker. So `/architect` always uses `o3` even if you have
 
 ```yaml
 ---
-mode: ask # "ask" = chat response only, "edit" = modifies files
+agent: ask # which chat agent runs the command. One of:
+           #   ask    — read-only chat response (no file edits)
+           #   agent  — autonomous mode, modifies files directly
+           #   plan   — produces a plan only, no edits
+           #   <custom-agent-name> — invokes an agent from .github/agents/
 model: o3 # which model to use for THIS command
 description: "..." # shown in the /command picker list
 ---
 ```
+
+> **Note**: The `agent:` field replaces the deprecated `mode: ask|edit|agent`
+> field. Existing files using `mode:` should migrate (`mode: edit` → `agent: agent`).
 
 **Slash commands in this setup**:
 | Command | Model | What it does |
@@ -375,6 +447,20 @@ description: >
   Also triggers for questions about Helm chart values, image tags, or release history.
 ```
 
+**Full frontmatter (current schema)**:
+
+```yaml
+---
+name: helm-upgrade                  # required, lowercase/numbers/hyphens, ≤64 chars
+description: >                      # required, ≤1024 chars, written as keywords
+  Use when asked to deploy, upgrade, or roll back a Kubernetes service via Helm.
+argument-hint: "<service-name>"     # optional — shown to the user when invoked
+user-invocable: true                # optional — default true; set false for hidden helper skills
+disable-model-invocation: false     # optional — default false; true forces user-only invocation
+context: inline                     # optional — `inline` (default) or `fork` (isolated subagent)
+---
+```
+
 **Where skills live**:
 
 ```
@@ -382,6 +468,11 @@ description: >
 .claude/skills/<name>/SKILL.md     ← same spec, works with both Copilot and Claude Code
 ~/.copilot/skills/<name>/SKILL.md  ← personal, works across all your projects
 ```
+
+**Settings key for discovery**: `chat.agentSkillsLocations` in `.vscode/settings.json`.
+
+**Install community skills**: `gh skills install github/awesome-copilot <skill-name>`
+(GitHub CLI ≥ 2.90.0).
 
 **Skills in this setup**:
 | Skill | Triggers on |
@@ -406,7 +497,7 @@ skills/incident-triage/
 ### `agents/*.agent.md`
 
 **What they are**: Autonomous workers that execute multi-step tasks without
-step-by-step guidance. Unlike chatmodes (you drive the conversation), agents
+step-by-step guidance. Unlike persona agents (you drive the conversation), task agents
 take a task and run it — reading files, writing code, running builds, then
 handing off to the next agent.
 
@@ -442,34 +533,48 @@ handoffs:
 | `implement` | claude-sonnet-4-5 | Read + Write + Terminal | `review` |
 | `review` | claude-opus-4-5 | Read-only | (terminal) |
 
-**When to use agents vs chatmodes**:
+**When to use task agents vs persona agents** (both live in `agents/`):
 
-- Use **agents** when you want Copilot to execute a complete workflow autonomously
-- Use **chatmodes** when you want to have a conversation with an expert persona
+- Use a **task agent** (plan/implement/review/specialist reviewer) when you
+  want Copilot to execute a complete workflow autonomously
+- Use a **persona agent** (architect/code-reviewer/security-auditor/etc.)
+  when you want to have a conversation with an expert persona
 
 ---
 
-### `chatmodes/*.chatmode.md`
+### `agents/*.agent.md` — persona variant
 
 **What they are**: Named conversation modes, each with a defined persona and
-model. You pick one from the chat mode dropdown in VS Code. The mode persists
-for your entire conversation session.
+model. You pick one from the chat agent dropdown in VS Code. The persona
+persists for your entire conversation session.
+
+> Persona agents are the same primitive as task agents (plan/implement/review)
+> — both are Custom Agents (`.agent.md`). They differ only in usage pattern:
+> personas are interactive, task agents run workflows.
+>
+> This unification replaces the legacy `.chatmode.md` primitive that was
+> deprecated by GitHub Copilot in 2026.
 
 **Key difference from prompts**: Prompts are one-shot commands (`/review` runs
-once). Chatmodes are persistent personas for extended back-and-forth.
+once). Persona agents are persistent for extended back-and-forth.
 
-**Frontmatter fields**:
+**Frontmatter fields** (Custom Agent schema):
 
 ```yaml
 ---
-description: "What this mode does — shown in the picker"
-model: claude-opus-4-5 # model for all messages in this mode
+name: code-reviewer                 # required, kebab-case
+description: "What this persona does — shown in the picker"
+model: claude-opus-4-5              # model for all messages in this persona
+user-invocable: true                # default true; show in picker
+disable-model-invocation: false     # default false; if true, only user can invoke
+target: vscode                      # vscode | github-copilot
+# Optional: tools[], agents[] (subagents), handoffs[], mcp-servers[], hooks
 ---
 ```
 
-**Chatmodes in this setup**:
-| Mode | Model | Best for |
-|------|-------|---------|
+**Persona agents in this setup**:
+| Agent | Model | Best for |
+|-------|-------|---------|
 | Code reviewer | claude-sonnet-4-5 | PR review, before pushing |
 | Security auditor | claude-opus-4-5 | Auth PRs, new endpoints, security review |
 | Architect | o3 | Design sessions, technology decisions |
@@ -477,7 +582,7 @@ model: claude-opus-4-5 # model for all messages in this mode
 | Large codebase reader | gemini-2.5-pro | Onboarding, understanding legacy code |
 | Test writer | claude-sonnet-4-5 | TDD, adding tests to existing code |
 
-**Prerequisite**: `"github.copilot.chat.experimental.chatModes": true` in settings.json.
+**Prerequisite**: `"chat.agentFilesLocations": { ".github/agents": true }` and `"chat.agent.enabled": true` in settings.json.
 
 ---
 
@@ -525,7 +630,7 @@ doesn't rely on model behaviour — they're enforced at the workflow level.
 
 ### "I want to have an extended conversation with an expert"
 
-→ Use a **chatmode** (Code reviewer, Architect, Security auditor)
+→ Use a **persona agent** (Code reviewer, Architect, Security auditor)
 
 ### "I want Copilot to understand how we do X in this project"
 
@@ -541,15 +646,15 @@ doesn't rely on model behaviour — they're enforced at the workflow level.
 
 ### "I need to read and understand a huge codebase"
 
-→ Use the **Large codebase reader chatmode** (Gemini 2.5 Pro, 1M tokens)
+→ Use the **Large codebase reader persona agent** (Gemini 2.5 Pro, 1M tokens)
 
 ### "I need to find a security vulnerability"
 
-→ Use `/security-scan` or the **Security auditor chatmode** (Claude Opus, most thorough)
+→ Use `/security-scan` or the **Security auditor persona agent** (Claude Opus, most thorough)
 
 ### "I'm designing a new system architecture"
 
-→ Use `/architect` or the **Architect chatmode** (o3, best reasoning)
+→ Use `/architect` or the **Architect persona agent** (o3, best reasoning)
 
 ### "I want these rules to apply across ALL my projects"
 
@@ -565,8 +670,8 @@ Create `.github/prompts/my-command.prompt.md`:
 
 ```markdown
 ---
-mode: ask # or "edit" to modify files
-model: claude-sonnet-4-5 # pick the best model for this task
+agent: ask                   # or: agent (modifies files), plan, or a custom agent name
+model: claude-sonnet-4-5     # pick the best model for this task
 description: "What /my-command does — shown in the picker"
 ---
 
@@ -596,14 +701,17 @@ Include code examples, commands, decision tables — anything useful.
 
 The skill auto-discovers when Copilot detects relevance.
 
-### Adding a new chatmode
+### Adding a new persona agent (formerly "chatmode")
 
-Create `.github/chatmodes/my-persona.chatmode.md`:
+Create `.github/agents/my-persona.agent.md`:
 
 ```markdown
 ---
-description: "My persona — what it does — shown in mode picker"
+name: my-persona
+description: "My persona — what it does — shown in agent picker"
 model: o3
+user-invocable: true
+target: vscode
 ---
 
 You are [name], a [role] with expertise in [domain].
@@ -611,7 +719,7 @@ You are [name], a [role] with expertise in [domain].
 [Describe the persona's approach, rules, and constraints.]
 ```
 
-Appears immediately in the VS Code chat mode dropdown.
+Appears immediately in the VS Code chat agent dropdown.
 
 ### Adding an instruction file
 
@@ -731,13 +839,18 @@ transferring ownership of assets. Key rules:
 
 ## 9. Troubleshooting
 
-### Chatmodes not appearing in VS Code
+### Custom agents not appearing in VS Code
 
 Add to `.vscode/settings.json`:
 
 ```json
-"github.copilot.chat.experimental.chatModes": true
+"chat.agentFilesLocations": { ".github/agents": true },
+"chat.agent.enabled": true
 ```
+
+The older `"github.copilot.chat.experimental.chatModes": true` setting only
+matters if you still have `.chatmode.md` files lingering in `.github/chatmodes/`
+— in this repo that primitive has been migrated to `.github/agents/*.agent.md`.
 
 Restart VS Code after changing.
 

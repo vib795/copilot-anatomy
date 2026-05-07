@@ -58,14 +58,18 @@ for f in .github/agents/*.agent.md; do
   fi
 done
 
-# Check chatmodes
-for f in .github/chatmodes/*.chatmode.md; do
-  [[ -e "$f" ]] || continue
-  if ! grep -q "\"$f\"" "$MANIFEST"; then
-    echo "DRIFT: File '$f' exists but is not in manifest"
-    ERRORS=$((ERRORS + 1))
-  fi
-done
+# Check chatmodes (legacy primitive — kept for back-compat scanning).
+# In the current schema chat modes are renamed to Custom Agents (.agent.md).
+# The loop is harmless when the directory is gone or empty.
+if [[ -d .github/chatmodes ]]; then
+  for f in .github/chatmodes/*.chatmode.md; do
+    [[ -e "$f" ]] || continue
+    if ! grep -q "\"$f\"" "$MANIFEST"; then
+      echo "DRIFT: File '$f' exists but is not in manifest"
+      ERRORS=$((ERRORS + 1))
+    fi
+  done
+fi
 
 # Check skills
 for d in .github/skills/*/; do

@@ -312,11 +312,11 @@ if [[ "$ROLE" == "developer" || "$ROLE" == "reviewer" || "$ROLE" == "all" ]]; th
     ROLE_READY=false
   fi
 
-  if [[ -d ".github/chatmodes" ]]; then
-    MODE_COUNT=$(find .github/chatmodes -name "*.chatmode.md" 2>/dev/null | wc -l | tr -d ' ')
-    pass "${MODE_COUNT} chat mode(s) available"
+  if [[ -d ".github/agents" ]]; then
+    AGENT_COUNT=$(find .github/agents -name "*.agent.md" 2>/dev/null | wc -l | tr -d ' ')
+    pass "${AGENT_COUNT} custom agent(s) available (includes personas — formerly chatmodes)"
   else
-    warn "No chatmodes directory"
+    warn "No agents directory"
   fi
 
   if [[ -d ".github/skills" ]]; then

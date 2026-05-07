@@ -2,7 +2,7 @@
 
 ## Adding New Assets
 
-Before merging a new prompt, skill, agent, chatmode, or instruction file, complete
+Before merging a new prompt, skill, agent, or instruction file, complete
 this checklist. CI will enforce manifest sync and frontmatter validation automatically.
 
 ### Required checklist
@@ -16,16 +16,15 @@ this checklist. CI will enforce manifest sync and frontmatter validation automat
 
 - [ ] **Frontmatter** — YAML frontmatter includes required fields:
   - Prompts: `model`, `description`
-  - Agents: `description` (model optional)
-  - Chatmodes: `model`, `description`
+  - Agents: `description` (model optional). Custom Agents (the persona kind,
+    formerly chat modes) additionally take `name`, `user-invocable`, `target`.
   - Skills: `description` field or trigger keywords in first 10 lines of SKILL.md
 
 - [ ] **Model reference** — if `model:` is set, it references a model in `.github/model-compatibility.json`
 
 - [ ] **Naming** — file follows kebab-case convention:
   - `my-prompt.prompt.md`
-  - `my-agent.agent.md`
-  - `my-mode.chatmode.md`
+  - `my-agent.agent.md` (replaces the legacy `.chatmode.md` primitive)
   - `my-instructions.instructions.md`
   - `my-skill/SKILL.md` (directory is kebab-case)
 

@@ -9,6 +9,16 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- `AGENTS.md` at repo root — cross-tool instruction file recognized by Copilot, Claude Code, Cursor, Aider, and other agents that read `AGENTS.md` alongside `CLAUDE.md` and `GEMINI.md`.
+- `.vscode/settings.json` — current canonical chat-customization location keys: `chat.agentFilesLocations`, `chat.agentSkillsLocations`, `chat.promptFilesLocations`, `chat.instructionsFilesLocations`. New flags: `chat.agent.enabled`, `chat.useCustomAgentHooks`, `chat.mcp.discovery.enabled`, `chat.useCustomizationsInParentRepositories`, `github.copilot.chat.organizationCustomAgents.enabled`.
+- `.vscode/mcp.json` — examples of the `streamable-http` server type, `envFile`, `dev: { watch }`, and the `sandboxEnabled` / `sandbox` block (filesystem + network rules).
+- `.github/hooks/copilot-hooks.json` — entries for the four previously-missing hook events: `userPromptSubmitted`, `preToolUse`, `postToolUse`, `errorOccurred`. The `preToolUse` entry runs the existing destructive-commands / broad-permissions / secret-hygiene policy scripts so a non-zero exit blocks the pending tool call.
+- `.github/copilot-mcp-config.json` — header documenting that this file follows the cloud-coding-agent MCP schema (`mcpServers` top-level key, mandatory per-server `tools:` allow-list, `COPILOT_MCP_*` env-var convention, repo-Settings UI as source of truth) versus the in-IDE `.vscode/mcp.json` schema.
+- `COPILOT-CHEATSHEET.md` — new "Schema currency note" banner at the top covering the four 2026 schema migrations. New section: `.github/copilot-mcp-config.json` (cloud agent MCP) with a side-by-side schema comparison table. New skills frontmatter reference covering `argument-hint`, `user-invocable`, `disable-model-invocation`, `context`. New `gh skills install` reference.
+- Deprecation notice inside each `.github/chatmodes/*.chatmode.md` (6 files) pointing users at the upcoming Custom Agents migration. *(Subsequently removed when the migration completed — see Removed below.)*
+- `.github/agents/{architect,code-reviewer,devops-assistant,longcontext-reader,security-auditor,test-writer}.agent.md` — 6 persona Custom Agents migrated from `.github/chatmodes/`. Frontmatter follows the current schema (`name`, `description`, `model`, `user-invocable`, `target`). Bodies preserved verbatim from the original chatmode files.
+- `AGENTS.md` (also updated): unified Custom Agents description (persona + task agents share the schema).
+
 - Asset manifest (`.github/copilot-asset-manifest.json`) — single source of truth for all Copilot assets with ownership and classification (R1)
 - Model compatibility matrix (`.github/model-compatibility.json`) — defines available models, capabilities, slots, and fallback policy (R3)
 - Evaluation harness framework (`.github/eval/`) — deterministic checks for frontmatter, naming, model refs, and manifest sync (R2)
@@ -29,11 +39,15 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ### Changed
 
 - `copilot-instructions.md` — added governance, model compatibility references, and MCP security posture section
-- `COPILOT-CHEATSHEET.md` — added governance section with manifest, eval, and changelog guidance
+- `COPILOT-CHEATSHEET.md` — added governance section with manifest, eval, and changelog guidance; migrated `mode:` examples to the new `agent:` field syntax
 - `copilot-hooks.yml` — integrated 3 policy check steps in pre-action-checks job
 - `copilot-eval.yml` — added governance, doc-consistency, and deprecation validation steps
 - `copilot-asset-manifest.json` — added eval-checks (7), policy-checks (3), mcp-profiles entries; expanded agents (53) and skills (64) coverage
 - `manifest-sync.sh` — extended to check agents, skills, and eval workflow filesystem↔manifest sync
+- Prompt frontmatter — migrated `agent: edit` → `agent: agent` in `fix-issue.prompt.md`, `document.prompt.md`, `test-gen.prompt.md` to match the current Copilot field schema (`ask | agent | plan | <custom-agent-name>`); the deprecated `mode: ask|edit|agent` form is no longer documented. Updated `copilot-setup.sh` heredocs and `copilot-anatomy.html` visualizer accordingly.
+- `.github/workflows/copilot-setup-steps.yml` — replaced the non-existent `on: copilot:` trigger with `workflow_dispatch` + paths-filtered `push`/`pull_request`. The cloud coding agent invokes the workflow internally by discovering the required `copilot-setup-steps` job name; the explicit `on:` block now only governs CI self-validation. Added `timeout-minutes: 30` (under the 59-minute coding-agent hard limit).
+- `.github/workflows/copilot-hooks.yml` — replaced the non-existent `on: copilot_pre_action` / `copilot_post_action` triggers with real `workflow_dispatch` + `pull_request` triggers (paths-filtered). Renamed jobs to `policy-pre-write` and `policy-post-write` so it's clear this is the CI mirror of the local hook scripts in `.github/hooks/copilot-hooks.json`; the canonical hook mechanism is the `hooks.json` file, not the workflow.
+- `.copilotignore` — header note clarifying the file is a community convention, not an official Copilot feature; pointer to the Content Exclusion API (UI + REST API public preview, Feb 2026) for real enforcement.
 
 ### Deprecated
 
@@ -41,7 +55,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Removed
 
-- None
+- `.github/chatmodes/` directory (6 `.chatmode.md` files: `architect`, `code-reviewer`, `devops-assistant`, `longcontext-reader`, `security-auditor`, `test-writer`). The chat-modes primitive was deprecated by GitHub Copilot in 2026 and folded into Custom Agents (`.agent.md`). Manifest entries moved from `assets.chatmodes` into `assets.agents` with updated paths and descriptions noting the migration date.
+- `github.copilot.chat.experimental.chatModes` setting from `.vscode/settings.json` and from the `copilot-setup.sh` heredoc — replaced by `chat.agentFilesLocations` (canonical) plus `chat.agent.enabled`.
+- The `.github/chatmodes` entry inside `chat.agentFilesLocations` (no longer needed after the migration).
+- `mkdir "$ROOT/.github/chatmodes"` in `copilot-setup.sh` — generator no longer creates the legacy directory in target repos.
+- `chatmode` asset type from `copilot-discover.sh` indexer (folded into `agent`).
+- `chatmodes/` folder tile from the `copilot-anatomy.html` visualizer (merged into the `agents/` tile, which now hosts both task and persona agents).
 
 ### Security
 

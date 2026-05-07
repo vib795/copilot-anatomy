@@ -65,11 +65,9 @@ Browse the files directly. The cheatsheet explains everything:
 │   ├── incident-triage/SKILL.md
 │   └── ... (60+ skills)
 │
-├── chatmodes/                       ← Persona-driven conversation sessions
-│   ├── code-reviewer.chatmode.md
-│   ├── security-auditor.chatmode.md
-│   ├── architect.chatmode.md
-│   └── ...
+│   (Persona agents — formerly `.chatmode.md` under chatmodes/ — now live
+│    in agents/ above. Chat modes were deprecated by GitHub Copilot in 2026
+│    in favor of Custom Agents with a richer frontmatter schema.)
 │
 ├── eval/                            ← Quality gates
 │   ├── checks/                         (manifest sync, frontmatter, model refs)
@@ -128,16 +126,21 @@ See [GOVERNANCE.md](.github/GOVERNANCE.md) for the full process.
 
 ---
 
-## The six primitives
+## The five primitives
 
-| Primitive             | Trigger              | Location                         |
-| --------------------- | -------------------- | -------------------------------- |
-| **Team instructions** | Always on            | `copilot-instructions.md`        |
-| **Instruction files** | Auto, by file type   | `instructions/*.instructions.md` |
-| **Prompt files**      | Manual — `/command`  | `prompts/*.prompt.md`            |
-| **Skills**            | Auto-discovered      | `skills/*/SKILL.md`              |
-| **Chat modes**        | Manual — mode picker | `chatmodes/*.chatmode.md`        |
-| **Agents**            | Manual or chained    | `agents/*.agent.md`              |
+| Primitive             | Trigger                       | Location                         |
+| --------------------- | ----------------------------- | -------------------------------- |
+| **Team instructions** | Always on                     | `copilot-instructions.md`        |
+| **Instruction files** | Auto, by `applyTo:` glob      | `instructions/*.instructions.md` |
+| **Prompt files**      | Manual — `/command`           | `prompts/*.prompt.md`            |
+| **Skills**            | Auto-discovered by description| `skills/*/SKILL.md`              |
+| **Custom Agents**     | Agent picker, chained, autonomous | `agents/*.agent.md`         |
+
+> Custom Agents subsume the legacy "chat modes" primitive. Persona agents
+> (formerly `.chatmode.md`) and task agents (plan / implement / review +
+> 50+ specialist reviewers) now share the same `.agent.md` schema, with
+> richer frontmatter (`agents`, `handoffs`, `user-invocable`,
+> `disable-model-invocation`, `target`, `mcp-servers`, `hooks`).
 
 ---
 

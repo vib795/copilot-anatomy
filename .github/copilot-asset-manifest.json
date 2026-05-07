@@ -952,62 +952,60 @@
         "classification": "extension",
         "generated": false,
         "description": "Always-on code-review persona. Reviews code for test coverage gaps, weak assertions, brittle implementation-coupled tests, and missing edge case coverage.user-invocable: true---# Testing ReviewerYou are a test architecture and coverage expert who evaluates whether the tests in a diff actually prove the code works -- not just that they exist. You distinguish between tests that catch real regressions and tests that provide false confidence by asserting the wrong things or coupling"
-      }
-    },
-    "chatmodes": {
+      },
       "architect": {
-        "path": ".github/chatmodes/architect.chatmode.md",
+        "path": ".github/agents/architect.agent.md",
         "owner": "platform-team",
         "classification": "core",
         "generated": true,
         "generatedBy": "copilot-setup.sh",
         "model": "o3",
-        "description": "Architecture discussion persona"
+        "description": "Architecture discussion persona (migrated from .chatmode.md May 2026)"
       },
       "code-reviewer": {
-        "path": ".github/chatmodes/code-reviewer.chatmode.md",
+        "path": ".github/agents/code-reviewer.agent.md",
         "owner": "platform-team",
         "classification": "core",
         "generated": true,
         "generatedBy": "copilot-setup.sh",
         "model": "claude-sonnet-4-5",
-        "description": "Code review discussion persona"
+        "description": "Code review discussion persona (migrated from .chatmode.md May 2026)"
       },
       "devops-assistant": {
-        "path": ".github/chatmodes/devops-assistant.chatmode.md",
+        "path": ".github/agents/devops-assistant.agent.md",
         "owner": "platform-team",
         "classification": "core",
         "generated": true,
         "generatedBy": "copilot-setup.sh",
         "model": "gpt-4.1",
-        "description": "DevOps operations persona"
+        "description": "DevOps operations persona (migrated from .chatmode.md May 2026)"
       },
       "longcontext-reader": {
-        "path": ".github/chatmodes/longcontext-reader.chatmode.md",
+        "path": ".github/agents/longcontext-reader.agent.md",
         "owner": "platform-team",
         "classification": "core",
         "generated": true,
         "generatedBy": "copilot-setup.sh",
         "model": "gemini-2.5-pro",
-        "description": "Large codebase reading persona"
+        "description": "Large codebase reading persona (migrated from .chatmode.md May 2026)"
       },
       "security-auditor": {
-        "path": ".github/chatmodes/security-auditor.chatmode.md",
+        "path": ".github/agents/security-auditor.agent.md",
         "owner": "platform-team",
         "classification": "core",
         "generated": true,
         "generatedBy": "copilot-setup.sh",
         "model": "claude-opus-4-5",
-        "description": "Security audit discussion persona"
+        "description": "Security audit discussion persona (migrated from .chatmode.md May 2026)"
       },
       "test-writer": {
-        "path": ".github/chatmodes/test-writer.chatmode.md",
+        "path": ".github/agents/test-writer.agent.md",
         "owner": "platform-team",
         "classification": "core",
         "generated": true,
         "generatedBy": "copilot-setup.sh",
         "model": "claude-sonnet-4-5",
-        "description": "Test writing discussion persona"
+        "description": "Test writing discussion persona (migrated from .chatmode.md May 2026)"
       }
     },
     "workflows": {

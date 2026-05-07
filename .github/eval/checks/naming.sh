@@ -32,15 +32,18 @@ for f in .github/agents/*; do
   fi
 done
 
-echo "── Checking chatmode naming ──"
-for f in .github/chatmodes/*; do
-  [[ -e "$f" ]] || continue
-  base=$(basename "$f")
-  if [[ ! "$base" =~ ^[a-z][a-z0-9-]*\.chatmode\.md$ ]]; then
-    echo "FAIL: $f — expected kebab-case.chatmode.md (got: $base)"
-    ERRORS=$((ERRORS + 1))
-  fi
-done
+echo "── Checking chatmode naming (legacy) ──"
+# Chat modes deprecated in favor of Custom Agents (.agent.md).
+if [[ -d .github/chatmodes ]]; then
+  for f in .github/chatmodes/*; do
+    [[ -e "$f" ]] || continue
+    base=$(basename "$f")
+    if [[ ! "$base" =~ ^[a-z][a-z0-9-]*\.chatmode\.md$ ]]; then
+      echo "FAIL: $f — expected kebab-case.chatmode.md (got: $base)"
+      ERRORS=$((ERRORS + 1))
+    fi
+  done
+fi
 
 echo "── Checking instruction naming ──"
 for f in .github/instructions/*; do

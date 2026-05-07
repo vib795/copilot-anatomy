@@ -1,4 +1,21 @@
 {
+  "_comment": [
+    "GitHub Copilot coding-agent hooks — local policy/observability gates.",
+    "",
+    "DOCS: https://docs.github.com/en/copilot/how-tos/use-copilot-agents/coding-agent/use-hooks",
+    "",
+    "Six supported events:",
+    "  sessionStart        — fires when a Copilot coding session begins",
+    "  sessionEnd          — fires when a session terminates (success or failure)",
+    "  userPromptSubmitted — fires after the user sends a chat message",
+    "  preToolUse          — fires before any tool/MCP call. Non-zero exit blocks.",
+    "  postToolUse         — fires after a tool/MCP call returns",
+    "  errorOccurred       — fires when the agent or a tool errors out",
+    "",
+    "Each hook entry runs `bash` on macOS/Linux and `powershell` on Windows.",
+    "Exit non-zero from preToolUse to deny the pending tool call.",
+    "Set chat.useCustomAgentHooks: true in VS Code settings to enable agent-scoped hooks."
+  ],
   "version": 1,
   "hooks": {
     "sessionStart": [
@@ -15,6 +32,38 @@
         "bash": "node .github/hooks/scripts/observe.js sessionEnd 2>/dev/null || true",
         "powershell": "try { node .github/hooks/scripts/observe.js sessionEnd 2>$null } catch {}",
         "timeoutSec": 10
+      }
+    ],
+    "userPromptSubmitted": [
+      {
+        "type": "command",
+        "bash": "node .github/hooks/scripts/observe.js userPromptSubmitted 2>/dev/null || true",
+        "powershell": "try { node .github/hooks/scripts/observe.js userPromptSubmitted 2>$null } catch {}",
+        "timeoutSec": 3
+      }
+    ],
+    "preToolUse": [
+      {
+        "type": "command",
+        "bash": "bash .github/hooks/scripts/destructive-commands.sh && bash .github/hooks/scripts/broad-permissions.sh && bash .github/hooks/scripts/secret-hygiene.sh",
+        "powershell": "Write-Host 'preToolUse policy checks not implemented for PowerShell'",
+        "timeoutSec": 15
+      }
+    ],
+    "postToolUse": [
+      {
+        "type": "command",
+        "bash": "node .github/hooks/scripts/observe.js postToolUse 2>/dev/null || true",
+        "powershell": "try { node .github/hooks/scripts/observe.js postToolUse 2>$null } catch {}",
+        "timeoutSec": 5
+      }
+    ],
+    "errorOccurred": [
+      {
+        "type": "command",
+        "bash": "node .github/hooks/scripts/observe.js errorOccurred 2>/dev/null || true",
+        "powershell": "try { node .github/hooks/scripts/observe.js errorOccurred 2>$null } catch {}",
+        "timeoutSec": 5
       }
     ]
   }

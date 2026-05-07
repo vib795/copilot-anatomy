@@ -49,16 +49,51 @@
   ],
 
   // ── FEATURE FLAGS ─────────────────────────────────────────────────────────
-  // Enable chatmodes/ — REQUIRED for .github/chatmodes/*.chatmode.md to work.
-  "github.copilot.chat.experimental.chatModes": true,
+  // Enable Copilot agent mode (the in-IDE agent, not the GitHub coding agent).
+  "chat.agent.enabled": true,
+  // Enable hooks declared in .agent.md frontmatter (`hooks:` field).
+  "chat.useCustomAgentHooks": true,
+  // Allow VS Code to discover MCP servers from other apps (Claude Desktop, etc.).
+  "chat.mcp.discovery.enabled": {
+    "claude-desktop": true,
+    "windsurf": true,
+    "cursor-global": true,
+    "cursor-workspace": true
+  },
+  // Inherit chat customizations from parent repos in nested workspace setups.
+  "chat.useCustomizationsInParentRepositories": true,
+  // Allow custom agents from organization-level locations.
+  "github.copilot.chat.organizationCustomAgents.enabled": true,
   // Keeps Copilot responses in English regardless of OS locale.
   "github.copilot.chat.localeOverride": "en",
 
+  // ── ASSET DISCOVERY LOCATIONS ─────────────────────────────────────────────
+  // Tell VS Code where to find each asset type. These are the current
+  // canonical keys (replacing the older `chat.modeFilesLocations` and the
+  // legacy `github.copilot.chat.experimental.chatModes` shim).
+  "chat.agentFilesLocations": {
+    ".github/agents": true
+  },
+  "chat.agentSkillsLocations": {
+    ".github/skills": true
+  },
+  "chat.promptFilesLocations": {
+    ".github/prompts": true
+  },
+  "chat.instructionsFilesLocations": {
+    ".github/instructions": true
+  },
+
   // ── AUTO-LOADED INSTRUCTIONS ───────────────────────────────────────────────
-  // These instruction files are automatically injected into every code
-  // generation request (completions, edits, chat with code context).
-  // Order matters: files listed first are injected first.
-  // Each file uses applyTo: globs to scope itself to relevant file types.
+  // Modern: instruction files self-scope via `applyTo:` globs in their own
+  // frontmatter, so this explicit list is no longer required. Kept here to
+  // pin load order — files listed first are injected first.
+  //
+  // DEPRECATED (VS Code 1.102+): the sibling instruction-category settings
+  //   github.copilot.chat.commitMessageGeneration.instructions
+  //   github.copilot.chat.pullRequestDescriptionGeneration.instructions
+  //   github.copilot.chat.reviewSelection.instructions
+  // were removed. Use `applyTo:` in a single .instructions.md file instead.
   "github.copilot.chat.codeGeneration.instructions": [
     { "file": ".github/instructions/code-style.instructions.md" },
     { "file": ".github/instructions/testing.instructions.md" },

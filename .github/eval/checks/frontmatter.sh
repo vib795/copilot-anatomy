@@ -69,12 +69,16 @@ for f in .github/agents/*.agent.md; do
   check_frontmatter "$f" "description" "agent"
 done
 
-echo "── Checking chatmode frontmatter ──"
-for f in .github/chatmodes/*.chatmode.md; do
-  [[ -e "$f" ]] || continue
-  check_frontmatter "$f" "model" "chatmode"
-  check_frontmatter "$f" "description" "chatmode"
-done
+echo "── Checking chatmode frontmatter (legacy) ──"
+# Chat modes are deprecated in favor of Custom Agents (.agent.md). The loop
+# stays for back-compat with downstream repos that haven't migrated yet.
+if [[ -d .github/chatmodes ]]; then
+  for f in .github/chatmodes/*.chatmode.md; do
+    [[ -e "$f" ]] || continue
+    check_frontmatter "$f" "model" "chatmode"
+    check_frontmatter "$f" "description" "chatmode"
+  done
+fi
 
 echo "── Checking skill descriptions ──"
 for f in .github/skills/*/SKILL.md; do
