@@ -33,11 +33,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Each language step is gated on its project files actually existing,
+      # so this workflow self-validates cleanly in copilot-anatomy itself
+      # (no pom.xml / go.mod / pyproject.toml here) AND fully bootstraps
+      # when scaffolded into a real Java/Go/Python target repo.
+
       # ── Java 17 ───────────────────────────────────────────────────────────
-      - uses: actions/setup-java@v4
+      - name: Setup Java 17 (only if pom.xml present)
+        if: hashFiles('**/pom.xml') != ''
+        uses: actions/setup-java@v4
         with: { java-version: "17", distribution: "temurin", cache: maven }
 
       - name: Configure Maven (Artifactory mirror)
+        if: hashFiles('**/pom.xml') != ''
         run: |
           mkdir -p ~/.m2
           cat > ~/.m2/settings.xml << 'XML'
@@ -53,20 +61,27 @@ jobs:
           XML
 
       # ── Go 1.22 ───────────────────────────────────────────────────────────
-      - uses: actions/setup-go@v5
+      - name: Setup Go 1.22 (only if go.mod present)
+        if: hashFiles('**/go.mod') != ''
+        uses: actions/setup-go@v5
         with: { go-version: "1.22", cache: true }
 
       - name: Install golangci-lint
+        if: hashFiles('**/go.mod') != ''
         run: |
           curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
             | sh -s -- -b $(go env GOPATH)/bin v1.57.0
 
       # ── Python 3.11 ───────────────────────────────────────────────────────
-      - uses: actions/setup-python@v5
+      - name: Setup Python 3.11 (only if pyproject.toml or requirements.txt present)
+        if: hashFiles('**/pyproject.toml', '**/requirements.txt') != ''
+        uses: actions/setup-python@v5
         with: { python-version: "3.11", cache: pip }
-      - run: pip install uv black ruff pytest pytest-mock httpx
+      - name: Install Python tooling
+        if: hashFiles('**/pyproject.toml', '**/requirements.txt') != ''
+        run: pip install uv black ruff pytest pytest-mock httpx
 
-      # ── Infrastructure tooling ────────────────────────────────────────────
+      # ── Infrastructure tooling (always installed — useful for any repo) ──
       - uses: opentofu/setup-opentofu@v1
         with: { tofu_version: "1.7.0" }
       - uses: azure/setup-helm@v4
@@ -74,9 +89,28 @@ jobs:
       - uses: azure/setup-kubectl@v4
         with: { version: "1.30.0" }
 
-      # ── Validate everything compiles ──────────────────────────────────────
-      - name: Validate builds
+      # ── Validate the toolchain can build whatever sources exist ──────────
+      - name: Validate Maven build
+        if: hashFiles('**/pom.xml') != ''
         run: |
-          ./mvnw --no-transfer-progress -q clean compile -DskipTests
-          go build ./...
-          ruff check .
+          if [ -x "./mvnw" ]; then
+            ./mvnw --no-transfer-progress -q clean compile -DskipTests
+          else
+            mvn --no-transfer-progress -q clean compile -DskipTests
+          fi
+
+      - name: Validate Go build
+        if: hashFiles('**/go.mod') != ''
+        run: go build ./...
+
+      - name: Validate Python lint
+        if: hashFiles('**/pyproject.toml', '**/requirements.txt') != ''
+        run: ruff check .
+
+      - name: Bootstrap summary
+        run: |
+          echo "Bootstrap complete. Detected toolchains:"
+          [ -n "$(find . -name 'pom.xml' -not -path '*/node_modules/*' 2>/dev/null | head -1)" ] && echo "  - Java/Maven (pom.xml found)"   || echo "  - Java/Maven: skipped (no pom.xml)"
+          [ -n "$(find . -name 'go.mod'  -not -path '*/node_modules/*' 2>/dev/null | head -1)" ] && echo "  - Go (go.mod found)"          || echo "  - Go: skipped (no go.mod)"
+          [ -n "$(find . \( -name 'pyproject.toml' -o -name 'requirements.txt' \) -not -path '*/node_modules/*' 2>/dev/null | head -1)" ] && echo "  - Python (pyproject/requirements found)" || echo "  - Python: skipped (no pyproject.toml or requirements.txt)"
+          echo "  - OpenTofu/Helm/kubectl always installed"

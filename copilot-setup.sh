@@ -2047,27 +2047,52 @@ HEREDOC
 cat > "$ROOT/.github/workflows/copilot-setup-steps.yml" << 'HEREDOC'
 # copilot-setup-steps.yml
 # ─────────────────────────────────────────────────────────────────────────────
-# PURPOSE: Bootstraps the toolchain for the GitHub Copilot coding agent.
-# WHEN RUNS: Automatically before the Copilot coding agent starts any task.
-#            This ensures the agent can build, test, and lint the code it generates.
-# DOCS: https://docs.github.com/en/copilot/using-github-copilot/using-copilot-coding-agent
+# PURPOSE: Bootstraps the toolchain for the GitHub Copilot coding agent
+#          (the cloud agent that works on assigned GitHub issues).
+# WHEN RUNS: Automatically before the Copilot coding agent starts any task —
+#            GitHub discovers this workflow by the REQUIRED job name
+#            `copilot-setup-steps` and runs it before agent execution.
+#            Also runs on workflow_dispatch and on PRs that modify this file
+#            so a broken bootstrap is caught at PR time, not at agent-task time.
+# REQUIRED: The job MUST be named `copilot-setup-steps`.
+# DOCS: https://docs.github.com/en/copilot/how-tos/use-copilot-agents/coding-agent/customize-the-agent-environment
+#
+# NOTE: There is NO `on: copilot:` trigger. The coding agent invokes this
+#       workflow internally; the `on:` block below is only for self-validation
+#       in normal CI.
 # ─────────────────────────────────────────────────────────────────────────────
 
 name: "Copilot Setup Steps"
+
 on:
-  copilot:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+  pull_request:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
 
 jobs:
+  # The job name `copilot-setup-steps` is REQUIRED by the coding agent.
   copilot-setup-steps:
     runs-on: ubuntu-latest
+    timeout-minutes: 30  # coding-agent hard limit is 59 minutes
     steps:
       - uses: actions/checkout@v4
 
+      # Each language step is gated on its project files actually existing,
+      # so the workflow self-validates cleanly in repos with no source code
+      # AND fully bootstraps when there's a real Java/Go/Python project.
+
       # ── Java 17 ───────────────────────────────────────────────────────────
-      - uses: actions/setup-java@v4
+      - name: Setup Java 17 (only if pom.xml present)
+        if: hashFiles('**/pom.xml') != ''
+        uses: actions/setup-java@v4
         with: { java-version: "17", distribution: "temurin", cache: maven }
 
       - name: Configure Maven (Artifactory mirror)
+        if: hashFiles('**/pom.xml') != ''
         run: |
           mkdir -p ~/.m2
           cat > ~/.m2/settings.xml << 'XML'
@@ -2083,20 +2108,27 @@ jobs:
           XML
 
       # ── Go 1.22 ───────────────────────────────────────────────────────────
-      - uses: actions/setup-go@v5
+      - name: Setup Go 1.22 (only if go.mod present)
+        if: hashFiles('**/go.mod') != ''
+        uses: actions/setup-go@v5
         with: { go-version: "1.22", cache: true }
 
       - name: Install golangci-lint
+        if: hashFiles('**/go.mod') != ''
         run: |
           curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh \
             | sh -s -- -b $(go env GOPATH)/bin v1.57.0
 
       # ── Python 3.11 ───────────────────────────────────────────────────────
-      - uses: actions/setup-python@v5
+      - name: Setup Python 3.11 (only if pyproject.toml or requirements.txt present)
+        if: hashFiles('**/pyproject.toml', '**/requirements.txt') != ''
+        uses: actions/setup-python@v5
         with: { python-version: "3.11", cache: pip }
-      - run: pip install uv black ruff pytest pytest-mock httpx
+      - name: Install Python tooling
+        if: hashFiles('**/pyproject.toml', '**/requirements.txt') != ''
+        run: pip install uv black ruff pytest pytest-mock httpx
 
-      # ── Infrastructure tooling ────────────────────────────────────────────
+      # ── Infrastructure tooling (always installed — useful for any repo) ──
       - uses: opentofu/setup-opentofu@v1
         with: { tofu_version: "1.7.0" }
       - uses: azure/setup-helm@v4
@@ -2104,45 +2136,67 @@ jobs:
       - uses: azure/setup-kubectl@v4
         with: { version: "1.30.0" }
 
-      # ── Validate everything compiles ──────────────────────────────────────
-      - name: Validate builds
+      # ── Validate the toolchain can build whatever sources exist ──────────
+      - name: Validate Maven build
+        if: hashFiles('**/pom.xml') != ''
         run: |
-          ./mvnw --no-transfer-progress -q clean compile -DskipTests
-          go build ./...
-          ruff check .
+          if [ -x "./mvnw" ]; then
+            ./mvnw --no-transfer-progress -q clean compile -DskipTests
+          else
+            mvn --no-transfer-progress -q clean compile -DskipTests
+          fi
+
+      - name: Validate Go build
+        if: hashFiles('**/go.mod') != ''
+        run: go build ./...
+
+      - name: Validate Python lint
+        if: hashFiles('**/pyproject.toml', '**/requirements.txt') != ''
+        run: ruff check .
 HEREDOC
 
 cat > "$ROOT/.github/workflows/copilot-hooks.yml" << 'HEREDOC'
 # copilot-hooks.yml
 # ─────────────────────────────────────────────────────────────────────────────
-# PURPOSE: Policy gates that run before and after every Copilot agent action.
-#          These are non-negotiable guardrails enforced regardless of which
-#          model or agent triggered the action.
+# PURPOSE: PR-time policy gates. CI mirror of the local hook scripts in
+#          .github/hooks/copilot-hooks.json — the same policies run both
+#          interactively (locally during agent sessions) and in CI (here).
 #
-# HOOKS EXPLAINED:
-#   copilot_pre_action  → runs BEFORE the agent makes changes. Use to block
-#                         dangerous patterns before they're written.
-#   copilot_post_action → runs AFTER changes. Use to validate correctness.
-#
-# DOCS: https://docs.github.com/en/copilot/concepts/agents/coding-agent/about-hooks
+# IMPORTANT — DEPRECATED TRIGGERS REMOVED:
+#   Earlier templates used `on: copilot_pre_action` / `copilot_post_action`.
+#   Those triggers DO NOT EXIST in GitHub Actions. The real Copilot
+#   coding-agent hook mechanism lives in `.github/hooks/<name>/hooks.json`
+#   with the six events: sessionStart, sessionEnd, userPromptSubmitted,
+#   preToolUse, postToolUse, errorOccurred.
+#   See: https://docs.github.com/en/copilot/how-tos/use-copilot-agents/coding-agent/use-hooks
 # ─────────────────────────────────────────────────────────────────────────────
 
-name: "Copilot Hooks"
+name: "Copilot Policy Checks (CI)"
+
 on:
-  copilot_pre_action:
-  copilot_post_action:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - '**/*.java'
+      - '**/*.go'
+      - '**/*.py'
+      - '**/*.tf'
+      - '**/*.yaml'
+      - '**/*.yml'
+      - '**/Dockerfile'
+      - '.github/hooks/**'
+      - '.github/workflows/copilot-hooks.yml'
 
 jobs:
-  # ── PRE-ACTION: Block dangerous patterns ─────────────────────────────────
-  pre-action-checks:
-    if: github.event_name == 'copilot_pre_action'
+  # ── Pre-write policies (block dangerous patterns) ────────────────────────
+  policy-pre-write:
+    name: "Pre-write policy checks"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
       - name: Block hardcoded credentials
-        # Fails the action if the agent is about to commit obvious secrets.
-        # Adjust the pattern to match your secret naming conventions.
+        # Fails CI if obvious secrets are about to be merged.
         run: |
           if grep -rE \
             '(password|secret|token|api_key|apikey)\s*[=:]\s*"[^$\{][^"]{6,}"' \
@@ -2150,7 +2204,7 @@ jobs:
             --include="*.yaml" --include="*.yml" --include="*.properties" \
             --exclude-dir=".git" --exclude-dir="vendor" --exclude-dir="node_modules" \
             . 2>/dev/null; then
-            echo "ERROR: Hardcoded credential pattern detected. Blocking agent action."
+            echo "ERROR: Hardcoded credential pattern detected."
             echo "Use environment variables or secrets manager references instead."
             exit 1
           fi
@@ -2158,39 +2212,61 @@ jobs:
 
       - name: Block terraform state commits
         run: |
-          if git diff --cached --name-only 2>/dev/null | grep -E '\.tfstate'; then
-            echo "ERROR: Agent attempted to commit terraform state file. Blocking."
+          if git diff origin/${{ github.base_ref }}...HEAD --name-only 2>/dev/null | grep -E '\.tfstate'; then
+            echo "ERROR: PR attempts to commit terraform state file."
             exit 1
           fi
           echo "Terraform state check passed."
 
-  # ── POST-ACTION: Validate correctness ────────────────────────────────────
-  post-action-checks:
-    if: github.event_name == 'copilot_post_action'
+      - name: "Policy: destructive command patterns (warn-only)"
+        if: hashFiles('.github/hooks/scripts/destructive-commands.sh') != ''
+        run: bash .github/hooks/scripts/destructive-commands.sh
+
+      - name: "Policy: broad cloud permissions (warn-only)"
+        if: hashFiles('.github/hooks/scripts/broad-permissions.sh') != ''
+        run: bash .github/hooks/scripts/broad-permissions.sh
+
+      - name: "Policy: secret hygiene (warn-only)"
+        if: hashFiles('.github/hooks/scripts/secret-hygiene.sh') != ''
+        run: bash .github/hooks/scripts/secret-hygiene.sh
+
+  # ── Post-write validation (lint + test sanity) ───────────────────────────
+  policy-post-write:
+    name: "Post-write validation"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-go@v5
+      - if: hashFiles('**/go.mod') != ''
+        uses: actions/setup-go@v5
         with: { go-version: "1.22" }
-      - uses: actions/setup-python@v5
+      - if: hashFiles('**/pyproject.toml', '**/requirements.txt') != ''
+        uses: actions/setup-python@v5
         with: { python-version: "3.11" }
 
-      - name: Run tests after agent changes
+      - name: Run tests
         # Non-blocking (|| true) — reports results but doesn't fail the pipeline.
         # Change to `exit $?` if you want hard failures.
         run: |
-          echo "── Go tests ──────────────────────────────────"
-          go test ./... -race 2>&1 | tail -20 || true
-          echo "── Python tests ──────────────────────────────"
-          python -m pytest --tb=short -q 2>&1 | tail -20 || true
+          if [ -f go.mod ]; then
+            echo "── Go tests ──────────────────────────────────"
+            go test ./... -race 2>&1 | tail -20 || true
+          fi
+          if [ -f pyproject.toml ] || [ -f requirements.txt ]; then
+            echo "── Python tests ──────────────────────────────"
+            python -m pytest --tb=short -q 2>&1 | tail -20 || true
+          fi
 
       - name: Lint check
         run: |
-          echo "── Go lint ───────────────────────────────────"
-          which golangci-lint && golangci-lint run --timeout 2m 2>&1 | tail -20 || true
-          echo "── Python lint ───────────────────────────────"
-          pip install ruff --quiet && ruff check . 2>&1 | tail -20 || true
+          if [ -f go.mod ]; then
+            echo "── Go lint ───────────────────────────────────"
+            which golangci-lint && golangci-lint run --timeout 2m 2>&1 | tail -20 || true
+          fi
+          if [ -f pyproject.toml ] || [ -f requirements.txt ]; then
+            echo "── Python lint ───────────────────────────────"
+            pip install ruff --quiet && ruff check . 2>&1 | tail -20 || true
+          fi
 HEREDOC
 
 # =============================================================================
