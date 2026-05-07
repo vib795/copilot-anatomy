@@ -2128,13 +2128,22 @@ jobs:
         if: hashFiles('**/pyproject.toml', '**/requirements.txt') != ''
         run: pip install uv black ruff pytest pytest-mock httpx
 
-      # ── Infrastructure tooling (always installed — useful for any repo) ──
-      - uses: opentofu/setup-opentofu@v1
+      # ── Infrastructure tooling (only when the repo actually uses it) ─────
+      # Gated on Terraform / Helm artefacts existing — pinned kubectl/Helm
+      # patch versions get pruned upstream over time, so let `latest` resolve
+      # at install time when the tools are actually needed.
+      - name: Setup OpenTofu (only if .tf files present)
+        if: hashFiles('**/*.tf') != ''
+        uses: opentofu/setup-opentofu@v1
         with: { tofu_version: "1.7.0" }
-      - uses: azure/setup-helm@v4
-        with: { version: "3.14.0" }
-      - uses: azure/setup-kubectl@v4
-        with: { version: "1.30.0" }
+      - name: Setup Helm (only if Chart.yaml present)
+        if: hashFiles('**/Chart.yaml') != ''
+        uses: azure/setup-helm@v4
+        with: { version: "latest" }
+      - name: Setup kubectl (only if Chart.yaml or k8s manifests present)
+        if: hashFiles('**/Chart.yaml', '**/k8s/**/*.yaml', '**/kustomization.yaml') != ''
+        uses: azure/setup-kubectl@v4
+        with: { version: "latest" }
 
       # ── Validate the toolchain can build whatever sources exist ──────────
       - name: Validate Maven build

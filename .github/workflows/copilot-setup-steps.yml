@@ -81,13 +81,22 @@ jobs:
         if: hashFiles('**/pyproject.toml', '**/requirements.txt') != ''
         run: pip install uv black ruff pytest pytest-mock httpx
 
-      # ── Infrastructure tooling (always installed — useful for any repo) ──
-      - uses: opentofu/setup-opentofu@v1
+      # ── Infrastructure tooling (only when the repo actually uses it) ─────
+      # Gated on Terraform / Helm artefacts existing — pinned versions get
+      # pruned upstream (kubectl 1.30.0 was upstream 404 on 2026-05-07),
+      # so we let `latest` / well-supported versions resolve at install time.
+      - name: Setup OpenTofu (only if .tf files present)
+        if: hashFiles('**/*.tf') != ''
+        uses: opentofu/setup-opentofu@v1
         with: { tofu_version: "1.7.0" }
-      - uses: azure/setup-helm@v4
-        with: { version: "3.14.0" }
-      - uses: azure/setup-kubectl@v4
-        with: { version: "1.30.0" }
+      - name: Setup Helm (only if Chart.yaml present)
+        if: hashFiles('**/Chart.yaml') != ''
+        uses: azure/setup-helm@v4
+        with: { version: "latest" }
+      - name: Setup kubectl (only if Chart.yaml or k8s manifests present)
+        if: hashFiles('**/Chart.yaml', '**/k8s/**/*.yaml', '**/kustomization.yaml') != ''
+        uses: azure/setup-kubectl@v4
+        with: { version: "latest" }
 
       # ── Validate the toolchain can build whatever sources exist ──────────
       - name: Validate Maven build
@@ -110,7 +119,9 @@ jobs:
       - name: Bootstrap summary
         run: |
           echo "Bootstrap complete. Detected toolchains:"
-          [ -n "$(find . -name 'pom.xml' -not -path '*/node_modules/*' 2>/dev/null | head -1)" ] && echo "  - Java/Maven (pom.xml found)"   || echo "  - Java/Maven: skipped (no pom.xml)"
-          [ -n "$(find . -name 'go.mod'  -not -path '*/node_modules/*' 2>/dev/null | head -1)" ] && echo "  - Go (go.mod found)"          || echo "  - Go: skipped (no go.mod)"
+          [ -n "$(find . -name 'pom.xml'         -not -path '*/node_modules/*' 2>/dev/null | head -1)" ] && echo "  - Java/Maven (pom.xml found)"        || echo "  - Java/Maven: skipped (no pom.xml)"
+          [ -n "$(find . -name 'go.mod'          -not -path '*/node_modules/*' 2>/dev/null | head -1)" ] && echo "  - Go (go.mod found)"               || echo "  - Go: skipped (no go.mod)"
           [ -n "$(find . \( -name 'pyproject.toml' -o -name 'requirements.txt' \) -not -path '*/node_modules/*' 2>/dev/null | head -1)" ] && echo "  - Python (pyproject/requirements found)" || echo "  - Python: skipped (no pyproject.toml or requirements.txt)"
-          echo "  - OpenTofu/Helm/kubectl always installed"
+          [ -n "$(find . -name '*.tf'            -not -path '*/node_modules/*' 2>/dev/null | head -1)" ] && echo "  - OpenTofu (.tf files found)"      || echo "  - OpenTofu: skipped (no .tf files)"
+          [ -n "$(find . -name 'Chart.yaml'      -not -path '*/node_modules/*' 2>/dev/null | head -1)" ] && echo "  - Helm (Chart.yaml found)"         || echo "  - Helm: skipped (no Chart.yaml)"
+          [ -n "$(find . \( -name 'Chart.yaml' -o -path '*/k8s/*' -o -name 'kustomization.yaml' \) -not -path '*/node_modules/*' 2>/dev/null | head -1)" ] && echo "  - kubectl (Helm/k8s manifests found)" || echo "  - kubectl: skipped (no Helm/k8s manifests)"
