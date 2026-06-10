@@ -43,6 +43,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- `copilot-anatomy.html` — visualizer now includes Wave 2 curriculum examples: three lab skills (`wave2-chaining-agents`, `wave2-context-engineering`, `wave2-guardrails-error-recovery`) in the skills/ tree and both capstone prompts (`/wave2-capstone-delivery`, `/wave2-capstone-accelerator`) in the prompts/ tree, each with full detail panels (trigger, lab structure, tips); a placeholder row points at the 7 remaining labs via `docs/curriculum/wave-2/`.
 - `copilot-instructions.md` — added governance, model compatibility references, and MCP security posture section
 - `COPILOT-CHEATSHEET.md` — added governance section with manifest, eval, and changelog guidance; migrated `mode:` examples to the new `agent:` field syntax
 - `copilot-hooks.yml` — integrated 3 policy check steps in pre-action-checks job
