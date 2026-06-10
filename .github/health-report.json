@@ -1,13 +1,13 @@
 {
-  "timestamp": "2026-04-16T04:03:04Z",
+  "timestamp": "2026-06-10T22:22:56Z",
   "healthScore": 100,
   "assets": {
-    "prompts": 8,
-    "agents": 53,
-    "skills": 64,
-    "chatmodes": 6,
+    "prompts": 10,
+    "agents": 59,
+    "skills": 74,
+    "chatmodes": 0,
     "instructions": 4,
-    "total": 135,
+    "total": 147,
     "deprecated": 0
   },
   "evalChecks": {

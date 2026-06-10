@@ -9,6 +9,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Wave 2 curriculum (10 lab skills + 2 capstone prompts) — "From Individual Proficiency → Delivery-Integrated, Team-Scale AI Execution", imported from the Wave 2 Proposed Curriculum sheet. Ten `wave2-*` skill directories under `.github/skills/` — weeks 1–2 (Advanced Agent Building & Multi-Step Workflows): chaining-agents, context-engineering, guardrails-error-recovery, cross-persona-collaboration, impact-tracking; weeks 3–4 (Delivery Integration & Reusable Assets): embedding-ai-project, reusable-accelerators, team-standards-agent-library, ai-estimation-planning, ai-delivery-playbook. Persona-specific labs carry `ba-track.md` / `dev-track.md` / `qa-track.md` alongside `SKILL.md`.
+- `.github/prompts/wave2-capstone-delivery.prompt.md` — weeks 1–2 capstone: end-to-end delivery scenario with chained agents and cross-persona handoffs (`/wave2-capstone-delivery`).
+- `.github/prompts/wave2-capstone-accelerator.prompt.md` — weeks 3–4 capstone hackathon: build a governance-clean reusable accelerator, judged on evidence, reusability, governance, and craft (`/wave2-capstone-accelerator`).
+- `docs/curriculum/wave-2/README.md` — curriculum map: day-by-day lab → asset table, lab threading, and cohort-run instructions.
+
 - `AGENTS.md` at repo root — cross-tool instruction file recognized by Copilot, Claude Code, Cursor, Aider, and other agents that read `AGENTS.md` alongside `CLAUDE.md` and `GEMINI.md`.
 - `.vscode/settings.json` — current canonical chat-customization location keys: `chat.agentFilesLocations`, `chat.agentSkillsLocations`, `chat.promptFilesLocations`, `chat.instructionsFilesLocations`. New flags: `chat.agent.enabled`, `chat.useCustomAgentHooks`, `chat.mcp.discovery.enabled`, `chat.useCustomizationsInParentRepositories`, `github.copilot.chat.organizationCustomAgents.enabled`.
 - `.vscode/mcp.json` — examples of the `streamable-http` server type, `envFile`, `dev: { watch }`, and the `sandboxEnabled` / `sandbox` block (filesystem + network rules).
@@ -61,6 +66,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `mkdir "$ROOT/.github/chatmodes"` in `copilot-setup.sh` — generator no longer creates the legacy directory in target repos.
 - `chatmode` asset type from `copilot-discover.sh` indexer (folded into `agent`).
 - `chatmodes/` folder tile from the `copilot-anatomy.html` visualizer (merged into the `agents/` tile, which now hosts both task and persona agents).
+
+### Fixed
+
+- `copilot-health.sh` — aborted under `set -euo pipefail` because it ran `find` on the removed `.github/chatmodes/` directory (broken since the 2026-05-07 chatmode removal). The chatmode count is now guarded on directory existence; the health dashboard regenerates again.
 
 ### Security
 

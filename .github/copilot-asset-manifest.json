@@ -119,6 +119,22 @@
         "generatedBy": "copilot-setup.sh",
         "model": "claude-sonnet-4-5",
         "description": "Test generation slash command"
+      },
+      "wave2-capstone-delivery": {
+        "path": ".github/prompts/wave2-capstone-delivery.prompt.md",
+        "owner": "platform-team",
+        "classification": "extension",
+        "generated": false,
+        "model": "claude-opus-4-5",
+        "description": "Wave 2 weeks 1-2 capstone: end-to-end delivery scenario using chained agents, shared context, and cross-persona handoffs"
+      },
+      "wave2-capstone-accelerator": {
+        "path": ".github/prompts/wave2-capstone-accelerator.prompt.md",
+        "owner": "platform-team",
+        "classification": "extension",
+        "generated": false,
+        "model": "claude-opus-4-5",
+        "description": "Wave 2 weeks 3-4 capstone hackathon: build a reusable, governance-clean accelerator that solves a real delivery problem"
       }
     },
     "skills": {
@@ -573,6 +589,76 @@
         "classification": "extension",
         "generated": false,
         "description": "Unified de-slop pass: code simplification + comment rot detection + design slop check. Run after completing features or before PRs to strip AI-generated generic patterns."
+      },
+      "wave2-chaining-agents": {
+        "path": ".github/skills/wave2-chaining-agents/SKILL.md",
+        "owner": "platform-team",
+        "classification": "extension",
+        "generated": false,
+        "description": "Wave 2 lab (wk1-2, d1-2): chain 2-3 agents into a multi-step delivery workflow with handoffs; BA/Dev/QA persona tracks"
+      },
+      "wave2-context-engineering": {
+        "path": ".github/skills/wave2-context-engineering/SKILL.md",
+        "owner": "platform-team",
+        "classification": "extension",
+        "generated": false,
+        "description": "Wave 2 lab (wk1-2, d3-4): chunking, reference injection, and context prioritization for long specs and large codebases; persona tracks"
+      },
+      "wave2-guardrails-error-recovery": {
+        "path": ".github/skills/wave2-guardrails-error-recovery/SKILL.md",
+        "owner": "platform-team",
+        "classification": "extension",
+        "generated": false,
+        "description": "Wave 2 lab (wk1-2, d5-6): agent guardrails, fallback behaviors, and validation checkpoints using hooks, policy scripts, and MCP profiles"
+      },
+      "wave2-cross-persona-collaboration": {
+        "path": ".github/skills/wave2-cross-persona-collaboration/SKILL.md",
+        "owner": "platform-team",
+        "classification": "extension",
+        "generated": false,
+        "description": "Wave 2 lab (wk1-2, d7-8): mixed BA+Dev / Dev+QA pairs build complementary agents that hand off artifacts via written contracts"
+      },
+      "wave2-impact-tracking": {
+        "path": ".github/skills/wave2-impact-tracking/SKILL.md",
+        "owner": "platform-team",
+        "classification": "extension",
+        "generated": false,
+        "description": "Wave 2 lab (wk1-2, d9-10): personal AI impact log (time saved, rework, quality) that rolls up into team metrics"
+      },
+      "wave2-embedding-ai-project": {
+        "path": ".github/skills/wave2-embedding-ai-project/SKILL.md",
+        "owner": "platform-team",
+        "classification": "extension",
+        "generated": false,
+        "description": "Wave 2 lab (wk3-4, d1-2): execute a real engagement task with the AI stack and write a what-worked retrospective; persona tracks"
+      },
+      "wave2-reusable-accelerators": {
+        "path": ".github/skills/wave2-reusable-accelerators/SKILL.md",
+        "owner": "platform-team",
+        "classification": "extension",
+        "generated": false,
+        "description": "Wave 2 lab (wk3-4, d3-4): convert your best prompts, agents, and instructions into shareable governed assets; persona tracks"
+      },
+      "wave2-team-standards-agent-library": {
+        "path": ".github/skills/wave2-team-standards-agent-library/SKILL.md",
+        "owner": "platform-team",
+        "classification": "extension",
+        "generated": false,
+        "description": "Wave 2 lab (wk3-4, d5-6): team AI standards \u2014 naming conventions, shared agent catalog with ownership, review process, quality gates"
+      },
+      "wave2-ai-estimation-planning": {
+        "path": ".github/skills/wave2-ai-estimation-planning/SKILL.md",
+        "owner": "platform-team",
+        "classification": "extension",
+        "generated": false,
+        "description": "Wave 2 lab (wk3-4, d7-8): AI-assisted estimation, sprint planning, and task decomposition with data-backed deltas; persona tracks"
+      },
+      "wave2-ai-delivery-playbook": {
+        "path": ".github/skills/wave2-ai-delivery-playbook/SKILL.md",
+        "owner": "platform-team",
+        "classification": "extension",
+        "generated": false,
+        "description": "Wave 2 lab (wk3-4, d9-10): cohort assembles its AI Delivery Playbook \u2014 task routing, standard agents, review process, impact tracking"
       }
     },
     "agents": {
