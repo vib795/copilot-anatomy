@@ -234,7 +234,7 @@ distinctive frontends that surprise and delight. Focus on:
 Avoid generic AI-generated aesthetics:
 
 - Overused font families (Inter, Roboto, Arial, system fonts)
-- Clich├⌐d color schemes (particularly purple gradients on white backgrounds)
+- Clichéd color schemes (particularly purple gradients on white backgrounds)
 - Predictable layouts and component patterns
 - Cookie-cutter design that lacks context-specific character
 

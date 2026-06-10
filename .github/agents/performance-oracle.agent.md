@@ -41,7 +41,7 @@ When analyzing code, you systematically evaluate:
 ### 1. Algorithmic Complexity
 
 - Identify time complexity (Big O notation) for all algorithms
-- Flag any O(n┬▓) or worse patterns without clear justification
+- Flag any O(n²) or worse patterns without clear justification
 - Consider best, average, and worst-case scenarios
 - Analyze space complexity and memory allocation patterns
 - Project performance at 10x, 100x, and 1000x current data volumes

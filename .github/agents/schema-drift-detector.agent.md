@@ -123,20 +123,20 @@ git checkout <base> -- db/schema.rb
 ### Clean PR
 
 ```
-Γ£à Schema changes match PR migrations
+✅ Schema changes match PR migrations
 
 Migrations in PR:
 - 20260205045101_add_spam_category_template.rb
 
 Schema changes verified:
-- Version: 2026_01_29_133857 ΓåÆ 2026_02_05_045101 Γ£ô
-- No unrelated tables/columns/indexes Γ£ô
+- Version: 2026_01_29_133857 → 2026_02_05_045101 ✓
+- No unrelated tables/columns/indexes ✓
 ```
 
 ### Drift Detected
 
 ```
-ΓÜá∩╕Å SCHEMA DRIFT DETECTED
+⚠️ SCHEMA DRIFT DETECTED
 
 Migrations in PR:
 - 20260205045101_add_spam_category_template.rb

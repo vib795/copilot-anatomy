@@ -79,7 +79,7 @@ For every data migration or backfill, you must:
 ## Quick Reference SQL Snippets
 
 ```sql
--- Check legacy value ΓåÆ new value mapping
+-- Check legacy value → new value mapping
 SELECT legacy_column, new_column, COUNT(*)
 FROM <table_name>
 GROUP BY legacy_column, new_column
