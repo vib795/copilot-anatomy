@@ -69,6 +69,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Fixed
 
+- 49 of 59 `.github/agents/*.agent.md` files had every newline stripped — each file was one single line, with frontmatter keys run together and all body structure (headings, lists, example blocks, tables, code fences) collapsed. Restored proper multi-line formatting; verified whitespace-stripped content is byte-identical to the prior state for every file.
+- 14 of those agent files also carried cp437 mojibake from the same encoding accident (`ΓÇö` for em dash, `ΓåÆ` for arrow, garbled emoji, `┬▓` for superscript-2). Reversed deterministically; zero reversible mojibake sequences remain in the repo.
 - `copilot-health.sh` — aborted under `set -euo pipefail` because it ran `find` on the removed `.github/chatmodes/` directory (broken since the 2026-05-07 chatmode removal). The chatmode count is now guarded on directory existence; the health dashboard regenerates again.
 
 ### Security
