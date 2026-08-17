@@ -296,7 +296,7 @@ const ITEMS = {
   tips: [
     '<strong>agent: ask</strong> means the command produces a chat response — it does not edit files.',
     '<strong>Select code first</strong> before running /review to focus on a specific function or class.',
-    'The model: field <strong>overrides your active picker</strong> — you always get Sonnet here even if you\'re using GPT-4o.',
+    'The model: field <strong>overrides your active picker</strong> — you always get Sonnet here even if your picker is set to gpt-5.6-terra.',
     'Add your own lenses by editing the prompt file — e.g. add a "Logging" or "Observability" section.'
   ],
   tags: [{text:'/review', color:'blue'},{text:'agent: ask', color:'gray'},{text:'claude-sonnet-5', color:'purple'}]
@@ -336,7 +336,7 @@ const ITEMS = {
   tips: [
     'The dry run step (helm diff) is <strong>mandatory</strong> in the template. Never skip it — stop if -/+ lines appear.',
     '<strong>--atomic</strong> is included by default: Helm auto-rolls-back if health checks fail within 5 minutes.',
-    'All <placeholder> values are filled from your active file context — open the right file first.',
+    'All &lt;placeholder&gt; values are filled from your active file context — open the right file first.',
     'For production deploys, the checklist includes a notification step for the on-call engineer.'
   ],
   tags: [{text:'/deploy', color:'blue'},{text:'agent: ask', color:'gray'},{text:'gpt-5.6-terra', color:'blue'}]
@@ -346,7 +346,7 @@ const ITEMS = {
   path: '.github/prompts/architect.prompt.md',
   label: 'architect.prompt.md',
   chip: 'c-gray',
-  model: 'gpt-5.6-sol',
+  model: 'reason',
   trigger: { type: 'manual', text: 'Manual — type /architect in Copilot Chat' },
   what: 'Produces a structured architecture analysis: clarifying questions, multiple options with explicit trade-offs, a recommendation with conditions, and a formatted <strong>ADR (Architecture Decision Record)</strong>.',
   when: 'When you type /architect. Describe the design problem in your prompt. Best used when starting a new service, choosing between technologies, or planning a major refactor.',
@@ -406,7 +406,7 @@ const ITEMS = {
   path: '.github/prompts/explain-codebase.prompt.md',
   label: 'explain-codebase.prompt.md',
   chip: 'c-gray',
-  model: 'gemini',
+  model: 'longctx',
   trigger: { type: 'manual', text: 'Manual — type /explain-codebase in Copilot Chat' },
   what: 'Reads entire large files or complete codebases using Gemini\'s 1M token context window. Produces: what it does (plain language), key concepts, data flow trace, gotchas, and where to start if making a change.',
   when: 'When you type /explain-codebase. Best for files over 2,000 lines, entire packages, or unfamiliar services. Use "Add files to context" in VS Code to attach multiple files before running.',
@@ -712,7 +712,7 @@ const ITEMS = {
   path: '.github/agents/plan.agent.md',
   label: 'plan.agent.md',
   chip: 'c-gray',
-  model: 'gpt-5.6-sol',
+  model: 'reason',
   trigger: { type: 'chain', text: 'Manual start — chains to implement agent on approval' },
   what: 'Planning agent: scopes a feature request into a structured implementation plan with file change list, ordered steps, test strategy, risk table, and explicit out-of-scope boundaries. Read-only — does not modify files. Hands off to implement agent.',
   when: 'Activate manually when starting a new feature or bug fix. The plan agent thinks before implement touches any files.',
@@ -814,7 +814,7 @@ const ITEMS = {
   path: '.github/agents/architect.agent.md',
   label: 'architect.agent.md',
   chip: 'c-gray',
-  model: 'gpt-5.6-sol',
+  model: 'reason',
   trigger: { type: 'isolated', text: 'Manual — select from VS Code chat agent picker dropdown' },
   what: 'Jordan persona: staff engineer, trade-offs over absolutes. Every recommendation states what it optimises for. Produces ADRs (Context → Decision → Consequences → Alternatives considered). Never recommends complexity the team can\'t operate on-call.',
   when: 'Select "Architect" from the chat mode dropdown. Best for extended design discussions: new service architecture, technology decisions, major refactors.',
@@ -854,7 +854,7 @@ const ITEMS = {
   path: '.github/agents/longcontext-reader.agent.md',
   label: 'longcontext-reader.agent.md',
   chip: 'c-gray',
-  model: 'gemini',
+  model: 'longctx',
   trigger: { type: 'isolated', text: 'Manual — select from VS Code chat agent picker dropdown' },
   what: 'Dedicated GPT-5.4 mode for reading entire codebases or very large files. Produces: what it does (plain language), key concepts, data flow trace, non-obvious behaviour, and entry points for new contributors. Never truncates analysis.',
   when: 'Select "Large codebase reader" from the chat mode dropdown. Use "Add files to context" (paperclip icon) before asking your question to attach multiple files at once.',
@@ -1007,7 +1007,7 @@ const ITEMS = {
   contentLabel: 'Agent Plugins 1.0 manifest',
   whyModel: null,
   tips: [
-    '<strong>The root manifest is a CLOSED object.</strong> Only $schema, name, version, description, author, homepage, repository, license, keywords and extensions are legal. Add "hooks" or "mcpServers" at the top level and the package is invalid — and clients reject it <em>silently</em>.',
+    '<strong>The root manifest is a CLOSED object.</strong> Only $schema, name, version, description, author, homepage, repository, license, keywords and extensions are legal. Add "hooks" or "mcpServers" at the top level and the package is invalid — and clients reject it silently, with no error.',
     '<strong>Only skills and MCP servers are portable.</strong> Custom agents, instructions, hooks and prompt files are all Copilot-specific. If you want a capability to survive a move to another tool, write it as a skill.',
     'Client-specific data goes under extensions["com.github.copilot"] — a reverse-domain namespace the client owns.',
     'VS Code currently ignores client-extension data in Agent Plugins packages; it loads skills/ and mcp.json and nothing else. The extensions block is forward-looking.',
