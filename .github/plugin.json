@@ -1,0 +1,32 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "copilot-anatomy",
+  "version": "2.0.0",
+  "description": "Reference implementation of every GitHub Copilot customisation primitive, with governance and evaluation tooling for multi-model polyglot teams.",
+  "author": {
+    "name": "copilot-anatomy contributors",
+    "url": "https://github.com/vib795/copilot-anatomy"
+  },
+  "homepage": "https://vib795.github.io/copilot-anatomy/",
+  "repository": "https://github.com/vib795/copilot-anatomy",
+  "license": "MIT",
+  "keywords": [
+    "copilot",
+    "governance",
+    "skills",
+    "custom-agents",
+    "mcp",
+    "reference",
+    "polyglot",
+    "model-routing"
+  ],
+  "extensions": {
+    "com.github.copilot": {
+      "agents": "agents",
+      "instructions": "instructions",
+      "hooks": "hooks/copilot-hooks.json",
+      "mcpProfiles": "copilot-mcp-profiles.json",
+      "defaultMcpProfile": "read-only"
+    }
+  }
+}

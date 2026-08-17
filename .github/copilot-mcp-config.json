@@ -1,6 +1,6 @@
 {
   "_comment": [
-    "MCP configuration for the GitHub Copilot CLOUD CODING AGENT (the one",
+    "MCP configuration for the GitHub Copilot CLOUD AGENT (the one",
     "that picks up assigned issues on github.com). NOT for the in-IDE agent.",
     "",
     "Cloud-agent schema differences vs VS Code .vscode/mcp.json:",
@@ -12,7 +12,7 @@
     "  • Configured through GitHub.com → Settings → Copilot → Cloud agent;",
     "    this file is a reference template, not the source of truth",
     "",
-    "DOCS: https://docs.github.com/en/copilot/customizing-copilot/extending-copilot-coding-agent-with-mcp"
+    "DOCS: https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/customize-cloud-agent/use-mcp"
   ],
   "mcpServers": {
     "context7": {

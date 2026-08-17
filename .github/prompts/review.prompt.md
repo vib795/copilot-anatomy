@@ -1,12 +1,20 @@
 ---
 agent: ask
-model: claude-sonnet-4-5
+model: claude-sonnet-5
 description: "Code review: correctness, security, performance, style, tests"
 ---
 
+> [!WARNING]
+> **DEPRECATED (2026-08-17) — removal 2026-11-16.** Prompt files run only in the
+> Local agent harness. Copilot CLI, the Copilot cloud agent, and Agent Plugins
+> express slash commands as **skills**. This command now lives at
+> `.github/skills/review/SKILL.md`; edit that file, not this one.
+> See `.github/GOVERNANCE.md` → "Deprecating an asset".
+
+
 <!--
   SLASH COMMAND: /review
-  MODEL: claude-sonnet-4-5 — best for structured multi-step code analysis
+  MODEL: claude-sonnet-5 — best for structured multi-step code analysis
   AGENT: ask — read-only, produces a review report without editing files
 -->
 

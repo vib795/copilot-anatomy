@@ -24,7 +24,7 @@
 > 3. **`.copilotignore` is unofficial.** Use repo/org **Content Exclusion**
 >    (Settings UI + REST API public preview, Feb 2026) for real enforcement.
 >
-> 4. **Cloud coding-agent MCP is a different schema** from in-IDE MCP — see
+> 4. **Cloud cloud-agent MCP is a different schema** from in-IDE MCP — see
 >    [§ MCP](#vscodemcp-json) below. Top-level key is `mcpServers` (not
 >    `servers`), each server requires a `tools:` allow-list, and the file
 >    isn't committed (it's repo-Settings UI).
@@ -33,7 +33,7 @@
 
 ## Table of contents
 
-1. [Mental model — the six primitives](#1-mental-model--the-six-primitives)
+1. [Mental model — the primitives](#1-mental-model--the-primitives)
 2. [Model routing — which AI for which task](#2-model-routing--which-ai-for-which-task)
 3. [Full folder structure at a glance](#3-full-folder-structure-at-a-glance)
 4. [File-by-file reference](#4-file-by-file-reference)
@@ -45,17 +45,30 @@
 
 ---
 
-## 1. Mental model — the five primitives
+## 1. Mental model — the primitives
 
-Copilot has five customisation primitives. Each solves a different problem:
+Each primitive solves a different problem. The **Portable** column is the one
+that matters most in 2026: Agent Plugins 1.0 standardises only skills and MCP
+servers across agent clients, so everything else is Copilot-specific.
 
-| Primitive              | Where                            | Trigger                        | Best for                             |
-| ---------------------- | -------------------------------- | ------------------------------ | ------------------------------------ |
-| **Team instructions**  | `copilot-instructions.md`        | Always, automatically          | Project overview, non-negotiables    |
-| **Instructions files** | `instructions/*.instructions.md` | Auto, scoped by `applyTo:` glob| Language/framework conventions       |
-| **Prompt files**       | `prompts/*.prompt.md`            | Manual (`/command`)            | Repeatable slash commands            |
-| **Skills**             | `skills/*/SKILL.md`              | Auto-discovered by description | Task runbooks (helm, terraform, K8s) |
-| **Custom Agents**      | `agents/*.agent.md`              | Agent picker, chained, autonomous | Personas (formerly chatmodes) AND task agents (plan→implement→review) |
+| Primitive              | Where                            | Trigger                        | Portable | Best for                             |
+| ---------------------- | -------------------------------- | ------------------------------ | -------- | ------------------------------------ |
+| **Team instructions**  | `copilot-instructions.md`        | Always, automatically          | Copilot  | Project overview, non-negotiables    |
+| **`AGENTS.md`**        | repo root or any subdirectory    | Always; nearest file wins      | **Yes**  | Cross-tool project context           |
+| **Instructions files** | `instructions/*.instructions.md` | Auto, scoped by `applyTo:` glob| Copilot  | Language/framework conventions       |
+| **Skills**             | `skills/*/SKILL.md`              | Auto-discovered, or `/name`    | **Yes**  | Runbooks **and** slash commands      |
+| **Custom Agents**      | `agents/*.agent.md`              | Agent picker, chained, autonomous | Copilot | Personas AND task agents (plan→implement→review) |
+| **Hooks**              | `hooks/*.json`                   | 14 lifecycle events            | Copilot  | Policy gates, audit, observability   |
+| **Agent Plugin**       | `plugin.json` + `skills/` + `mcp.json` | Installed from a marketplace | **Yes** | Shipping the whole bundle to others  |
+| **Prompt files** ⚠️    | `prompts/*.prompt.md`            | Manual (`/command`)            | No       | **Legacy** — migrate to skills       |
+
+> **⚠️ Prompt files are legacy.** They are supported **only in the Local agent
+> harness**. Copilot CLI, the Copilot cloud agent, and Agent Plugins all
+> express slash commands as skills. GitHub ships a one-time **Migrate Prompts**
+> action in the AI Customizations overview (enable
+> `chat.customizations.promptMigration.enabled`) that converts them for you.
+> This repo has migrated all ten; the `.prompt.md` originals remain, formally
+> deprecated, with removal on **2026-11-16**.
 
 > The earlier "Chat modes" primitive (`.chatmode.md`) was deprecated in 2026
 > and folded into Custom Agents. Persona agents (architecture, code review,
@@ -66,12 +79,32 @@ Copilot has five customisation primitives. Each solves a different problem:
 Think of it as layers, innermost to outermost:
 
 ```
-Always on:   [team instructions] + [instruction files scoped to applyTo: glob]
-On demand:   [slash command prompts] ← you type /review
-Auto-loaded: [skills] ← Copilot decides based on what you're asking
+Always on:   [team instructions] + [AGENTS.md] + [instruction files scoped by applyTo:]
+On demand:   [skills invoked as /name] ← you type /review
+Auto-loaded: [skills matched by description] ← Copilot decides from what you're asking
 Interactive: [persona custom agents] ← you pick the persona from the agent picker
 Autonomous:  [task custom agents] ← runs a full workflow, can chain via handoffs:
+Around all:  [hooks] ← fire on 14 lifecycle events, can allow/ask/deny tool calls
 ```
+
+### `AGENTS.md` — the cross-tool standard
+
+`AGENTS.md` is now the portable way to give any agent project context. Copilot
+reads it alongside `.github/copilot-instructions.md`, and also supports
+`CLAUDE.md` and `GEMINI.md`.
+
+- **Nested files are supported.** Put one at the repo root and another in
+  `services/payments/`; the **nearest file in the directory tree wins**. That
+  is the cleanest way to give a monorepo per-service context.
+- **`@path` includes work.** Inside `AGENTS.md`, `.github/copilot-instructions.md`,
+  or `CLAUDE.md`, write `@docs/architecture.md` to pull in another file. Copilot
+  CLI reads the referenced file immediately, and references nest.
+- **Instruction files can target a specific agent.** `.instructions.md`
+  frontmatter supports `excludeAgent:`, so you can write rules that apply to
+  Copilot code review but not the cloud agent, or vice versa.
+
+This repo keeps `AGENTS.md` at the root as the tool-neutral entry point and
+`.github/copilot-instructions.md` for Copilot-specific detail.
 
 ---
 
@@ -82,45 +115,67 @@ Autonomous:  [task custom agents] ← runs a full workflow, can chain via handof
 
 ### Model strengths
 
-| Model               | Strength                             | Cost tier | Use for                                      |
-| ------------------- | ------------------------------------ | --------- | -------------------------------------------- |
-| `o3`                | Deep multi-step reasoning            | High      | Architecture, planning, trade-off analysis   |
-| `o4-mini`           | Speed                                | Low       | Inline completions, quick fixes, boilerplate |
-| `gpt-4.1`           | Balanced, reliable                   | Medium    | DevOps commands, general tasks, good default |
-| `claude-sonnet-4-5` | Code quality + instruction following | Medium    | Code gen, review, docs, tests                |
-| `claude-opus-4-5`   | Maximum thoroughness                 | High      | Security audit, nuanced analysis             |
-| `claude-haiku-4-5`  | Speed + cost                         | Low       | Fast persona agents, light review            |
-| `gemini-2.5-pro`    | 1M token context window              | High      | Reading entire codebases, large files        |
-| `gemini-2.0-flash`  | Fast long context                    | Medium    | Quick multi-file analysis                    |
+| Slot       | Model              | Strength                             | Cost   | Context | Use for                                      |
+| ---------- | ------------------ | ------------------------------------ | ------ | ------- | -------------------------------------------- |
+| `reason`   | `gpt-5.6-sol`      | Deep multi-step reasoning            | High   | 1M      | Architecture, planning, trade-off analysis   |
+| `balanced` | `gpt-5.6-terra`    | Balanced, reliable                   | Medium | 1M      | DevOps commands, general tasks, good default |
+| `code`     | `claude-sonnet-5`  | Code quality + instruction following | Medium | 1M      | Code gen, review, docs, tests                |
+| `thorough` | `claude-opus-5`    | Maximum thoroughness                 | High   | 1M      | Security audit, nuanced analysis             |
+| `longctx`  | `gpt-5.4`          | Long context at moderate cost        | Medium | 1M      | Reading entire codebases, large files        |
+| `fast`     | `claude-haiku-4-5` | Speed + cost                         | Low    | 200k    | Inline completions, quick fixes, light review|
+| —          | `gpt-5.6-luna`     | Cheapest of the GPT-5.6 tier         | Low    | 1M      | High-frequency, low-complexity tasks         |
+| —          | `gemini-3.7-flash` | Fast multi-file analysis             | Low    | std     | Scanning many files at once                  |
+| —          | `mai-code-1.1-flash`| Low-cost completions                | Low    | std     | Inline completion alternative                |
+
+> **The GPT-5.6 tiers are durable names, not versions.** *Sol* is the flagship
+> (highest reasoning ceiling), *Terra* the balanced default (roughly GPT-5.5
+> performance at half the cost), and *Luna* the fastest and cheapest. The
+> number advances; the tier names stay.
+
+> **Two 2026 shifts that change how you route.**
+>
+> **1M context is a capability, not a tier.** It ships on nearly every frontier
+> model, but only in VS Code and Copilot CLI, and it costs more per request.
+> Leave `github.copilot.chat.largeContext.enabled` off and opt in per session.
+>
+> **Reasoning level is a dial.** Before escalating `code` → `thorough`, try
+> raising `github.copilot.chat.reasoningEffort` on the model you already have.
+> It is usually the cheaper way to buy depth.
+
+> **Retired models (verified 2026-08-17).** `o3`, `o4-mini`, `gpt-4.1`,
+> `gemini-2.5-pro`, and `gemini-2.0-flash` are gone from Copilot entirely.
+> Claude Sonnet 4.5/4.6 and Opus 4.5/4.6 retire **2026-09-01** (Sonnet 4.6
+> survives for individual annual subscribers). Full replacement table:
+> the `deprecated` block in `.github/model-compatibility.json`.
 
 ### Task → model routing table
 
 | Task                                        | Model               | Why                                           |
 | ------------------------------------------- | ------------------- | --------------------------------------------- |
-| Typing autocomplete                         | `o4-mini`           | Must be fast enough not to interrupt typing   |
-| `/review` — code review                     | `claude-sonnet-4-5` | Best code understanding + natural feedback    |
-| `/fix-issue` — bug fix                      | `claude-sonnet-4-5` | Reliable targeted edits, follows instructions |
-| `/deploy` — deployment checklist            | `gpt-4.1`           | Fast, structured CLI output                   |
-| `/architect` — system design                | `o3`                | Multi-step trade-off reasoning                |
-| `/security-scan` — security audit           | `claude-opus-4-5`   | Most thorough, catches subtle issues          |
-| `/document` — write docs                    | `claude-sonnet-4-5` | Natural prose + technical accuracy            |
-| `/explain-codebase` — understand large code | `gemini-2.5-pro`    | Only model that fits entire service           |
-| `/test-gen` — write tests                   | `claude-sonnet-4-5` | Best at realistic, idiomatic tests            |
-| Plan agent (planning phase)                 | `o3`                | Systematic planning and risk analysis         |
-| Implement agent (coding phase)              | `claude-sonnet-4-5` | Code generation at scale                      |
-| Review agent (final review)                 | `claude-opus-4-5`   | Maximum scrutiny before merge                 |
-| Code reviewer persona agent                 | `claude-sonnet-4-5` | Balanced speed + quality for back-and-forth   |
-| Security auditor persona agent              | `claude-opus-4-5`   | Most thorough for deep sessions               |
-| Architect persona agent                     | `o3`                | Extended reasoning conversations              |
-| DevOps persona agent                        | `gpt-4.1`           | Fast, reliable for command lookups            |
-| Large codebase reader persona agent         | `gemini-2.5-pro`    | 1M token window                               |
+| Typing autocomplete                         | `claude-haiku-4-5`           | Must be fast enough not to interrupt typing   |
+| `/review` — code review                     | `claude-sonnet-5` | Best code understanding + natural feedback    |
+| `/fix-issue` — bug fix                      | `claude-sonnet-5` | Reliable targeted edits, follows instructions |
+| `/deploy` — deployment checklist            | `gpt-5.6-terra`           | Fast, structured CLI output                   |
+| `/architect` — system design                | `gpt-5.6-sol`                | Multi-step trade-off reasoning                |
+| `/security-scan` — security audit           | `claude-opus-5`   | Most thorough, catches subtle issues          |
+| `/document` — write docs                    | `claude-sonnet-5` | Natural prose + technical accuracy            |
+| `/explain-codebase` — understand large code | `gpt-5.4`    | Only model that fits entire service           |
+| `/test-gen` — write tests                   | `claude-sonnet-5` | Best at realistic, idiomatic tests            |
+| Plan agent (planning phase)                 | `gpt-5.6-sol`                | Systematic planning and risk analysis         |
+| Implement agent (coding phase)              | `claude-sonnet-5` | Code generation at scale                      |
+| Review agent (final review)                 | `claude-opus-5`   | Maximum scrutiny before merge                 |
+| Code reviewer persona agent                 | `claude-sonnet-5` | Balanced speed + quality for back-and-forth   |
+| Security auditor persona agent              | `claude-opus-5`   | Most thorough for deep sessions               |
+| Architect persona agent                     | `gpt-5.6-sol`                | Extended reasoning conversations              |
+| DevOps persona agent                        | `gpt-5.6-terra`           | Fast, reliable for command lookups            |
+| Large codebase reader persona agent         | `gpt-5.4`    | 1M token window                               |
 
 ### How model selection works
 
 There are three mechanisms, in priority order:
 
 1. **Frontmatter `model:` field** — a prompt or agent file specifies the model explicitly.
-   This overrides everything. Example: `model: claude-opus-4-5` in `security-scan.prompt.md`.
+   This overrides everything. Example: `model: claude-opus-5` in `security-scan.prompt.md`.
 
 2. **Model picker selection** — whatever model you've selected in the VS Code chat panel.
    Used when no frontmatter model is set (skills, instructions, inline completions).
@@ -128,7 +183,7 @@ There are three mechanisms, in priority order:
 3. **Auto mode** — if you select "Auto" in the picker, Copilot dynamically chooses based
    on availability and your subscription. Gives a 10% premium request discount.
 
-> **Tip**: For everyday work, set your picker to `Auto`. Switch manually to `gemini-2.5-pro`
+> **Tip**: For everyday work, set your picker to `Auto`. Switch manually to `gpt-5.4`
 > only when you need to read large files. The slash commands and custom agents will override
 > your picker anyway.
 
@@ -145,14 +200,14 @@ your-project/
 ├── .github/
 │   │
 │   ├── prompts/                          ← SLASH COMMANDS. Type /name to invoke.
-│   │   ├── review.prompt.md             →  /review        [claude-sonnet-4-5]
-│   │   ├── fix-issue.prompt.md          →  /fix-issue      [claude-sonnet-4-5]
-│   │   ├── deploy.prompt.md             →  /deploy         [gpt-4.1]
-│   │   ├── architect.prompt.md          →  /architect      [o3]
-│   │   ├── security-scan.prompt.md      →  /security-scan  [claude-opus-4-5]
-│   │   ├── document.prompt.md           →  /document       [claude-sonnet-4-5]
-│   │   ├── explain-codebase.prompt.md   →  /explain-codebase [gemini-2.5-pro]
-│   │   ├── test-gen.prompt.md           →  /test-gen       [claude-sonnet-4-5]
+│   │   ├── review.prompt.md             →  /review        [claude-sonnet-5]
+│   │   ├── fix-issue.prompt.md          →  /fix-issue      [claude-sonnet-5]
+│   │   ├── deploy.prompt.md             →  /deploy         [gpt-5.6-terra]
+│   │   ├── architect.prompt.md          →  /architect      [gpt-5.6-sol]
+│   │   ├── security-scan.prompt.md      →  /security-scan  [claude-opus-5]
+│   │   ├── document.prompt.md           →  /document       [claude-sonnet-5]
+│   │   ├── explain-codebase.prompt.md   →  /explain-codebase [gpt-5.4]
+│   │   ├── test-gen.prompt.md           →  /test-gen       [claude-sonnet-5]
 │   │   └── [your-command].prompt.md     →  /your-command   [model of choice]
 │   │
 │   ├── instructions/                     ← AUTO-LOADED by file type. Always on for matches.
@@ -171,15 +226,15 @@ your-project/
 │   ├── agents/                           ← CUSTOM AGENTS. Two flavors share this dir:
 │   │   │                                    (a) TASK AGENTS — chain plan→implement→review
 │   │   │                                    (b) PERSONA AGENTS — formerly chatmodes
-│   │   ├── plan.agent.md                → model: o3              (task: reasoning)
-│   │   ├── implement.agent.md           → model: claude-sonnet-4-5 (task: coding)
-│   │   ├── review.agent.md              → model: claude-opus-4-5  (task: thorough review)
-│   │   ├── code-reviewer.agent.md       → model: claude-sonnet-4-5 (persona)
-│   │   ├── security-auditor.agent.md    → model: claude-opus-4-5  (persona)
-│   │   ├── architect.agent.md           → model: o3              (persona)
-│   │   ├── devops-assistant.agent.md    → model: gpt-4.1         (persona)
-│   │   ├── longcontext-reader.agent.md  → model: gemini-2.5-pro  (persona)
-│   │   ├── test-writer.agent.md         → model: claude-sonnet-4-5 (persona)
+│   │   ├── plan.agent.md                → model: gpt-5.6-sol              (task: reasoning)
+│   │   ├── implement.agent.md           → model: claude-sonnet-5 (task: coding)
+│   │   ├── review.agent.md              → model: claude-opus-5  (task: thorough review)
+│   │   ├── code-reviewer.agent.md       → model: claude-sonnet-5 (persona)
+│   │   ├── security-auditor.agent.md    → model: claude-opus-5  (persona)
+│   │   ├── architect.agent.md           → model: gpt-5.6-sol              (persona)
+│   │   ├── devops-assistant.agent.md    → model: gpt-5.6-terra         (persona)
+│   │   ├── longcontext-reader.agent.md  → model: gpt-5.4  (persona)
+│   │   ├── test-writer.agent.md         → model: claude-sonnet-5 (persona)
 │   │   └── ... (50+ specialist reviewer agents)
 │   │
 │   └── workflows/
@@ -258,12 +313,12 @@ Everyone on the team gets these defaults when they clone the repo.
 **Named model slots** (defined here, referenced in frontmatter):
 
 ```json
-"fast":      o4-mini           → speed, inline, boilerplate
-"reason":    o3                → architecture, planning, trade-offs
-"code":      claude-sonnet-4-5 → code quality, review, tests
-"thorough":  claude-opus-4-5   → security, deep analysis
-"longctx":   gemini-2.5-pro    → reading entire codebases
-"balanced":  gpt-4.1           → general tasks, DevOps
+"fast":      claude-haiku-4-5           → speed, inline, boilerplate
+"reason":    gpt-5.6-sol                → architecture, planning, trade-offs
+"code":      claude-sonnet-5 → code quality, review, tests
+"thorough":  claude-opus-5   → security, deep analysis
+"longctx":   gpt-5.4    → reading entire codebases
+"balanced":  gpt-5.6-terra           → general tasks, DevOps
 ```
 
 ---
@@ -323,7 +378,7 @@ to paste it. Tools are called automatically when relevant.
 
 ---
 
-### `.github/copilot-mcp-config.json` (cloud coding agent MCP)
+### `.github/copilot-mcp-config.json` (cloud agent MCP)
 
 **What it is**: MCP configuration for the **GitHub Copilot cloud coding
 agent** (the agent that picks up assigned issues on github.com). This is a
@@ -339,7 +394,7 @@ agent** (the agent that picks up assigned issues on github.com). This is a
 
 The committed file is a reference template — the actual configuration is
 applied through the repo's GitHub Settings UI.
-Reference: https://docs.github.com/en/copilot/customizing-copilot/extending-copilot-coding-agent-with-mcp
+Reference: https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/customize-cloud-agent/use-mcp
 
 ---
 
@@ -353,14 +408,31 @@ same toolchain without a setup wiki page.
 
 ---
 
-### `prompts/*.prompt.md`
+### `prompts/*.prompt.md` — ⚠️ LEGACY
+
+> **Migrate these to skills.** Prompt files run **only in the Local agent
+> harness**. Copilot CLI, the Copilot cloud agent, and any Agent Plugin express
+> slash commands as skills instead — so a `/command` that lives only as a
+> `.prompt.md` silently does not exist outside the IDE.
+>
+> Set `chat.customizations.promptMigration.enabled: true` and use the one-time
+> **Migrate Prompts** action in the AI Customizations overview. All ten prompt
+> files in this repo have been migrated to `.github/skills/<name>/SKILL.md` and
+> the originals deprecated (removal **2026-11-16**) — compare any pair to see
+> exactly what the conversion changes.
+>
+> The rest of this section documents the legacy format, which you still need in
+> order to read and migrate existing prompt files.
 
 **What they are**: Slash commands. Type `/review` in Copilot Chat → the
 `review.prompt.md` template loads and runs with the selected model.
 
 **How the model is selected**: The `model:` field in frontmatter. This overrides
-your active model picker. So `/architect` always uses `o3` even if you have
-`gpt-4.1` selected in the picker.
+your active model picker. So `/architect` always uses `gpt-5.6-sol` even if you have
+`gpt-5.6-terra` selected in the picker. Note that skills have **no `model:` field** —
+they are cross-tool, and a Copilot model id means nothing to another client. That
+is the one capability you give up in the migration; set the model with a custom
+agent or the picker instead.
 
 **Frontmatter fields**:
 
@@ -371,7 +443,7 @@ agent: ask # which chat agent runs the command. One of:
            #   agent  — autonomous mode, modifies files directly
            #   plan   — produces a plan only, no edits
            #   <custom-agent-name> — invokes an agent from .github/agents/
-model: o3 # which model to use for THIS command
+model: gpt-5.6-sol # which model to use for THIS command
 description: "..." # shown in the /command picker list
 ---
 ```
@@ -382,14 +454,14 @@ description: "..." # shown in the /command picker list
 **Slash commands in this setup**:
 | Command | Model | What it does |
 |---------|-------|-------------|
-| `/review` | claude-sonnet-4-5 | 5-lens code review (correctness/security/perf/style/tests) |
-| `/fix-issue` | claude-sonnet-4-5 | Root-cause diagnosis + targeted fix + test |
-| `/deploy` | gpt-4.1 | Full deployment checklist + Helm commands |
-| `/architect` | o3 | Trade-off analysis + ADR document |
-| `/security-scan` | claude-opus-4-5 | Threat model + OWASP audit |
-| `/document` | claude-sonnet-4-5 | Javadoc / GoDoc / docstrings generation |
-| `/explain-codebase` | gemini-2.5-pro | Explain large files using 1M token context |
-| `/test-gen` | claude-sonnet-4-5 | Generate comprehensive tests |
+| `/review` | claude-sonnet-5 | 5-lens code review (correctness/security/perf/style/tests) |
+| `/fix-issue` | claude-sonnet-5 | Root-cause diagnosis + targeted fix + test |
+| `/deploy` | gpt-5.6-terra | Full deployment checklist + Helm commands |
+| `/architect` | gpt-5.6-sol | Trade-off analysis + ADR document |
+| `/security-scan` | claude-opus-5 | Threat model + OWASP audit |
+| `/document` | claude-sonnet-5 | Javadoc / GoDoc / docstrings generation |
+| `/explain-codebase` | gpt-5.4 | Explain large files using 1M token context |
+| `/test-gen` | claude-sonnet-5 | Generate comprehensive tests |
 
 ---
 
@@ -466,8 +538,19 @@ context: inline                     # optional — `inline` (default) or `fork` 
 ```
 .github/skills/<name>/SKILL.md     ← project-scoped (committed, everyone uses)
 .claude/skills/<name>/SKILL.md     ← same spec, works with both Copilot and Claude Code
+.agents/skills/<name>/SKILL.md     ← tool-neutral project location
 ~/.copilot/skills/<name>/SKILL.md  ← personal, works across all your projects
+~/.claude/skills/<name>/SKILL.md   ← personal, shared with Claude Code
+~/.agents/skills/<name>/SKILL.md   ← personal, tool-neutral
 ```
+
+**`name:` must exactly match the directory name.** This is the single most
+common way a skill silently fails to load — and it is exactly what
+`plugin-manifest.sh` caught across 35 imported skills in this repo.
+
+**Skills are also slash commands.** With `user-invocable: true` (the default) a
+skill appears in the `/` menu, which is why they supersede prompt files rather
+than merely complementing them.
 
 **Settings key for discovery**: `chat.agentSkillsLocations` in `.vscode/settings.json`.
 
@@ -516,7 +599,7 @@ the optimal model for that work type.
 ```yaml
 ---
 name: plan # identifier used in handoffs:
-model: o3 # model for this agent's work
+model: gpt-5.6-sol # model for this agent's work
 tools: # what the agent can do
   - read_file
   - write_file
@@ -529,9 +612,9 @@ handoffs:
 **Agents in this setup**:
 | Agent | Model | Tools | Hands off to |
 |-------|-------|-------|-------------|
-| `plan` | o3 | Read-only | `implement` |
-| `implement` | claude-sonnet-4-5 | Read + Write + Terminal | `review` |
-| `review` | claude-opus-4-5 | Read-only | (terminal) |
+| `plan` | gpt-5.6-sol | Read-only | `implement` |
+| `implement` | claude-sonnet-5 | Read + Write + Terminal | `review` |
+| `review` | claude-opus-5 | Read-only | (terminal) |
 
 **When to use task agents vs persona agents** (both live in `agents/`):
 
@@ -564,7 +647,7 @@ once). Persona agents are persistent for extended back-and-forth.
 ---
 name: code-reviewer                 # required, kebab-case
 description: "What this persona does — shown in the picker"
-model: claude-opus-4-5              # model for all messages in this persona
+model: claude-opus-5              # model for all messages in this persona
 user-invocable: true                # default true; show in picker
 disable-model-invocation: false     # default false; if true, only user can invoke
 target: vscode                      # vscode | github-copilot
@@ -575,12 +658,12 @@ target: vscode                      # vscode | github-copilot
 **Persona agents in this setup**:
 | Agent | Model | Best for |
 |-------|-------|---------|
-| Code reviewer | claude-sonnet-4-5 | PR review, before pushing |
-| Security auditor | claude-opus-4-5 | Auth PRs, new endpoints, security review |
-| Architect | o3 | Design sessions, technology decisions |
-| DevOps assistant | gpt-4.1 | Deployment issues, infra debugging |
-| Large codebase reader | gemini-2.5-pro | Onboarding, understanding legacy code |
-| Test writer | claude-sonnet-4-5 | TDD, adding tests to existing code |
+| Code reviewer | claude-sonnet-5 | PR review, before pushing |
+| Security auditor | claude-opus-5 | Auth PRs, new endpoints, security review |
+| Architect | gpt-5.6-sol | Design sessions, technology decisions |
+| DevOps assistant | gpt-5.6-terra | Deployment issues, infra debugging |
+| Large codebase reader | gpt-5.4 | Onboarding, understanding legacy code |
+| Test writer | claude-sonnet-5 | TDD, adding tests to existing code |
 
 **Prerequisite**: `"chat.agentFilesLocations": { ".github/agents": true }` and `"chat.agent.enabled": true` in settings.json.
 
@@ -589,14 +672,14 @@ target: vscode                      # vscode | github-copilot
 ### `workflows/copilot-setup-steps.yml`
 
 **What it is**: A GitHub Actions workflow that bootstraps the environment for
-the Copilot _coding agent_ (the autonomous one that works on GitHub issues).
+the Copilot _cloud agent_ (the autonomous one that works on GitHub issues).
 
 **When it runs**: Automatically before the agent starts any assigned task.
 
 **What it installs**: Java 17, Maven (with Artifactory mirror), Go 1.22,
 golangci-lint, Python 3.11, OpenTofu, Helm, kubectl.
 
-**Why this matters**: Without this file, the coding agent would try to generate
+**Why this matters**: Without this file, the cloud agent would try to generate
 code it can't compile or test. With it, the agent has a full toolchain and can
 verify its own work.
 
@@ -622,11 +705,115 @@ doesn't rely on model behaviour — they're enforced at the workflow level.
 
 ---
 
+### `hooks/*.json` — the 14 lifecycle events
+
+**What they are**: Repo-scoped hooks in `.github/hooks/*.json` (personal ones in
+`~/.copilot/hooks/*.json`) that fire on agent lifecycle events. This is where
+policy, audit, and observability live.
+
+| Group | Events |
+| --- | --- |
+| Lifecycle | `sessionStart`, `sessionEnd`, `agentStop`, `subagentStart`, `subagentStop` |
+| Prompt | `userPromptSubmitted`, `userPromptTransformed` |
+| Tools | `preToolUse`, `postToolUse`, `postToolUseFailure`, `permissionRequest` |
+| Diagnostics | `preCompact`, `errorOccurred`, `notification` |
+
+**Hooks return structured JSON, not just exit codes.** The most important
+contract is `preToolUse`:
+
+```json
+{ "permissionDecision": "allow" }
+{ "permissionDecision": "ask",  "permissionDecisionReason": "why the human should look" }
+{ "permissionDecision": "deny", "permissionDecisionReason": "why this is blocked" }
+```
+
+Other events have their own shapes — `postToolUse` returns `modifiedResult` /
+`additionalContext`, `agentStop` returns `decision: block|allow`,
+`permissionRequest` returns `behavior: allow|deny`. See
+`.github/hooks/scripts/policy-gate.sh` for a working implementation.
+
+**Three hook types**: `command` (bash / powershell / cross-platform `command`),
+`http` (HTTPS POST of the payload), and `prompt` (auto-submitted text,
+`sessionStart` + CLI only).
+
+**Scope with `matcher`.** A regex against the tool name. Running a policy scan
+before every file read is wasted latency — scope the gate to shell and edit tools.
+
+**Failure modes you must design around:**
+
+- **Timeouts always fail OPEN.** A slow policy hook degrades to *no policy*.
+- **`preToolUse` command hooks fail CLOSED** on non-timeout errors — a crashing
+  gate blocks the agent entirely.
+- Output is capped at **10 MiB** per invocation.
+- On the **cloud agent** only `bash`/`command` are honoured, a subset of events
+  fire, and there is no user interactivity — so `ask` behaves as `deny` there.
+
+**Kill switch**: `"disableAllHooks": true` at the top of the file.
+
+---
+
+### `plugin.json` — Agent Plugins 1.0
+
+**What it is**: an open, vendor-neutral standard (August 2026; GitHub, AWS,
+Anysphere, Microsoft, OpenAI, Vercel, Google) for packaging **skills + MCP
+servers** into one installable unit that works across compatible agent clients.
+Build once, install in VS Code, Copilot CLI, and the Copilot app.
+
+```
+plugin-root/
+├── plugin.json                 ← manifest (CLOSED schema)
+├── skills/<name>/SKILL.md      ← portable
+├── mcp.json                    ← portable MCP servers
+└── com.github.copilot/         ← client extension namespace (reverse-domain)
+```
+
+In this repo, **`.github/` is the plugin root** — `.github/skills/` already sat
+exactly where the spec wants `skills/`.
+
+**The root manifest is a closed object.** Only these top-level fields are legal:
+
+```
+$schema  name  version  description  author
+homepage  repository  license  keywords  extensions
+```
+
+Adding `hooks`, `agents`, `commands`, or `mcpServers` at the top level makes the
+package invalid — and clients reject it **silently**. Client-specific data goes
+under `extensions["<reverse.domain>"]`, or in a matching top-level directory.
+`bash .github/eval/checks/plugin-manifest.sh` enforces this in CI.
+
+**`mcp.json`** uses the portable schema — `mcpServers` with `stdio`,
+`streamable-http`, or `sse` types. Note it has **no `tools:` allow-list**; that
+is a Copilot cloud-agent field, not part of the standard. `${PLUGIN_ROOT}` and
+`${PLUGIN_DATA}` expand in `args`, `env`, and `cwd` — **never in `command`**.
+
+**Testing a plugin locally**: register the root with
+`chat.pluginLocations: { ".github": true }` and VS Code loads it exactly as it
+would after a marketplace install.
+
+**Enterprise governance** lives in `managed-settings.json`:
+
+| Setting | Effect |
+| --- | --- |
+| `enabledPlugins` | `true` force-installs, `false` blocks |
+| `extraKnownMarketplaces` | Adds sources beyond Awesome Copilot |
+| `strictKnownMarketplaces` | Restricts installs to managed marketplaces — the setting that actually closes the gate |
+
+Worked example: [`docs/examples/managed-settings.json`](docs/examples/managed-settings.json).
+
+> **Caveat**: VS Code currently ignores client-extension data and directories in
+> Agent Plugins 1.0 packages — it loads `skills/` and `mcp.json` and nothing
+> else. The `extensions` block is forward-looking. Re-verify at
+> <https://agent-plugins.org/specification> before depending on it.
+
+---
+
 ## 5. Decision guide — what to use when
 
 ### "I want to do something once, right now"
 
-→ Use a **slash command** (`/review`, `/deploy`, `/fix-issue`)
+→ Use a **slash command** (`/review`, `/deploy`, `/fix-issue`) — which in 2026
+means a **skill** with `user-invocable: true`, not a prompt file
 
 ### "I want to have an extended conversation with an expert"
 
@@ -635,6 +822,16 @@ doesn't rely on model behaviour — they're enforced at the workflow level.
 ### "I want Copilot to understand how we do X in this project"
 
 → Add a **skill** (SKILL.md with a good description)
+
+### "I want this to keep working if we switch agent tools"
+
+→ Write it as a **skill**, and ship it in an **Agent Plugin**. Skills and MCP
+servers are the only things the cross-client standard covers.
+
+### "I want to block the agent from doing something dangerous"
+
+→ Add a **`preToolUse` hook** returning `permissionDecision: deny` (or `ask`).
+Instructions are advisory; hooks are enforced.
 
 ### "I want Copilot to follow rules when writing Java/Python/Go code"
 
@@ -646,7 +843,7 @@ doesn't rely on model behaviour — they're enforced at the workflow level.
 
 ### "I need to read and understand a huge codebase"
 
-→ Use the **Large codebase reader persona agent** (Gemini 2.5 Pro, 1M tokens)
+→ Use the **Large codebase reader persona agent** (GPT-5.4, 1M tokens)
 
 ### "I need to find a security vulnerability"
 
@@ -654,7 +851,7 @@ doesn't rely on model behaviour — they're enforced at the workflow level.
 
 ### "I'm designing a new system architecture"
 
-→ Use `/architect` or the **Architect persona agent** (o3, best reasoning)
+→ Use `/architect` or the **Architect persona agent** (gpt-5.6-sol, best reasoning)
 
 ### "I want these rules to apply across ALL my projects"
 
@@ -666,20 +863,47 @@ doesn't rely on model behaviour — they're enforced at the workflow level.
 
 ### Adding a new slash command
 
-Create `.github/prompts/my-command.prompt.md`:
+**Write it as a skill.** Skills are invocable as `/name`, work in every harness,
+and travel inside an Agent Plugin. Prompt files do none of that.
+
+Create `.github/skills/my-command/SKILL.md` — the directory name **is** the
+command name, and `name:` must match it exactly:
 
 ```markdown
 ---
-agent: ask                   # or: agent (modifies files), plan, or a custom agent name
-model: claude-sonnet-4-5     # pick the best model for this task
-description: "What /my-command does — shown in the picker"
+name: my-command
+description: >
+  What this does and when to use it, written as search keywords — this is the
+  only text Copilot reads when deciding whether to load the skill.
+argument-hint: "<what to pass>"
 ---
 
-Your prompt instructions here.
+Your instructions here.
 Tell Copilot exactly what to do when this command is invoked.
 ```
 
 The command is immediately available as `/my-command`.
+
+<details>
+<summary>Legacy: the same thing as a prompt file</summary>
+
+Only for maintaining existing `.prompt.md` files — do not write new ones.
+They run in the Local agent harness only.
+
+```markdown
+---
+agent: ask                 # or: agent (modifies files), plan, or a custom agent name
+model: claude-sonnet-5     # pick the best model for this task
+description: "What /my-command does — shown in the picker"
+---
+
+Your prompt instructions here.
+```
+
+The one thing prompt files can do that skills cannot is pin `model:`. Use a
+custom agent for that instead.
+
+</details>
 
 ### Adding a new skill
 
@@ -709,7 +933,7 @@ Create `.github/agents/my-persona.agent.md`:
 ---
 name: my-persona
 description: "My persona — what it does — shown in agent picker"
-model: o3
+model: gpt-5.6-sol
 user-invocable: true
 target: vscode
 ---
@@ -773,9 +997,9 @@ Or committed to a central config repo and referenced via
 
 Some models cost more than 1× the base request rate. Current multipliers:
 
-- `o3`, `claude-opus-4-5`, `gemini-2.5-pro` → higher multiplier (check GitHub docs)
-- `o4-mini`, `claude-haiku-4-5`, `gemini-2.0-flash` → 1× or close
-- `gpt-4.1` → check current docs
+- `gpt-5.6-sol`, `claude-opus-5`, `gpt-5.4` → higher multiplier (check GitHub docs)
+- `claude-haiku-4-5`, `claude-haiku-4-5`, `gemini-3.7-flash` → 1× or close
+- `gpt-5.6-terra` → check current docs
 
 **Use "Auto" mode** for a 10% discount on premium requests and automatic
 model selection based on availability.
@@ -810,12 +1034,16 @@ named slots (referenced in `settings.json`), and fallback behavior.
 
 PRs touching Copilot assets trigger `.github/workflows/copilot-eval.yml`, which runs:
 
-| Check              | What it validates                                       |
-| ------------------ | ------------------------------------------------------- |
-| `naming.sh`        | Kebab-case file names, correct extensions               |
-| `frontmatter.sh`   | Required YAML frontmatter fields per asset type         |
-| `model-refs.sh`    | Model names exist in the compatibility matrix           |
-| `manifest-sync.sh` | Every manifest path exists on disk; no untracked assets |
+| Check                 | What it validates                                       |
+| --------------------- | ------------------------------------------------------- |
+| `naming.sh`           | Kebab-case file names, correct extensions               |
+| `frontmatter.sh`      | Required YAML frontmatter fields per asset type         |
+| `model-refs.sh`       | Model names exist in the compatibility matrix           |
+| `manifest-sync.sh`    | Every manifest path exists on disk; no untracked assets |
+| `governance.sh`       | Owner, classification, and description on every entry   |
+| `doc-consistency.sh`  | Stale path references, conflicting guidance (warn-only) |
+| `deprecation.sh`      | Deprecated assets have dates and a ≥60-day grace period |
+| `plugin-manifest.sh`  | Agent Plugins 1.0: closed manifest fields, skill `name` matches its directory, MCP server schema |
 
 All deterministic checks must pass (100%). Rubric-based behavioral checks will be
 added in Phase 2 with a ≥80% pass threshold.

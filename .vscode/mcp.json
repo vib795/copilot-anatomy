@@ -25,7 +25,7 @@
   //   headers          — for http/sse/streamable-http server types
   //
   // NOTE: This file is for the IN-IDE Copilot agent. The cloud GitHub
-  //       coding agent uses a DIFFERENT schema with top-level `mcpServers`
+  //       cloud agent uses a DIFFERENT schema with top-level `mcpServers`
   //       and a mandatory per-server `tools:` allow-list — see
   //       .github/copilot-mcp-config.json for that example.
 

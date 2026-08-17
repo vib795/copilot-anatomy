@@ -2,17 +2,17 @@
 # ─────────────────────────────────────────────────────────────────────────────
 # PURPOSE: PR-time policy gates. Runs the same scripts that
 #          `.github/hooks/copilot-hooks.json` invokes locally during
-#          coding-agent sessions, so the policies are enforced both
+#          cloud-agent sessions, so the policies are enforced both
 #          interactively (locally) and in CI (here).
 #
 # IMPORTANT — DEPRECATED TRIGGERS REMOVED:
 #   Earlier revisions of this file used `on: copilot_pre_action` /
 #   `copilot_post_action`. Those triggers DO NOT EXIST in GitHub Actions.
-#   The real Copilot coding-agent hook mechanism lives in
+#   The real Copilot cloud-agent hook mechanism lives in
 #   `.github/hooks/<name>/hooks.json` with the six events:
 #     sessionStart, sessionEnd, userPromptSubmitted,
 #     preToolUse, postToolUse, errorOccurred
-#   See: https://docs.github.com/en/copilot/how-tos/use-copilot-agents/coding-agent/use-hooks
+#   See: https://docs.github.com/en/copilot/reference/hooks-reference
 #
 #   This workflow is the CI mirror of those policies. The local hook config
 #   is the canonical source; this file ensures PR reviewers see the same

@@ -16,13 +16,13 @@ artefacts in JFrog Artifactory.
 
 We have access to all major model families. Use the right tool:
 
-- **o3** → architecture decisions, complex reasoning, planning
-- **o4-mini** → fast completions, boilerplate, quick fixes
-- **gpt-4.1** → general-purpose, DevOps commands, balanced tasks
-- **claude-sonnet-4-5** → code generation, review, documentation, tests
-- **claude-opus-4-5** → security audits, thorough review, nuanced analysis
-- **gemini-2.5-pro** → reading large files or entire codebases (1M token context)
-- **gemini-2.0-flash** → fast analysis of many files simultaneously
+- **gpt-5.6-sol** → architecture decisions, complex reasoning, planning
+- **claude-haiku-4-5** → fast completions, boilerplate, quick fixes
+- **gpt-5.6-terra** → general-purpose, DevOps commands, balanced tasks
+- **claude-sonnet-5** → code generation, review, documentation, tests
+- **claude-opus-5** → security audits, thorough review, nuanced analysis
+- **gpt-5.4** → reading large files or entire codebases (1M token context)
+- **gemini-3.7-flash** → fast analysis of many files simultaneously
 
 Use `/review`, `/fix-issue`, `/deploy`, `/architect`, `/security-scan` for
 guided workflows. Type `/skills list` to see available skills.

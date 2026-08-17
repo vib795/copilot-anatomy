@@ -1,12 +1,20 @@
 ---
 agent: agent
-model: claude-opus-4-5
+model: claude-opus-5
 description: "Wave 2 weeks 1-2 capstone: end-to-end delivery scenario using chained agents, shared context, and cross-persona handoffs"
 ---
 
+> [!WARNING]
+> **DEPRECATED (2026-08-17) — removal 2026-11-16.** Prompt files run only in the
+> Local agent harness. Copilot CLI, the Copilot cloud agent, and Agent Plugins
+> express slash commands as **skills**. This command now lives at
+> `.github/skills/wave2-capstone-delivery/SKILL.md`; edit that file, not this one.
+> See `.github/GOVERNANCE.md` → "Deprecating an asset".
+
+
 <!--
   SLASH COMMAND: /wave2-capstone-delivery
-  MODEL: claude-opus-4-5 — thorough multi-step orchestration across a long scenario
+  MODEL: claude-opus-5 — thorough multi-step orchestration across a long scenario
   AGENT: agent — the capstone requires file edits, chained handoffs, and validation runs
 -->
 

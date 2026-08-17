@@ -1,6 +1,6 @@
 {
   "$schema": ".github/eval/manifest-schema.json",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "generated": false,
   "description": "Single source of truth for shipped Copilot assets. Each entry declares ownership, classification, and generated-vs-committed status.",
   "assets": {
@@ -54,8 +54,13 @@
         "classification": "core",
         "generated": true,
         "generatedBy": "copilot-setup.sh",
-        "model": "claude-sonnet-4-5",
-        "description": "Code review slash command"
+        "model": "claude-sonnet-5",
+        "description": "Code review slash command",
+        "deprecated": true,
+        "deprecationDate": "2026-08-17",
+        "removalDate": "2026-11-16",
+        "supersededBy": ".github/skills/review/SKILL.md",
+        "deprecationReason": "Prompt files run only in the Local agent harness. Copilot CLI, the cloud agent, and Agent Plugins express slash commands as skills."
       },
       "fix-issue": {
         "path": ".github/prompts/fix-issue.prompt.md",
@@ -63,8 +68,13 @@
         "classification": "core",
         "generated": true,
         "generatedBy": "copilot-setup.sh",
-        "model": "claude-sonnet-4-5",
-        "description": "Bug fix slash command"
+        "model": "claude-sonnet-5",
+        "description": "Bug fix slash command",
+        "deprecated": true,
+        "deprecationDate": "2026-08-17",
+        "removalDate": "2026-11-16",
+        "supersededBy": ".github/skills/fix-issue/SKILL.md",
+        "deprecationReason": "Prompt files run only in the Local agent harness. Copilot CLI, the cloud agent, and Agent Plugins express slash commands as skills."
       },
       "deploy": {
         "path": ".github/prompts/deploy.prompt.md",
@@ -72,8 +82,13 @@
         "classification": "core",
         "generated": true,
         "generatedBy": "copilot-setup.sh",
-        "model": "gpt-4.1",
-        "description": "Deployment checklist slash command"
+        "model": "gpt-5.6-terra",
+        "description": "Deployment checklist slash command",
+        "deprecated": true,
+        "deprecationDate": "2026-08-17",
+        "removalDate": "2026-11-16",
+        "supersededBy": ".github/skills/deploy/SKILL.md",
+        "deprecationReason": "Prompt files run only in the Local agent harness. Copilot CLI, the cloud agent, and Agent Plugins express slash commands as skills."
       },
       "architect": {
         "path": ".github/prompts/architect.prompt.md",
@@ -81,8 +96,13 @@
         "classification": "core",
         "generated": true,
         "generatedBy": "copilot-setup.sh",
-        "model": "o3",
-        "description": "Architecture design slash command"
+        "model": "gpt-5.6-sol",
+        "description": "Architecture design slash command",
+        "deprecated": true,
+        "deprecationDate": "2026-08-17",
+        "removalDate": "2026-11-16",
+        "supersededBy": ".github/skills/architect/SKILL.md",
+        "deprecationReason": "Prompt files run only in the Local agent harness. Copilot CLI, the cloud agent, and Agent Plugins express slash commands as skills."
       },
       "security-scan": {
         "path": ".github/prompts/security-scan.prompt.md",
@@ -90,8 +110,13 @@
         "classification": "core",
         "generated": true,
         "generatedBy": "copilot-setup.sh",
-        "model": "claude-opus-4-5",
-        "description": "Security audit slash command"
+        "model": "claude-opus-5",
+        "description": "Security audit slash command",
+        "deprecated": true,
+        "deprecationDate": "2026-08-17",
+        "removalDate": "2026-11-16",
+        "supersededBy": ".github/skills/security-scan/SKILL.md",
+        "deprecationReason": "Prompt files run only in the Local agent harness. Copilot CLI, the cloud agent, and Agent Plugins express slash commands as skills."
       },
       "document": {
         "path": ".github/prompts/document.prompt.md",
@@ -99,8 +124,13 @@
         "classification": "core",
         "generated": true,
         "generatedBy": "copilot-setup.sh",
-        "model": "claude-sonnet-4-5",
-        "description": "Documentation generation slash command"
+        "model": "claude-sonnet-5",
+        "description": "Documentation generation slash command",
+        "deprecated": true,
+        "deprecationDate": "2026-08-17",
+        "removalDate": "2026-11-16",
+        "supersededBy": ".github/skills/document/SKILL.md",
+        "deprecationReason": "Prompt files run only in the Local agent harness. Copilot CLI, the cloud agent, and Agent Plugins express slash commands as skills."
       },
       "explain-codebase": {
         "path": ".github/prompts/explain-codebase.prompt.md",
@@ -108,8 +138,13 @@
         "classification": "core",
         "generated": true,
         "generatedBy": "copilot-setup.sh",
-        "model": "gemini-2.5-pro",
-        "description": "Large codebase explanation slash command"
+        "model": "gpt-5.4",
+        "description": "Large codebase explanation slash command",
+        "deprecated": true,
+        "deprecationDate": "2026-08-17",
+        "removalDate": "2026-11-16",
+        "supersededBy": ".github/skills/explain-codebase/SKILL.md",
+        "deprecationReason": "Prompt files run only in the Local agent harness. Copilot CLI, the cloud agent, and Agent Plugins express slash commands as skills."
       },
       "test-gen": {
         "path": ".github/prompts/test-gen.prompt.md",
@@ -117,24 +152,39 @@
         "classification": "core",
         "generated": true,
         "generatedBy": "copilot-setup.sh",
-        "model": "claude-sonnet-4-5",
-        "description": "Test generation slash command"
+        "model": "claude-sonnet-5",
+        "description": "Test generation slash command",
+        "deprecated": true,
+        "deprecationDate": "2026-08-17",
+        "removalDate": "2026-11-16",
+        "supersededBy": ".github/skills/test-gen/SKILL.md",
+        "deprecationReason": "Prompt files run only in the Local agent harness. Copilot CLI, the cloud agent, and Agent Plugins express slash commands as skills."
       },
       "wave2-capstone-delivery": {
         "path": ".github/prompts/wave2-capstone-delivery.prompt.md",
         "owner": "platform-team",
         "classification": "extension",
         "generated": false,
-        "model": "claude-opus-4-5",
-        "description": "Wave 2 weeks 1-2 capstone: end-to-end delivery scenario using chained agents, shared context, and cross-persona handoffs"
+        "model": "claude-opus-5",
+        "description": "Wave 2 weeks 1-2 capstone: end-to-end delivery scenario using chained agents, shared context, and cross-persona handoffs",
+        "deprecated": true,
+        "deprecationDate": "2026-08-17",
+        "removalDate": "2026-11-16",
+        "supersededBy": ".github/skills/wave2-capstone-delivery/SKILL.md",
+        "deprecationReason": "Prompt files run only in the Local agent harness. Copilot CLI, the cloud agent, and Agent Plugins express slash commands as skills."
       },
       "wave2-capstone-accelerator": {
         "path": ".github/prompts/wave2-capstone-accelerator.prompt.md",
         "owner": "platform-team",
         "classification": "extension",
         "generated": false,
-        "model": "claude-opus-4-5",
-        "description": "Wave 2 weeks 3-4 capstone hackathon: build a reusable, governance-clean accelerator that solves a real delivery problem"
+        "model": "claude-opus-5",
+        "description": "Wave 2 weeks 3-4 capstone hackathon: build a reusable, governance-clean accelerator that solves a real delivery problem",
+        "deprecated": true,
+        "deprecationDate": "2026-08-17",
+        "removalDate": "2026-11-16",
+        "supersededBy": ".github/skills/wave2-capstone-accelerator/SKILL.md",
+        "deprecationReason": "Prompt files run only in the Local agent harness. Copilot CLI, the cloud agent, and Agent Plugins express slash commands as skills."
       }
     },
     "skills": {
@@ -238,7 +288,7 @@
         "owner": "platform-team",
         "classification": "extension",
         "generated": false,
-        "description": "Optimize Claude Code permissions by finding safe Bash commands from session history and auto-applying them to settings.json. Can run from any coding agent but targets Claude Code specifically. Use when experiencing permission fatigue, too many permission prompts, wanting to optimize permissions, or needing to set up allowlists. Triggers on \"optimize permissions\", \"reduce permission prompts\", \"allowlist commands\", \"too many permiss"
+        "description": "Optimize Claude Code permissions by finding safe Bash commands from session history and auto-applying them to settings.json. Can run from any cloud agent but targets Claude Code specifically. Use when experiencing permission fatigue, too many permission prompts, wanting to optimize permissions, or needing to set up allowlists. Triggers on \"optimize permissions\", \"reduce permission prompts\", \"allowlist commands\", \"too many permiss"
       },
       "deepen-plan": {
         "path": ".github/skills/deepen-plan/SKILL.md",
@@ -553,7 +603,7 @@
         "owner": "platform-team",
         "classification": "extension",
         "generated": false,
-        "description": "Autonomous Ralph Wiggum Loop \u2014 iterative task execution with fresh context, filesystem memory, and git versioning"
+        "description": "Autonomous Ralph Wiggum Loop — iterative task execution with fresh context, filesystem memory, and git versioning"
       },
       "resolve_todo_parallel": {
         "path": ".github/skills/resolve_todo_parallel/SKILL.md",
@@ -567,7 +617,7 @@
         "owner": "platform-team",
         "classification": "extension",
         "generated": false,
-        "description": "Configure project-level settings for compound-engineering workflows. Currently a placeholder \u2014 review agent selection is handled automatically by ce-review."
+        "description": "Configure project-level settings for compound-engineering workflows. Currently a placeholder — review agent selection is handled automatically by ce-review."
       },
       "slfg": {
         "path": ".github/skills/slfg/SKILL.md",
@@ -644,7 +694,7 @@
         "owner": "platform-team",
         "classification": "extension",
         "generated": false,
-        "description": "Wave 2 lab (wk3-4, d5-6): team AI standards \u2014 naming conventions, shared agent catalog with ownership, review process, quality gates"
+        "description": "Wave 2 lab (wk3-4, d5-6): team AI standards — naming conventions, shared agent catalog with ownership, review process, quality gates"
       },
       "wave2-ai-estimation-planning": {
         "path": ".github/skills/wave2-ai-estimation-planning/SKILL.md",
@@ -658,7 +708,77 @@
         "owner": "platform-team",
         "classification": "extension",
         "generated": false,
-        "description": "Wave 2 lab (wk3-4, d9-10): cohort assembles its AI Delivery Playbook \u2014 task routing, standard agents, review process, impact tracking"
+        "description": "Wave 2 lab (wk3-4, d9-10): cohort assembles its AI Delivery Playbook — task routing, standard agents, review process, impact tracking"
+      },
+      "architect": {
+        "path": ".github/skills/architect/SKILL.md",
+        "owner": "platform-team",
+        "classification": "core",
+        "generated": false,
+        "description": "Architecture and ADR skill — system design, trade-off analysis (migrated from architect.prompt.md)"
+      },
+      "deploy": {
+        "path": ".github/skills/deploy/SKILL.md",
+        "owner": "platform-team",
+        "classification": "core",
+        "generated": false,
+        "description": "Deployment checklist and Helm/kubectl/Terraform command skill (migrated from deploy.prompt.md)"
+      },
+      "document": {
+        "path": ".github/skills/document/SKILL.md",
+        "owner": "platform-team",
+        "classification": "core",
+        "generated": false,
+        "description": "Documentation authoring skill — README, API docs, docstrings (migrated from document.prompt.md)"
+      },
+      "explain-codebase": {
+        "path": ".github/skills/explain-codebase/SKILL.md",
+        "owner": "platform-team",
+        "classification": "core",
+        "generated": false,
+        "description": "Long-context codebase explanation skill, runs forked (migrated from explain-codebase.prompt.md)"
+      },
+      "fix-issue": {
+        "path": ".github/skills/fix-issue/SKILL.md",
+        "owner": "platform-team",
+        "classification": "core",
+        "generated": false,
+        "description": "Root-cause diagnosis and bug fix skill (migrated from fix-issue.prompt.md)"
+      },
+      "review": {
+        "path": ".github/skills/review/SKILL.md",
+        "owner": "platform-team",
+        "classification": "core",
+        "generated": false,
+        "description": "Code review skill — correctness, security, performance, tests (migrated from review.prompt.md)"
+      },
+      "security-scan": {
+        "path": ".github/skills/security-scan/SKILL.md",
+        "owner": "platform-team",
+        "classification": "core",
+        "generated": false,
+        "description": "Security audit skill — threat model, OWASP, CVE patterns, runs forked (migrated from security-scan.prompt.md)"
+      },
+      "test-gen": {
+        "path": ".github/skills/test-gen/SKILL.md",
+        "owner": "platform-team",
+        "classification": "core",
+        "generated": false,
+        "description": "Test generation skill following project conventions (migrated from test-gen.prompt.md)"
+      },
+      "wave2-capstone-accelerator": {
+        "path": ".github/skills/wave2-capstone-accelerator/SKILL.md",
+        "owner": "platform-team",
+        "classification": "core",
+        "generated": false,
+        "description": "Wave 2 weeks 3-4 capstone hackathon skill — build a reusable accelerator"
+      },
+      "wave2-capstone-delivery": {
+        "path": ".github/skills/wave2-capstone-delivery/SKILL.md",
+        "owner": "platform-team",
+        "classification": "core",
+        "generated": false,
+        "description": "Wave 2 weeks 1-2 capstone skill — end-to-end chained-agent delivery scenario"
       }
     },
     "agents": {
@@ -668,7 +788,7 @@
         "classification": "core",
         "generated": true,
         "generatedBy": "copilot-setup.sh",
-        "model": "o3",
+        "model": "gpt-5.6-sol",
         "description": "Planning agent for implementation plans"
       },
       "implement": {
@@ -677,7 +797,7 @@
         "classification": "core",
         "generated": true,
         "generatedBy": "copilot-setup.sh",
-        "model": "claude-sonnet-4-5",
+        "model": "claude-sonnet-5",
         "description": "Implementation agent for code changes"
       },
       "review": {
@@ -686,7 +806,7 @@
         "classification": "core",
         "generated": true,
         "generatedBy": "copilot-setup.sh",
-        "model": "claude-opus-4-5",
+        "model": "claude-opus-5",
         "description": "Review agent for PR review"
       },
       "adversarial-document-reviewer": {
@@ -1045,7 +1165,7 @@
         "classification": "core",
         "generated": true,
         "generatedBy": "copilot-setup.sh",
-        "model": "o3",
+        "model": "gpt-5.6-sol",
         "description": "Architecture discussion persona (migrated from .chatmode.md May 2026)"
       },
       "code-reviewer": {
@@ -1054,7 +1174,7 @@
         "classification": "core",
         "generated": true,
         "generatedBy": "copilot-setup.sh",
-        "model": "claude-sonnet-4-5",
+        "model": "claude-sonnet-5",
         "description": "Code review discussion persona (migrated from .chatmode.md May 2026)"
       },
       "devops-assistant": {
@@ -1063,7 +1183,7 @@
         "classification": "core",
         "generated": true,
         "generatedBy": "copilot-setup.sh",
-        "model": "gpt-4.1",
+        "model": "gpt-5.6-terra",
         "description": "DevOps operations persona (migrated from .chatmode.md May 2026)"
       },
       "longcontext-reader": {
@@ -1072,7 +1192,7 @@
         "classification": "core",
         "generated": true,
         "generatedBy": "copilot-setup.sh",
-        "model": "gemini-2.5-pro",
+        "model": "gpt-5.4",
         "description": "Large codebase reading persona (migrated from .chatmode.md May 2026)"
       },
       "security-auditor": {
@@ -1081,7 +1201,7 @@
         "classification": "core",
         "generated": true,
         "generatedBy": "copilot-setup.sh",
-        "model": "claude-opus-4-5",
+        "model": "claude-opus-5",
         "description": "Security audit discussion persona (migrated from .chatmode.md May 2026)"
       },
       "test-writer": {
@@ -1090,7 +1210,7 @@
         "classification": "core",
         "generated": true,
         "generatedBy": "copilot-setup.sh",
-        "model": "claude-sonnet-4-5",
+        "model": "claude-sonnet-5",
         "description": "Test writing discussion persona (migrated from .chatmode.md May 2026)"
       }
     },
@@ -1150,6 +1270,27 @@
         "classification": "core",
         "generated": false,
         "description": "Three-tier MCP least-privilege profiles (read-only, standard, elevated)"
+      },
+      "agent-plugin-manifest": {
+        "path": ".github/plugin.json",
+        "owner": "platform-team",
+        "classification": "core",
+        "generated": false,
+        "description": "Agent Plugins 1.0 manifest — packages this repo as a portable, installable plugin"
+      },
+      "agent-plugin-mcp": {
+        "path": ".github/mcp.json",
+        "owner": "platform-team",
+        "classification": "core",
+        "generated": false,
+        "description": "Portable Agent Plugins 1.0 MCP server configuration (spec schema, no tools allow-list)"
+      },
+      "agent-plugin-namespace": {
+        "path": ".github/com.github.copilot/README.md",
+        "owner": "platform-team",
+        "classification": "extension",
+        "generated": false,
+        "description": "Copilot client extension namespace for the Agent Plugins package"
       }
     },
     "eval-checks": {
@@ -1201,6 +1342,13 @@
         "classification": "core",
         "generated": false,
         "description": "Enforces deprecation lifecycle with 60-day minimum grace period"
+      },
+      "plugin-manifest": {
+        "path": ".github/eval/checks/plugin-manifest.sh",
+        "owner": "platform-team",
+        "classification": "core",
+        "generated": false,
+        "description": "Validates the Agent Plugins 1.0 package: closed manifest fields, skill name/dir match, MCP schema"
       }
     },
     "policy-checks": {
@@ -1224,6 +1372,13 @@
         "classification": "core",
         "generated": false,
         "description": "Warn-only scan for secrets in Dockerfiles, API keys, private keys"
+      },
+      "policy-gate": {
+        "path": ".github/hooks/scripts/policy-gate.sh",
+        "owner": "security-team",
+        "classification": "core",
+        "generated": false,
+        "description": "preToolUse gate emitting a structured permissionDecision (allow/ask/deny)"
       }
     }
   },

@@ -9,6 +9,36 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+#### 2026-08 Copilot platform refresh
+
+- **Agent Plugins 1.0 packaging** — `.github/` now doubles as an Agent Plugin root.
+  - `.github/plugin.json` — spec manifest (closed schema; Copilot-specific paths declared under `extensions["com.github.copilot"]`).
+  - `.github/mcp.json` — portable MCP server config using the spec schema (no `tools:` allow-list, which is a cloud-agent-only field).
+  - `.github/com.github.copilot/README.md` — documents the client extension namespace and why the Copilot-specific assets stay at their canonical `.github/` paths rather than moving into it.
+  - `.vscode/settings.json` — `chat.pluginLocations` registers the plugin root so VS Code loads it as it would after a marketplace install.
+  - `docs/examples/managed-settings.json` — enterprise governance reference: `enabledPlugins`, `extraKnownMarketplaces`, `strictKnownMarketplaces`, MCP allowlist, model allowlist, and administrator policy hooks.
+- `.github/eval/checks/plugin-manifest.sh` — eighth eval check. Validates the closed top-level field set, the `name` pattern, that every skill's `name` matches its directory, and the MCP server schema (including that `${PLUGIN_ROOT}`/`${PLUGIN_DATA}` are never used in `command`). Wired into `copilot-eval.yml`.
+- **Ten prompt files migrated to skills** — `architect`, `deploy`, `document`, `explain-codebase`, `fix-issue`, `review`, `security-scan`, `test-gen`, `wave2-capstone-accelerator`, `wave2-capstone-delivery` now exist as `.github/skills/<name>/SKILL.md`. `explain-codebase` and `security-scan` run with `context: fork`. Skills carry no `model:` field (they are cross-tool); the recommended model is stated in the body instead.
+- `.github/hooks/scripts/policy-gate.sh` — `preToolUse` gate emitting the structured `permissionDecision` contract (`allow` / `ask` / `deny`) instead of relying on exit codes. Escalates to `ask` by default; `COPILOT_POLICY_ESCALATE_TO=deny` makes it a hard gate.
+- `.github/hooks/copilot-hooks.json` — four more events wired (`postToolUseFailure`, `subagentStart`, `subagentStop`, `preCompact`), plus a `matcher` scoping the policy gate to shell/edit tools and a `disableAllHooks` kill switch. Header now documents all **14** supported events, the three hook types (`command`/`http`/`prompt`), the fail-open/fail-closed rules, and cloud-agent constraints.
+- `.vscode/settings.json` — `github.copilot.chat.reasoningEffort` and `github.copilot.chat.largeContext.enabled`, reflecting that reasoning level and 1M context are now per-model capabilities rather than model tiers. Also `chat.customizations.promptMigration.enabled` for the built-in prompt→skill migration action.
+- `COPILOT-CHEATSHEET.md` — new sections: `AGENTS.md` as the cross-tool standard (nested files, `@path` includes, `excludeAgent`), the 14 hook events with their output contracts, and Agent Plugins 1.0.
+
+### Changed
+
+- **Model roster refreshed against Copilot's supported-models reference (verified 2026-08-17)** across 28 files. `o3` → `gpt-5.6-sol`, `o4-mini` → `claude-haiku-4-5`, `gpt-4.1` → `gpt-5.6-terra`, `gemini-2.5-pro` → `gpt-5.4`, `gemini-2.0-flash` → `gemini-3.7-flash`, `claude-sonnet-4-5` → `claude-sonnet-5`, `claude-opus-4-5` → `claude-opus-5`. Every previously-routed model had been retired by GitHub, and Claude Sonnet 4.5/4.6 and Opus 4.5/4.6 retire 2026-09-01.
+- `.github/model-compatibility.json` → v2.0.0 — adds `lastVerified`, `sourceOfTruth`, `capabilityNotes`, and a `deprecated` block (`retired` + `scheduled`) with `replaceWith` values so `model-refs.sh` failures are self-explaining.
+- **"Copilot coding agent" → "Copilot cloud agent"** across 69 files, following GitHub's April 2026 rename. Stale `use-copilot-agents/coding-agent/*` and `customizing-copilot/extending-copilot-coding-agent-with-mcp` doc URLs repointed.
+- **Fixed `name:` on 35 skills** (`gstack-*`) whose frontmatter name did not match its directory — an Agent Skills spec violation that prevents reliable loading, and which collided with the newly migrated `review` skill. Found by the new `plugin-manifest.sh`.
+- `.github/GOVERNANCE.md` — checklist now requires new slash commands to be authored as skills, requires `name` to match the skill directory, adds a plugin-validity gate, and adds a "Keeping the model roster current" section with a quarterly re-verification cadence.
+- `README.md` / `COPILOT-CHEATSHEET.md` — primitive tables gain a **Portable** column distinguishing the cross-client standard (skills, MCP, `AGENTS.md`, plugins) from Copilot-specific primitives.
+
+### Deprecated
+
+- **All 10 `.github/prompts/*.prompt.md` files** — deprecated 2026-08-17, removal 2026-11-16 (91-day grace period). Prompt files are supported only in the Local agent harness; Copilot CLI, the cloud agent, and Agent Plugins express slash commands as skills. Each file carries an in-file deprecation banner and a `supersededBy` pointer in the manifest. The directory is retained so the legacy format stays documented and comparable.
+
+### Previously
+
 - Wave 2 curriculum (10 lab skills + 2 capstone prompts) — "From Individual Proficiency → Delivery-Integrated, Team-Scale AI Execution", imported from the Wave 2 Proposed Curriculum sheet. Ten `wave2-*` skill directories under `.github/skills/` — weeks 1–2 (Advanced Agent Building & Multi-Step Workflows): chaining-agents, context-engineering, guardrails-error-recovery, cross-persona-collaboration, impact-tracking; weeks 3–4 (Delivery Integration & Reusable Assets): embedding-ai-project, reusable-accelerators, team-standards-agent-library, ai-estimation-planning, ai-delivery-playbook. Persona-specific labs carry `ba-track.md` / `dev-track.md` / `qa-track.md` alongside `SKILL.md`.
 - `.github/prompts/wave2-capstone-delivery.prompt.md` — weeks 1–2 capstone: end-to-end delivery scenario with chained agents and cross-persona handoffs (`/wave2-capstone-delivery`).
 - `.github/prompts/wave2-capstone-accelerator.prompt.md` — weeks 3–4 capstone hackathon: build a governance-clean reusable accelerator, judged on evidence, reusability, governance, and craft (`/wave2-capstone-accelerator`).

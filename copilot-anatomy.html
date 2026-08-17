@@ -29,12 +29,12 @@
   --red:     #f85149; --red-bg:   #3d0f0f; --red-dim:   #220808;
   --coral:   #ff7b72; --coral-bg: #3d1a15; --coral-dim: #220e0b;
 
-  --model-o3:      #ffd60a; --model-o3-bg:   #2d2500;
+  --model-reason:      #ffd60a; --model-reason-bg:   #2d2500;
   --model-fast:    #3fb950; --model-fast-bg: #0d2112;
   --model-bal:     #58a6ff; --model-bal-bg:  #0d2137;
   --model-sonnet:  #bc8cff; --model-sonnet-bg:#1a1035;
   --model-opus:    #f778ba; --model-opus-bg: #2b0b1e;
-  --model-gemini:  #00c8ff; --model-gemini-bg:#002d3d;
+  --model-longctx:  #00c8ff; --model-longctx-bg:#002d3d;
   --model-flash:   #00e5cc; --model-flash-bg: #002d28;
 }
 
@@ -60,12 +60,12 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
 .legend{background:var(--bg2);border-bottom:1px solid var(--border);padding:10px 28px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
 .legend-label{font-size:10px;color:var(--hint);margin-right:4px;font-family:var(--mono)}
 .mbadge{display:inline-flex;align-items:center;gap:3px;font-family:var(--mono);font-size:9.5px;font-weight:500;padding:2px 7px;border-radius:10px;white-space:nowrap}
-.m-o3     {background:var(--model-o3-bg);    color:var(--model-o3)}
+.m-reason     {background:var(--model-reason-bg);    color:var(--model-reason)}
 .m-fast   {background:var(--model-fast-bg);  color:var(--model-fast)}
 .m-bal    {background:var(--model-bal-bg);   color:var(--model-bal)}
 .m-sonnet {background:var(--model-sonnet-bg);color:var(--model-sonnet)}
 .m-opus   {background:var(--model-opus-bg);  color:var(--model-opus)}
-.m-gemini {background:var(--model-gemini-bg);color:var(--model-gemini)}
+.m-longctx {background:var(--model-longctx-bg);color:var(--model-longctx)}
 .m-flash  {background:var(--model-flash-bg); color:var(--model-flash)}
 .tbadge{font-size:9px;padding:2px 6px;border-radius:8px;font-weight:500;font-family:var(--mono);border:1px solid}
 .t-auto   {color:var(--amber); border-color:var(--amber);  background:var(--amber-dim)}
@@ -194,12 +194,12 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
 
 <div class="legend">
   <span class="legend-label">models →</span>
-  <span class="mbadge m-o3">o3 reasoning</span>
-  <span class="mbadge m-fast">o4-mini speed</span>
-  <span class="mbadge m-bal">gpt-4.1 balanced</span>
+  <span class="mbadge m-reason">gpt-5.6-sol reasoning</span>
+  <span class="mbadge m-fast">claude-haiku-4-5 speed</span>
+  <span class="mbadge m-bal">gpt-5.6-terra balanced</span>
   <span class="mbadge m-sonnet">claude-sonnet code</span>
   <span class="mbadge m-opus">claude-opus thorough</span>
-  <span class="mbadge m-gemini">gemini-2.5 long-ctx</span>
+  <span class="mbadge m-longctx">gpt-5.4 long-ctx</span>
   <span class="mbadge m-flash">gemini-flash fast</span>
   <span style="margin-left:6px" class="legend-label">triggers →</span>
   <span class="tbadge t-auto">auto</span>
@@ -248,7 +248,7 @@ const ITEMS = {
   trigger: { type: 'always', text: 'Always on — injected into every interaction in this repo' },
   what: 'The single most important file. Injected into <strong>every</strong> Copilot interaction — inline completions, chat sessions, agents, skills, everything. Think of it as the team constitution that every model reads before doing anything in your repo. Includes a <strong>governance section</strong> requiring manifest entries, model compatibility checks, and changelog updates for all asset changes.',
   when: 'Automatically, before every request. There is no way to disable it per-session.',
-  content: `name: none (no frontmatter needed)\n\n# What this project is\nA polyglot monorepo: Java 17/Spring Boot,\nGo CLIs, Python scripts, Terraform/OpenTofu.\nDeployed on EKS via Helm, built in Jenkins.\n\n# Available models\n- o3 → architecture, planning\n- claude-sonnet-4-5 → code quality\n- gemini-2.5-pro → large files\n...\n\n# Non-negotiables\n- No hardcoded credentials\n- Parameterised SQL only`,
+  content: `name: none (no frontmatter needed)\n\n# What this project is\nA polyglot monorepo: Java 17/Spring Boot,\nGo CLIs, Python scripts, Terraform/OpenTofu.\nDeployed on EKS via Helm, built in Jenkins.\n\n# Available models\n- gpt-5.6-sol → architecture, planning\n- claude-sonnet-5 → code quality\n- gpt-5.4 → large files\n...\n\n# Non-negotiables\n- No hardcoded credentials\n- Parameterised SQL only`,
   contentLabel: 'Example content',
   whyModel: null,
   tips: [
@@ -290,16 +290,16 @@ const ITEMS = {
   trigger: { type: 'manual', text: 'Manual — type /review in Copilot Chat' },
   what: 'A structured 5-lens code review: correctness, security, performance, style, and tests. Run it on any file or selection. Outputs per-finding line ranges, one-sentence issues, and concrete fixes.',
   when: 'When you type /review in the Copilot Chat input. Works on selected code or the active file if nothing is selected.',
-  content: `---\nagent: ask\nmodel: claude-sonnet-4-5\ndescription: "Code review: correctness, security, performance, style, tests"\n---\n\nReview the selected code (or active file).\nWork through these lenses in order:\n\n## 1. Correctness\n## 2. Security\n## 3. Performance\n## 4. Style\n## 5. Tests\n\nEnd with: LGTM / needs minor / needs major`,
+  content: `---\nagent: ask\nmodel: claude-sonnet-5\ndescription: "Code review: correctness, security, performance, style, tests"\n---\n\nReview the selected code (or active file).\nWork through these lenses in order:\n\n## 1. Correctness\n## 2. Security\n## 3. Performance\n## 4. Style\n## 5. Tests\n\nEnd with: LGTM / needs minor / needs major`,
   contentLabel: 'Frontmatter + structure',
-  whyModel: 'claude-sonnet-4-5 is chosen because code review requires both deep code understanding <em>and</em> the ability to express nuanced feedback clearly. Claude Sonnet consistently produces specific, actionable review comments that follow multi-step review checklists reliably. It avoids both false positives (flagging non-issues) and false negatives.',
+  whyModel: 'claude-sonnet-5 is chosen because code review requires both deep code understanding <em>and</em> the ability to express nuanced feedback clearly. Claude Sonnet consistently produces specific, actionable review comments that follow multi-step review checklists reliably. It avoids both false positives (flagging non-issues) and false negatives.',
   tips: [
     '<strong>agent: ask</strong> means the command produces a chat response — it does not edit files.',
     '<strong>Select code first</strong> before running /review to focus on a specific function or class.',
     'The model: field <strong>overrides your active picker</strong> — you always get Sonnet here even if you\'re using GPT-4o.',
     'Add your own lenses by editing the prompt file — e.g. add a "Logging" or "Observability" section.'
   ],
-  tags: [{text:'/review', color:'blue'},{text:'agent: ask', color:'gray'},{text:'claude-sonnet-4-5', color:'purple'}]
+  tags: [{text:'/review', color:'blue'},{text:'agent: ask', color:'gray'},{text:'claude-sonnet-5', color:'purple'}]
 },
 
 'fix-issue': {
@@ -310,7 +310,7 @@ const ITEMS = {
   trigger: { type: 'manual', text: 'Manual — type /fix-issue in Copilot Chat' },
   what: 'A structured bug-fix workflow: state the problem, trace the root cause, apply the minimal fix, update or add a test, provide verification commands. Uses <strong>agent: agent</strong> so it actually modifies files.',
   when: 'When you type /fix-issue. Open the file with the bug first, or select the problematic code.',
-  content: `---\nagent: agent\nmodel: claude-sonnet-4-5\ndescription: "Diagnose root cause and fix the bug"\n---\n\n## Step 1 — State the problem\n## Step 2 — Root cause\n(trace before writing code)\n## Step 3 — Apply the fix\n(minimal change only)\n## Step 4 — Add/update a test\n## Step 5 — Verification commands`,
+  content: `---\nagent: agent\nmodel: claude-sonnet-5\ndescription: "Diagnose root cause and fix the bug"\n---\n\n## Step 1 — State the problem\n## Step 2 — Root cause\n(trace before writing code)\n## Step 3 — Apply the fix\n(minimal change only)\n## Step 4 — Add/update a test\n## Step 5 — Verification commands`,
   contentLabel: 'Frontmatter + 5-step structure',
   whyModel: 'Claude Sonnet excels at following multi-step diagnostic workflows and producing targeted edits. It avoids the common failure mode of "fix the symptom without understanding the root cause." The agent: agent field means it writes the changes directly rather than just showing them.',
   tips: [
@@ -330,36 +330,36 @@ const ITEMS = {
   trigger: { type: 'manual', text: 'Manual — type /deploy in Copilot Chat' },
   what: 'Reads the active file to identify service name, version, and target environment, then generates a <strong>complete deployment checklist</strong>: pre-flight, helm upgrade command, smoke tests, rollback procedure, and post-deploy checklist.',
   when: 'When you type /deploy. Open the Helm values file or service config first so it can read the context.',
-  content: `---\nagent: ask\nmodel: gpt-4.1\ndescription: "Deployment checklist and Helm commands"\n---\n\n## 1. Pre-flight checklist\n## 2. Dry run (always first)\nhelm diff upgrade ...\n## 3. Live deploy\nhelm upgrade --install ... --atomic\n## 4. Smoke test\nkubectl rollout status ...\n## 5. Rollback\nhelm rollback ... 0`,
+  content: `---\nagent: ask\nmodel: gpt-5.6-terra\ndescription: "Deployment checklist and Helm commands"\n---\n\n## 1. Pre-flight checklist\n## 2. Dry run (always first)\nhelm diff upgrade ...\n## 3. Live deploy\nhelm upgrade --install ... --atomic\n## 4. Smoke test\nkubectl rollout status ...\n## 5. Rollback\nhelm rollback ... 0`,
   contentLabel: 'Frontmatter + checklist structure',
-  whyModel: 'GPT-4.1 is chosen over the heavier reasoning models because DevOps checklists are structured, reproducible tasks — not deep reasoning problems. GPT-4.1 reliably generates correct CLI commands and produces well-structured checklists faster than o3. Speed matters here — you often run /deploy when you\'re about to push to prod.',
+  whyModel: 'GPT-5.6 Terra is chosen over the heavier reasoning models because DevOps checklists are structured, reproducible tasks — not deep reasoning problems. GPT-5.6 Terra reliably generates correct CLI commands and produces well-structured checklists faster than gpt-5.6-sol. Speed matters here — you often run /deploy when you\'re about to push to prod.',
   tips: [
     'The dry run step (helm diff) is <strong>mandatory</strong> in the template. Never skip it — stop if -/+ lines appear.',
     '<strong>--atomic</strong> is included by default: Helm auto-rolls-back if health checks fail within 5 minutes.',
     'All <placeholder> values are filled from your active file context — open the right file first.',
     'For production deploys, the checklist includes a notification step for the on-call engineer.'
   ],
-  tags: [{text:'/deploy', color:'blue'},{text:'agent: ask', color:'gray'},{text:'gpt-4.1', color:'blue'}]
+  tags: [{text:'/deploy', color:'blue'},{text:'agent: ask', color:'gray'},{text:'gpt-5.6-terra', color:'blue'}]
 },
 
 'architect': {
   path: '.github/prompts/architect.prompt.md',
   label: 'architect.prompt.md',
   chip: 'c-gray',
-  model: 'o3',
+  model: 'gpt-5.6-sol',
   trigger: { type: 'manual', text: 'Manual — type /architect in Copilot Chat' },
   what: 'Produces a structured architecture analysis: clarifying questions, multiple options with explicit trade-offs, a recommendation with conditions, and a formatted <strong>ADR (Architecture Decision Record)</strong>.',
   when: 'When you type /architect. Describe the design problem in your prompt. Best used when starting a new service, choosing between technologies, or planning a major refactor.',
-  content: `---\nagent: ask\nmodel: o3\ndescription: "System design, trade-offs, and ADRs"\n---\n\n## Before proposing: clarify\n1. Expected load / scale\n2. Consistency vs availability\n3. Team operational maturity\n\n## Options considered\nOption N: ... | Optimises for: X | Costs: Y\n\n## ADR format\nContext → Decision → Consequences\n→ Alternatives considered`,
+  content: `---\nagent: ask\nmodel: gpt-5.6-sol\ndescription: "System design, trade-offs, and ADRs"\n---\n\n## Before proposing: clarify\n1. Expected load / scale\n2. Consistency vs availability\n3. Team operational maturity\n\n## Options considered\nOption N: ... | Optimises for: X | Costs: Y\n\n## ADR format\nContext → Decision → Consequences\n→ Alternatives considered`,
   contentLabel: 'Frontmatter + output structure',
-  whyModel: 'o3 is the only model in the lineup specifically optimised for multi-step reasoning and weighing complex trade-offs. Architecture decisions involve second-order consequences, operational constraints, and team-specific factors that simpler models handle poorly. o3 systematically works through implications before committing to a recommendation.',
+  whyModel: 'gpt-5.6-sol is the only model in the lineup specifically optimised for multi-step reasoning and weighing complex trade-offs. Architecture decisions involve second-order consequences, operational constraints, and team-specific factors that simpler models handle poorly. gpt-5.6-sol systematically works through implications before committing to a recommendation.',
   tips: [
-    '<strong>o3 is the most expensive model here.</strong> Use /architect for real design decisions, not quick questions.',
+    '<strong>gpt-5.6-sol is the most expensive model here.</strong> Use /architect for real design decisions, not quick questions.',
     'The ADR format (Context → Decision → Consequences → Alternatives) is enforced in the template — commit the output as a file.',
-    'Describe your constraints explicitly: team size, existing infra, on-call maturity. o3 factors these in.',
+    'Describe your constraints explicitly: team size, existing infra, on-call maturity. gpt-5.6-sol factors these in.',
     'Re-run with different constraints to explore the option space before committing.'
   ],
-  tags: [{text:'/architect', color:'blue'},{text:'agent: ask', color:'gray'},{text:'o3 reasoning', color:'amber'}]
+  tags: [{text:'/architect', color:'blue'},{text:'agent: ask', color:'gray'},{text:'gpt-5.6-sol reasoning', color:'amber'}]
 },
 
 'security-scan': {
@@ -370,7 +370,7 @@ const ITEMS = {
   trigger: { type: 'manual', text: 'Manual — type /security-scan in Copilot Chat' },
   what: 'A comprehensive threat-model audit covering: authentication, authorisation, injection, secrets exposure, supply chain, and infrastructure. Per finding: severity (Critical/High/Medium/Low), what, where (file:line), impact, fix, and OWASP/CWE reference.',
   when: 'When you type /security-scan. Run before PRs that touch auth, permissions, new endpoints, or infrastructure changes.',
-  content: `---\nagent: ask\nmodel: claude-opus-4-5\ndescription: "Security audit — threat model, OWASP, CVEs"\n---\n\nSeverity: 🔴 Critical | 🟠 High | 🟡 Med | 🔵 Low\n\nChecks:\n- Auth & authorisation\n- SQL/command/log injection\n- Secrets & data exposure\n- Supply chain\n- Infrastructure (K8s, Terraform)\n\nPer finding: what · where · impact · fix · CWE`,
+  content: `---\nagent: ask\nmodel: claude-opus-5\ndescription: "Security audit — threat model, OWASP, CVEs"\n---\n\nSeverity: 🔴 Critical | 🟠 High | 🟡 Med | 🔵 Low\n\nChecks:\n- Auth & authorisation\n- SQL/command/log injection\n- Secrets & data exposure\n- Supply chain\n- Infrastructure (K8s, Terraform)\n\nPer finding: what · where · impact · fix · CWE`,
   contentLabel: 'Frontmatter + audit structure',
   whyModel: 'Claude Opus-4-5 is the most capable Claude model and is used here because security review has the highest cost of false negatives — a missed vulnerability is a production incident. Opus catches subtle issues that Sonnet misses: timing attacks, indirect injection vectors, privilege escalation paths. The extra cost is justified.',
   tips: [
@@ -379,7 +379,7 @@ const ITEMS = {
     'Each finding includes a CWE reference so you can link directly to the vulnerability description.',
     'The severity ratings follow CVSS-inspired criteria — Critical means remotely exploitable with high impact.'
   ],
-  tags: [{text:'/security-scan', color:'blue'},{text:'agent: ask', color:'gray'},{text:'claude-opus-4-5', color:'pink'}]
+  tags: [{text:'/security-scan', color:'blue'},{text:'agent: ask', color:'gray'},{text:'claude-opus-5', color:'pink'}]
 },
 
 'document': {
@@ -390,16 +390,16 @@ const ITEMS = {
   trigger: { type: 'manual', text: 'Manual — type /document in Copilot Chat' },
   what: 'Generates or updates documentation for the selected code. Applies the correct format by language: Javadoc + SpringDoc for Java, GoDoc for Go, Google-style docstrings for Python, description fields for Terraform.',
   when: 'When you type /document. Select the function, class, or file you want documented first.',
-  content: `---\nagent: agent\nmodel: claude-sonnet-4-5\ndescription: "Generate docs: Javadoc/GoDoc/docstrings/Terraform"\n---\n\nJava → Javadoc + @Operation (SpringDoc)\nGo → GoDoc on every exported symbol\nPython → Google-style: Args/Returns/Raises\nTerraform → description on variable+output\n\nRules:\n- Document WHAT and WHY, not HOW\n- Include usage examples for non-trivial APIs\n- Never restate the code`,
+  content: `---\nagent: agent\nmodel: claude-sonnet-5\ndescription: "Generate docs: Javadoc/GoDoc/docstrings/Terraform"\n---\n\nJava → Javadoc + @Operation (SpringDoc)\nGo → GoDoc on every exported symbol\nPython → Google-style: Args/Returns/Raises\nTerraform → description on variable+output\n\nRules:\n- Document WHAT and WHY, not HOW\n- Include usage examples for non-trivial APIs\n- Never restate the code`,
   contentLabel: 'Frontmatter + language rules',
-  whyModel: 'Claude Sonnet is optimal for documentation because it produces <em>readable prose</em> alongside technical accuracy. Documentation needs to be something humans actually want to read, not just technically correct. Sonnet\'s natural language quality outperforms GPT-4.1 on prose generation tasks.',
+  whyModel: 'Claude Sonnet is optimal for documentation because it produces <em>readable prose</em> alongside technical accuracy. Documentation needs to be something humans actually want to read, not just technically correct. Sonnet\'s natural language quality outperforms GPT-5.6 Terra on prose generation tasks.',
   tips: [
     '<strong>agent: agent</strong> — this writes docs directly into your file. Review the diff.',
     'For Spring Boot REST controllers, /document adds @Operation(summary=...) + @ApiResponse automatically.',
     'GoDoc convention is enforced: first sentence ends with the symbol name, package doc goes in doc.go.',
     'The rule "never restate the code" prevents `count++ // increment count` style noise.'
   ],
-  tags: [{text:'/document', color:'blue'},{text:'agent: agent', color:'red'},{text:'claude-sonnet-4-5', color:'purple'}]
+  tags: [{text:'/document', color:'blue'},{text:'agent: agent', color:'red'},{text:'claude-sonnet-5', color:'purple'}]
 },
 
 'explain-codebase': {
@@ -410,16 +410,16 @@ const ITEMS = {
   trigger: { type: 'manual', text: 'Manual — type /explain-codebase in Copilot Chat' },
   what: 'Reads entire large files or complete codebases using Gemini\'s 1M token context window. Produces: what it does (plain language), key concepts, data flow trace, gotchas, and where to start if making a change.',
   when: 'When you type /explain-codebase. Best for files over 2,000 lines, entire packages, or unfamiliar services. Use "Add files to context" in VS Code to attach multiple files before running.',
-  content: `---\nagent: ask\nmodel: gemini-2.5-pro\ndescription: "Explain large files/codebases — 1M token context"\n---\n\n## 1. What this does (2-3 sentences)\n## 2. Key concepts (3-5 things)\n## 3. Data flow / request lifecycle\n## 4. Non-obvious behaviour\n## 5. Where to start if making a change\n\nNote: Never truncate — that's the point.`,
+  content: `---\nagent: ask\nmodel: gpt-5.4\ndescription: "Explain large files/codebases — 1M token context"\n---\n\n## 1. What this does (2-3 sentences)\n## 2. Key concepts (3-5 things)\n## 3. Data flow / request lifecycle\n## 4. Non-obvious behaviour\n## 5. Where to start if making a change\n\nNote: Never truncate — that's the point.`,
   contentLabel: 'Frontmatter + output structure',
-  whyModel: 'Gemini 2.5 Pro has a <strong>1 million token context window</strong> — the only model in this setup that can read an entire large service in a single call without chunking. A typical Spring Boot service with all its tests might be 50,000+ tokens. Other models would need to chunk it, losing the holistic view that makes this command valuable.',
+  whyModel: 'GPT-5.4 has a <strong>1 million token context window</strong> — the only model in this setup that can read an entire large service in a single call without chunking. A typical Spring Boot service with all its tests might be 50,000+ tokens. Other models would need to chunk it, losing the holistic view that makes this command valuable.',
   tips: [
     'Use VS Code\'s <strong>"Add files to context"</strong> (paperclip icon) before running /explain-codebase to attach all relevant files.',
-    'Gemini 2.5 Pro is premium tier — use this for genuine onboarding or deep code archaeology, not casual questions.',
+    'GPT-5.4 is premium tier — use this for genuine onboarding or deep code archaeology, not casual questions.',
     'The output format is designed for printing or saving — consider pasting it into Confluence or Notion as a service reference.',
     'Works equally well for unfamiliar libraries: attach the library source and ask Gemini to explain its architecture.'
   ],
-  tags: [{text:'/explain-codebase', color:'blue'},{text:'1M tokens', color:'teal'},{text:'gemini-2.5-pro', color:'teal'}]
+  tags: [{text:'/explain-codebase', color:'blue'},{text:'1M tokens', color:'teal'},{text:'gpt-5.4', color:'teal'}]
 },
 
 'test-gen': {
@@ -430,7 +430,7 @@ const ITEMS = {
   trigger: { type: 'manual', text: 'Manual — type /test-gen in Copilot Chat' },
   what: 'Generates comprehensive tests following project conventions: happy path, boundary/edge cases, primary failure path, and one integration-adjacent test. Enforces naming conventions and prevents test anti-patterns.',
   when: 'When you type /test-gen. Open the file you want tested, or select a specific function.',
-  content: `---\nagent: agent\nmodel: claude-sonnet-4-5\ndescription: "Generate tests following project conventions"\n---\n\nGenerates:\n1. Happy path (valid inputs)\n2. Boundary/edge cases\n3. Primary failure path\n4. Integration-adjacent test\n\nNaming:\nJava: shouldReturn404WhenUserNotFound()\nGo: TestHandler/returns_404_when_not_found\nPython: test_raises_not_found_when_user_missing`,
+  content: `---\nagent: agent\nmodel: claude-sonnet-5\ndescription: "Generate tests following project conventions"\n---\n\nGenerates:\n1. Happy path (valid inputs)\n2. Boundary/edge cases\n3. Primary failure path\n4. Integration-adjacent test\n\nNaming:\nJava: shouldReturn404WhenUserNotFound()\nGo: TestHandler/returns_404_when_not_found\nPython: test_raises_not_found_when_user_missing`,
   contentLabel: 'Frontmatter + what gets generated',
   whyModel: 'Claude Sonnet is consistently the best model for generating realistic, idiomatic tests. It produces tests that actually test behaviour (not implementation details), follows the project conventions from testing.instructions.md, and avoids the most common test anti-patterns: tests that only test mocks, and trivial assertions that always pass.',
   tips: [
@@ -439,7 +439,7 @@ const ITEMS = {
     'For Go, it always generates table-driven sub-tests rather than separate top-level functions.',
     'Reads testing.instructions.md automatically — your project\'s test conventions are already applied.'
   ],
-  tags: [{text:'/test-gen', color:'blue'},{text:'agent: agent', color:'red'},{text:'claude-sonnet-4-5', color:'purple'}]
+  tags: [{text:'/test-gen', color:'blue'},{text:'agent: agent', color:'red'},{text:'claude-sonnet-5', color:'purple'}]
 },
 
 'wave2-cap-delivery': {
@@ -450,9 +450,9 @@ const ITEMS = {
   trigger: { type: 'manual', text: 'Manual — type /wave2-capstone-delivery in Copilot Chat' },
   what: 'The Wave 2 weeks 1–2 <strong>capstone facilitator</strong>: guides a mixed BA+Dev+QA team through a realistic delivery milestone using chained agents, shared context plans, and cross-persona handoffs — with <strong>no scaffolding provided</strong>. Tracks handoff count, contract amendments, and human interventions.',
   when: 'At the end of curriculum weeks 1–2, after the team has built chains (lab 1), context plans (lab 2), guardrails (lab 3), and artifact contracts (lab 4).',
-  content: `---\nagent: agent\nmodel: claude-opus-4-5\ndescription: "Wave 2 weeks 1-2 capstone: end-to-end\n  delivery scenario using chained agents"\n---\n\n1. BA: brief → stories → criteria chain\n2. Handoff gate — artifact contract honored?\n3. Dev: plan → implement → test chain\n4. QA: coverage review → gap list handoff\n5. Guardrails on — violations stop the line\n6. Impact logged as you work`,
+  content: `---\nagent: agent\nmodel: claude-opus-5\ndescription: "Wave 2 weeks 1-2 capstone: end-to-end\n  delivery scenario using chained agents"\n---\n\n1. BA: brief → stories → criteria chain\n2. Handoff gate — artifact contract honored?\n3. Dev: plan → implement → test chain\n4. QA: coverage review → gap list handoff\n5. Guardrails on — violations stop the line\n6. Impact logged as you work`,
   contentLabel: 'Frontmatter + scenario flow',
-  whyModel: 'claude-opus-4-5 is chosen because the capstone is a long, multi-phase orchestration: it must hold the scenario state, every persona\'s artifact contract, and the facilitation rules in one session while making judgment calls about when a handoff failed. The thorough model handles the open-ended, hours-long scope better than faster models.',
+  whyModel: 'claude-opus-5 is chosen because the capstone is a long, multi-phase orchestration: it must hold the scenario state, every persona\'s artifact contract, and the facilitation rules in one session while making judgment calls about when a handoff failed. The thorough model handles the open-ended, hours-long scope better than faster models.',
   tips: [
     '<strong>When a handoff fails, fix the contract — not the output.</strong> The facilitator directs teams to amend the artifact contract and regenerate, never hand-translate between personas.',
     'The milestone is complete only when QA\'s coverage review passes and all validation checkpoints are green.',
@@ -470,9 +470,9 @@ const ITEMS = {
   trigger: { type: 'manual', text: 'Manual — type /wave2-capstone-accelerator in Copilot Chat' },
   what: 'The Wave 2 weeks 3–4 <strong>hackathon facilitator</strong>: teams build a reusable accelerator (agent, workflow, or template library) that solves a real delivery problem. Enforces an evidence-based problem pitch, correct primitive choice, a non-negotiable governance gate, and a <strong>cold demo</strong> where the team may not speak.',
   when: 'At the end of curriculum weeks 3–4, after teams have packaged accelerators (lab 7) and defined team standards (lab 8). Judged by leadership.',
-  content: `---\nagent: agent\nmodel: claude-opus-4-5\ndescription: "Wave 2 weeks 3-4 capstone hackathon:\n  build a reusable accelerator"\n---\n\nJudging criteria:\n| Real problem solved   | 30% | impact-log data |\n| Reusability           | 30% | the cold demo   |\n| Governance quality    | 20% | eval checks green |\n| Craft                 | 20% | right primitive  |`,
+  content: `---\nagent: agent\nmodel: claude-opus-5\ndescription: "Wave 2 weeks 3-4 capstone hackathon:\n  build a reusable accelerator"\n---\n\nJudging criteria:\n| Real problem solved   | 30% | impact-log data |\n| Reusability           | 30% | the cold demo   |\n| Governance quality    | 20% | eval checks green |\n| Craft                 | 20% | right primitive  |`,
   contentLabel: 'Frontmatter + judging table',
-  whyModel: 'claude-opus-4-5 spans the hackathon\'s full arc — problem framing, primitive-choice challenges, asset authoring, and governance review — where shallower models lose track of the judging rubric. The capstone is run rarely (once per cohort), so the cost trade-off favors quality.',
+  whyModel: 'claude-opus-5 spans the hackathon\'s full arc — problem framing, primitive-choice challenges, asset authoring, and governance review — where shallower models lose track of the judging rubric. The capstone is run rarely (once per cohort), so the cost trade-off favors quality.',
   tips: [
     '<strong>No evidence, no build.</strong> Problem pitches must cite impact-log data or retrospective findings, not anecdote.',
     'The governance gate is non-negotiable: manifest entry + changelog entry + all eval checks green <em>before</em> judging.',
@@ -712,20 +712,20 @@ const ITEMS = {
   path: '.github/agents/plan.agent.md',
   label: 'plan.agent.md',
   chip: 'c-gray',
-  model: 'o3',
+  model: 'gpt-5.6-sol',
   trigger: { type: 'chain', text: 'Manual start — chains to implement agent on approval' },
   what: 'Planning agent: scopes a feature request into a structured implementation plan with file change list, ordered steps, test strategy, risk table, and explicit out-of-scope boundaries. Read-only — does not modify files. Hands off to implement agent.',
   when: 'Activate manually when starting a new feature or bug fix. The plan agent thinks before implement touches any files.',
-  content: `---\nname: plan\nmodel: o3\ntools: [read_file, list_directory, search_code]\nhandoffs: [implement]\n---\n\nOutput:\n1. Understanding (confirm before proceeding)\n2. Files to change (table: path | action | reason)\n3. Implementation steps (ordered)\n4. Test strategy\n5. Risks and mitigations (table)\n6. Out of scope`,
+  content: `---\nname: plan\nmodel: gpt-5.6-sol\ntools: [read_file, list_directory, search_code]\nhandoffs: [implement]\n---\n\nOutput:\n1. Understanding (confirm before proceeding)\n2. Files to change (table: path | action | reason)\n3. Implementation steps (ordered)\n4. Test strategy\n5. Risks and mitigations (table)\n6. Out of scope`,
   contentLabel: 'Frontmatter + output structure',
-  whyModel: 'o3 is chosen for planning because architecture and planning require the same multi-step systematic reasoning as system design. o3 identifies second-order consequences, asks the right clarifying questions, and produces risk tables that Sonnet would miss. Read-only tool access enforces that this agent doesn\'t touch files — it only plans.',
+  whyModel: 'gpt-5.6-sol is chosen for planning because architecture and planning require the same multi-step systematic reasoning as system design. gpt-5.6-sol identifies second-order consequences, asks the right clarifying questions, and produces risk tables that Sonnet would miss. Read-only tool access enforces that this agent doesn\'t touch files — it only plans.',
   tips: [
     '<strong>Read-only tools</strong> are intentional — the plan agent can\'t modify files, preventing premature implementation.',
     'The handoff button appears in VS Code after planning is complete — you must explicitly approve before implementation starts.',
     'The "Out of scope" section prevents scope creep by making explicit what this change does NOT do.',
     'If the plan is wrong, say so before clicking handoff — it\'s much cheaper to revise a plan than fix bad implementation.'
   ],
-  tags: [{text:'chainable', color:'purple'},{text:'read-only', color:'gray'},{text:'o3', color:'amber'},{text:'handoffs: implement', color:'blue'}]
+  tags: [{text:'chainable', color:'purple'},{text:'read-only', color:'gray'},{text:'gpt-5.6-sol', color:'amber'},{text:'handoffs: implement', color:'blue'}]
 },
 
 'implement-agent': {
@@ -736,9 +736,9 @@ const ITEMS = {
   trigger: { type: 'chain', text: 'Receives handoff from plan agent — chains to review agent when complete' },
   what: 'Implementation agent: executes the plan step by step. Has full write access (read_file, write_file, create_file, run_terminal_command). Runs tests after each step. Has a validation checklist that must pass before handing off to review.',
   when: 'Receives handoff from the plan agent after you approve the plan. Works autonomously until the checklist is complete.',
-  content: `---\nname: implement\nmodel: claude-sonnet-4-5\ntools: [read_file, write_file, create_file,\n        run_terminal_command, search_code]\nhandoffs: [review]\n---\n\nRules:\n- Follow plan steps in order (don\'t skip)\n- Run tests after each file change\n- Stop and flag if plan is wrong\n- Check copilot-instructions.md before coding\n\nValidation checklist before handoff →`,
+  content: `---\nname: implement\nmodel: claude-sonnet-5\ntools: [read_file, write_file, create_file,\n        run_terminal_command, search_code]\nhandoffs: [review]\n---\n\nRules:\n- Follow plan steps in order (don\'t skip)\n- Run tests after each file change\n- Stop and flag if plan is wrong\n- Check copilot-instructions.md before coding\n\nValidation checklist before handoff →`,
   contentLabel: 'Frontmatter + rules',
-  whyModel: 'Claude Sonnet-4-5 is chosen for implementation because code generation at scale requires reliable instruction-following (execute the plan step by step without improvising) and idiomatic code quality. Sonnet produces code that matches project conventions better than GPT-4.1 and is faster than Opus for the volume of code written here.',
+  whyModel: 'Claude Sonnet-4-5 is chosen for implementation because code generation at scale requires reliable instruction-following (execute the plan step by step without improvising) and idiomatic code quality. Sonnet produces code that matches project conventions better than GPT-5.6 Terra and is faster than Opus for the volume of code written here.',
   tips: [
     '<strong>Full write access</strong> — this agent modifies your files. Review the diff in the VS Code source control panel after.',
     'The rule "stop and flag if plan is wrong" prevents the agent from inventing scope — it returns to the plan agent if needed.',
@@ -756,7 +756,7 @@ const ITEMS = {
   trigger: { type: 'chain', text: 'Receives handoff from implement agent — terminal step in chain' },
   what: 'Review agent: performs structured code review with fresh eyes, then generates a complete PR description (summary, changes, testing, risk, checklist). Read-only. Issues a verdict: Ready / Minor issues / Major issues.',
   when: 'Receives handoff from the implement agent. Terminal step — no further handoffs. Its output is the PR description you copy-paste into GitHub.',
-  content: `---\nname: review\nmodel: claude-opus-4-5\ntools: [read_file, search_code, list_directory]\n---\n\nReview checklist:\n☐ Failure path handled\n☐ No silent data-loss\n☐ Tests test behaviour (not mocks)\n☐ Conventions followed\n\nVerdicts:\n✅ Ready to merge\n🟡 Minor issues (list)\n🔴 Major → return to plan`,
+  content: `---\nname: review\nmodel: claude-opus-5\ntools: [read_file, search_code, list_directory]\n---\n\nReview checklist:\n☐ Failure path handled\n☐ No silent data-loss\n☐ Tests test behaviour (not mocks)\n☐ Conventions followed\n\nVerdicts:\n✅ Ready to merge\n🟡 Minor issues (list)\n🔴 Major → return to plan`,
   contentLabel: 'Frontmatter + checklist',
   whyModel: 'Claude Opus-4-5 is used for the final review because this is the last gate before a PR is opened — the cost of a missed issue here is a production bug. Opus catches things Sonnet misses: silent data-loss scenarios, subtle security issues, tests that appear to test behaviour but actually test implementation details.',
   tips: [
@@ -778,7 +778,7 @@ const ITEMS = {
   trigger: { type: 'isolated', text: 'Manual — select from VS Code chat agent picker dropdown' },
   what: 'Alex persona: direct, no hollow praise. Uses a 🔴/🟡/🔵 rating system (Blocker/Suggestion/Nit). Always checks: failure path, silent data-loss, 6-month readability, and whether tests actually test behaviour.',
   when: 'Select "Code reviewer" from the chat mode dropdown in VS Code. Best for extended review sessions — PRs, entire files, multiple passes.',
-  content: `---\ndescription: "Code review — direct feedback, Claude Sonnet"\nmodel: claude-sonnet-4-5\n---\n\nYou are Alex, senior engineer (Java/Go, 12 yrs).\nDirect. No hollow praise.\n\n🔴 Blocker — must fix before merge\n🟡 Suggestion — should fix, won\'t block\n🔵 Nit — personal preference\n\nAlways check: failure path, data-loss,\n6-month readability, tests vs mocks.\nShow code when you\'d write it differently.`,
+  content: `---\ndescription: "Code review — direct feedback, Claude Sonnet"\nmodel: claude-sonnet-5\n---\n\nYou are Alex, senior engineer (Java/Go, 12 yrs).\nDirect. No hollow praise.\n\n🔴 Blocker — must fix before merge\n🟡 Suggestion — should fix, won\'t block\n🔵 Nit — personal preference\n\nAlways check: failure path, data-loss,\n6-month readability, tests vs mocks.\nShow code when you\'d write it differently.`,
   contentLabel: 'Full custom agent definition',
   whyModel: 'Sonnet is chosen over Opus for the interactive reviewer because code review is a back-and-forth — you want fast responses as you discuss findings. Opus\'s extra capability isn\'t needed for individual-file review sessions. Use /security-scan (Opus) for deep security audits.',
   tips: [
@@ -798,7 +798,7 @@ const ITEMS = {
   trigger: { type: 'isolated', text: 'Manual — select from VS Code chat agent picker dropdown' },
   what: 'Morgan persona: AppSec engineer, thinks like an attacker. 🔴/🟠/🟡/🔵 severity ratings. Built-in pattern knowledge for Spring Boot actuator exposure, Go exec.Command injection, K8s privileged containers, Terraform S3 public-read, Docker root user.',
   when: 'Select "Security auditor" from the chat mode dropdown. Best for security-focused review sessions on auth PRs, new endpoints, or infrastructure changes.',
-  content: `---\ndescription: "Security audit — Claude Opus (most thorough)"\nmodel: claude-opus-4-5\n---\n\nYou are Morgan, AppSec engineer.\nThink like an attacker, design like a defender.\n\n🔴 Critical | 🟠 High | 🟡 Medium | 🔵 Low\n\nPer finding: what · where (file:line)\n  · impact · fix · OWASP/CWE reference\n\nStack-specific: Spring Boot, Go, K8s,\nTerraform, Docker, Jenkins`,
+  content: `---\ndescription: "Security audit — Claude Opus (most thorough)"\nmodel: claude-opus-5\n---\n\nYou are Morgan, AppSec engineer.\nThink like an attacker, design like a defender.\n\n🔴 Critical | 🟠 High | 🟡 Medium | 🔵 Low\n\nPer finding: what · where (file:line)\n  · impact · fix · OWASP/CWE reference\n\nStack-specific: Spring Boot, Go, K8s,\nTerraform, Docker, Jenkins`,
   contentLabel: 'Full custom agent definition',
   whyModel: 'Opus is used here (vs Sonnet for the code reviewer) because security audit catches different classes of bugs — subtle injection vectors, timing attacks, privilege escalation — that require maximum reasoning capability. The extra cost per message is justified by what it catches.',
   tips: [
@@ -814,20 +814,20 @@ const ITEMS = {
   path: '.github/agents/architect.agent.md',
   label: 'architect.agent.md',
   chip: 'c-gray',
-  model: 'o3',
+  model: 'gpt-5.6-sol',
   trigger: { type: 'isolated', text: 'Manual — select from VS Code chat agent picker dropdown' },
   what: 'Jordan persona: staff engineer, trade-offs over absolutes. Every recommendation states what it optimises for. Produces ADRs (Context → Decision → Consequences → Alternatives considered). Never recommends complexity the team can\'t operate on-call.',
   when: 'Select "Architect" from the chat mode dropdown. Best for extended design discussions: new service architecture, technology decisions, major refactors.',
-  content: `---\ndescription: "System design and ADRs — o3 (best reasoning)"\nmodel: o3\n---\n\nYou are Jordan, staff engineer.\nTrade-offs, not absolutes.\n\nStructure: Option A | Optimises for: X | Costs: Y\n\nADR format:\nContext → Decision → Consequences\n→ Alternatives considered\n\nNever recommend complexity the team\ncannot operate on a pager.`,
+  content: `---\ndescription: "System design and ADRs — gpt-5.6-sol (best reasoning)"\nmodel: gpt-5.6-sol\n---\n\nYou are Jordan, staff engineer.\nTrade-offs, not absolutes.\n\nStructure: Option A | Optimises for: X | Costs: Y\n\nADR format:\nContext → Decision → Consequences\n→ Alternatives considered\n\nNever recommend complexity the team\ncannot operate on a pager.`,
   contentLabel: 'Full custom agent definition',
-  whyModel: 'o3 is the only model worth using for extended architecture sessions. Architecture discussions involve chained reasoning across many constraints simultaneously — team capacity, existing systems, future scale, operational complexity. o3 holds all of this in context and reasons about interactions between factors that simpler models miss.',
+  whyModel: 'gpt-5.6-sol is the only model worth using for extended architecture sessions. Architecture discussions involve chained reasoning across many constraints simultaneously — team capacity, existing systems, future scale, operational complexity. gpt-5.6-sol holds all of this in context and reasons about interactions between factors that simpler models miss.',
   tips: [
     '<strong>Describe constraints explicitly:</strong> team size, existing infra, on-call burden, budget. Jordan factors all of these in.',
     'The "trade-offs not absolutes" framing prevents "just use microservices" answers without considering operational complexity.',
     'ADR output is designed to be committed as a markdown file in your repo — a living record of why decisions were made.',
-    'o3 is expensive for long sessions — use it when the decision genuinely matters, not for quick questions.'
+    'gpt-5.6-sol is expensive for long sessions — use it when the decision genuinely matters, not for quick questions.'
   ],
-  tags: [{text:'persona agent', color:'purple'},{text:'isolated session', color:'pink'},{text:'o3 reasoning', color:'amber'}]
+  tags: [{text:'persona agent', color:'purple'},{text:'isolated session', color:'pink'},{text:'gpt-5.6-sol reasoning', color:'amber'}]
 },
 
 'devops-cm': {
@@ -838,16 +838,16 @@ const ITEMS = {
   trigger: { type: 'isolated', text: 'Manual — select from VS Code chat agent picker dropdown' },
   what: 'Sam persona: senior DevOps engineer (EKS, Terraform/OpenTofu, Jenkins, Artifactory, AWS). Always provides exact commands with flags. Calls out footguns. Never recommends kubectl edit in prod. Never provides destructive commands without a confirmation step.',
   when: 'Select "DevOps assistant" from the chat mode dropdown. Best for deployment issues, infrastructure debugging, pipeline questions, K8s troubleshooting.',
-  content: `---\ndescription: "DevOps / platform engineering — GPT-4.1"\nmodel: gpt-4.1\n---\n\nYou are Sam, senior DevOps engineer.\nEKS, Terraform/OpenTofu, Jenkins, Artifactory.\n\nAlways: exact commands with flags, safest path\nfirst, call out footguns explicitly.\n\nNever: kubectl edit in prod, destructive\ncommands without confirm step, apply\nwithout a reviewed plan.`,
+  content: `---\ndescription: "DevOps / platform engineering — GPT-5.6 Terra"\nmodel: gpt-5.6-terra\n---\n\nYou are Sam, senior DevOps engineer.\nEKS, Terraform/OpenTofu, Jenkins, Artifactory.\n\nAlways: exact commands with flags, safest path\nfirst, call out footguns explicitly.\n\nNever: kubectl edit in prod, destructive\ncommands without confirm step, apply\nwithout a reviewed plan.`,
   contentLabel: 'Full custom agent definition',
-  whyModel: 'GPT-4.1 is chosen over Sonnet for DevOps because DevOps tasks are structured and reproducible — correct CLI commands, K8s manifests, Helm values. GPT-4.1 handles these reliably and faster than reasoning models. You often need quick answers during incidents, where response speed matters.',
+  whyModel: 'GPT-5.6 Terra is chosen over Sonnet for DevOps because DevOps tasks are structured and reproducible — correct CLI commands, K8s manifests, Helm values. GPT-5.6 Terra handles these reliably and faster than reasoning models. You often need quick answers during incidents, where response speed matters.',
   tips: [
-    '<strong>Why GPT-4.1 over Claude for DevOps?</strong> Structured output (exact commands, checklists) is GPT-4.1\'s strong suit. Speed matters during incident response.',
+    '<strong>Why GPT-5.6 Terra over Claude for DevOps?</strong> Structured output (exact commands, checklists) is GPT-5.6 Terra\'s strong suit. Speed matters during incident response.',
     'For K8s debugging: always provide the output of `kubectl describe pod` and `kubectl get events` — the model can\'t diagnose without them.',
     'The "never kubectl edit in prod" rule is enforced in the persona — use this persona agent to reinforce good habits.',
     'The model knows your specific stack: Bento state backend, JFrog Artifactory, EKS — not just generic cloud.'
   ],
-  tags: [{text:'persona agent', color:'purple'},{text:'isolated session', color:'pink'},{text:'gpt-4.1', color:'blue'}]
+  tags: [{text:'persona agent', color:'purple'},{text:'isolated session', color:'pink'},{text:'gpt-5.6-terra', color:'blue'}]
 },
 
 'longcontext-cm': {
@@ -856,18 +856,18 @@ const ITEMS = {
   chip: 'c-gray',
   model: 'gemini',
   trigger: { type: 'isolated', text: 'Manual — select from VS Code chat agent picker dropdown' },
-  what: 'Dedicated Gemini 2.5 Pro mode for reading entire codebases or very large files. Produces: what it does (plain language), key concepts, data flow trace, non-obvious behaviour, and entry points for new contributors. Never truncates analysis.',
+  what: 'Dedicated GPT-5.4 mode for reading entire codebases or very large files. Produces: what it does (plain language), key concepts, data flow trace, non-obvious behaviour, and entry points for new contributors. Never truncates analysis.',
   when: 'Select "Large codebase reader" from the chat mode dropdown. Use "Add files to context" (paperclip icon) before asking your question to attach multiple files at once.',
-  content: `---\ndescription: "Read entire codebases — Gemini 2.5 Pro (1M tokens)"\nmodel: gemini-2.5-pro\n---\n\n1M token context window. Read everything first.\n\nFor every analysis:\n1. What it does (2-3 sentences, plain language)\n2. Key concepts (3-5 things)\n3. Data flow trace (numbered steps)\n4. Non-obvious behaviour (surprises)\n5. Entry points for new contributors\n\nNever truncate — that's the point.`,
+  content: `---\ndescription: "Read entire codebases — GPT-5.4 (1M tokens)"\nmodel: gpt-5.4\n---\n\n1M token context window. Read everything first.\n\nFor every analysis:\n1. What it does (2-3 sentences, plain language)\n2. Key concepts (3-5 things)\n3. Data flow trace (numbered steps)\n4. Non-obvious behaviour (surprises)\n5. Entry points for new contributors\n\nNever truncate — that's the point.`,
   contentLabel: 'Full custom agent definition',
-  whyModel: 'Gemini 2.5 Pro\'s <strong>1 million token context window</strong> is why this persona agent exists. A typical Spring Boot service with all tests might be 50,000-100,000 tokens. Other models truncate or chunk it, losing the holistic view. Gemini reads the whole thing in one shot, enabling analysis that considers how all the pieces interact.',
+  whyModel: 'GPT-5.4\'s <strong>1 million token context window</strong> is why this persona agent exists. A typical Spring Boot service with all tests might be 50,000-100,000 tokens. Other models truncate or chunk it, losing the holistic view. Gemini reads the whole thing in one shot, enabling analysis that considers how all the pieces interact.',
   tips: [
     'Use <strong>"Add files to context"</strong> (📎 paperclip in VS Code chat) to attach all files in a module before asking.',
-    'Gemini 2.5 Pro is premium tier — use it for genuine onboarding or legacy archaeology sessions.',
+    'GPT-5.4 is premium tier — use it for genuine onboarding or legacy archaeology sessions.',
     'This persona agent is excellent for understanding a library you\'re unfamiliar with: attach the source and ask.',
     'The output format (key concepts → data flow → gotchas) is designed to be saved as a wiki page for the service.'
   ],
-  tags: [{text:'persona agent', color:'purple'},{text:'1M tokens', color:'teal'},{text:'gemini-2.5-pro', color:'teal'}]
+  tags: [{text:'persona agent', color:'purple'},{text:'1M tokens', color:'teal'},{text:'gpt-5.4', color:'teal'}]
 },
 
 'test-writer-cm': {
@@ -878,7 +878,7 @@ const ITEMS = {
   trigger: { type: 'isolated', text: 'Manual — select from VS Code chat agent picker dropdown' },
   what: 'Test-focused persona: generates happy path, primary failure path, boundary cases, and integration-adjacent tests. Enforces naming conventions. Explicitly prevents tests-that-only-test-mocks and Thread.sleep anti-patterns.',
   when: 'Select "Test writer" from the chat mode dropdown. Best for TDD (write tests before implementation) or adding coverage to existing code.',
-  content: `---\ndescription: "Generate comprehensive tests — Claude Sonnet"\nmodel: claude-sonnet-4-5\n---\n\nFor every piece of code generate:\n1. Happy path (valid inputs)\n2. Primary failure path\n3. Boundary/edge cases\n4. Integration-adjacent test\n\nNaming:\nJava: shouldReturn404WhenUserNotFound()\nGo: TestHandler/returns_404_when_not_found\nPython: test_raises_not_found_when_user_missing\n\nNever: tests that only test mocks`,
+  content: `---\ndescription: "Generate comprehensive tests — Claude Sonnet"\nmodel: claude-sonnet-5\n---\n\nFor every piece of code generate:\n1. Happy path (valid inputs)\n2. Primary failure path\n3. Boundary/edge cases\n4. Integration-adjacent test\n\nNaming:\nJava: shouldReturn404WhenUserNotFound()\nGo: TestHandler/returns_404_when_not_found\nPython: test_raises_not_found_when_user_missing\n\nNever: tests that only test mocks`,
   contentLabel: 'Full custom agent definition',
   whyModel: 'Claude Sonnet generates the most realistic, idiomatic tests of any model in this lineup. It understands the difference between testing behaviour and testing implementation, produces table-driven Go tests naturally, and follows the project\'s naming conventions from testing.instructions.md which is loaded automatically.',
   tips: [
@@ -897,15 +897,15 @@ const ITEMS = {
   label: 'copilot-setup-steps.yml',
   chip: 'c-gray',
   model: null,
-  trigger: { type: 'agent', text: 'Runs automatically before the Copilot coding agent starts any task' },
-  what: 'Bootstraps the full development toolchain for the Copilot coding agent. Without this file, the agent would generate code it cannot compile or test. With it, the agent has a complete environment and verifies its own work.',
-  when: 'Triggered by `on: copilot:` — GitHub runs this before the coding agent starts working on any assigned issue or task.',
+  trigger: { type: 'agent', text: 'Runs automatically before the Copilot cloud agent starts any task' },
+  what: 'Bootstraps the full development toolchain for the Copilot cloud agent. Without this file, the agent would generate code it cannot compile or test. With it, the agent has a complete environment and verifies its own work.',
+  when: 'Triggered by `on: copilot:` — GitHub runs this before the cloud agent starts working on any assigned issue or task.',
   content: `name: "Copilot Setup Steps"\non:\n  copilot:\n\njobs:\n  copilot-setup-steps:\n    runs-on: ubuntu-latest\n    steps:\n      - Java 17 (temurin, Maven cache)\n      - Configure Maven (Artifactory mirror)\n      - Go 1.22 (with module cache)\n      - golangci-lint v1.57.0\n      - Python 3.11 (black, ruff, pytest)\n      - OpenTofu 1.7.0\n      - Helm 3.14.0 + kubectl 1.30.0\n      - Validate builds (compile + ruff)`,
   contentLabel: 'Workflow summary',
   whyModel: null,
   tips: [
     '<strong>Required repo secrets:</strong> ARTIFACTORY_URL, ARTIFACTORY_USER, ARTIFACTORY_TOKEN — the Maven mirror step uses these.',
-    'The `on: copilot:` trigger is special — it only fires for the Copilot coding agent, not for regular CI runs.',
+    'The `on: copilot:` trigger is special — it only fires for the Copilot cloud agent, not for regular CI runs.',
     'golangci-lint is pinned to v1.57.0 — update this when your team upgrades. Pin versions to avoid unexpected failures.',
     'The final "Validate builds" step ensures the agent\'s environment actually works before it starts generating code.'
   ],
@@ -918,8 +918,8 @@ const ITEMS = {
   chip: 'c-gray',
   model: null,
   trigger: { type: 'hook', text: 'copilot_pre_action (before) and copilot_post_action (after) every agent action' },
-  what: 'Policy gates that run before and after every Copilot coding agent action. Pre-action: blocks hardcoded credential patterns and terraform state commits. Post-action: runs tests and linters to validate agent output.',
-  when: 'Every time the coding agent takes an action (writes a file, creates a commit). These run regardless of which model or agent triggered the action.',
+  what: 'Policy gates that run before and after every Copilot cloud agent action. Pre-action: blocks hardcoded credential patterns and terraform state commits. Post-action: runs tests and linters to validate agent output.',
+  when: 'Every time the cloud agent takes an action (writes a file, creates a commit). These run regardless of which model or agent triggered the action.',
   content: `name: "Copilot Hooks"\non:\n  copilot_pre_action:\n  copilot_post_action:\n\npre-action-checks:\n  - Block hardcoded credentials\n    (grep for password/token/secret=)\n  - Block terraform state commits\n    (git diff --cached *.tfstate)\n\npost-action-checks:\n  - Run go test ./... -race\n  - Run pytest --tb=short\n  - golangci-lint + ruff check`,
   contentLabel: 'Workflow structure',
   whyModel: null,
@@ -962,7 +962,7 @@ const ITEMS = {
   trigger: { type: 'perm', text: 'Committed — validated by CI on every PR' },
   what: 'Single source of truth for all Copilot assets shipped in this repo. Every prompt, skill, custom agent, instruction, and workflow has an entry with: path, owner, classification (core/workflow/extension), generated flag, and description. CI validates that the manifest stays in sync with the filesystem.',
   when: 'Referenced by the manifest-sync CI check. Updated whenever assets are added or removed.',
-  content: `{\n  "version": "1.0",\n  "assets": {\n    "prompts": [\n      {\n        "path": ".github/prompts/review.prompt.md",\n        "owner": "platform-team",\n        "classification": "core",\n        "generated": true,\n        "generatedBy": "copilot-setup.sh",\n        "model": "claude-sonnet-4-5",\n        "description": "5-lens code review"\n      }\n    ],\n    "instructions": [...],\n    "skills": [...],\n    "agents": [...]\n  }\n}`,
+  content: `{\n  "version": "1.0",\n  "assets": {\n    "prompts": [\n      {\n        "path": ".github/prompts/review.prompt.md",\n        "owner": "platform-team",\n        "classification": "core",\n        "generated": true,\n        "generatedBy": "copilot-setup.sh",\n        "model": "claude-sonnet-5",\n        "description": "5-lens code review"\n      }\n    ],\n    "instructions": [...],\n    "skills": [...],\n    "agents": [...]\n  }\n}`,
   contentLabel: 'Manifest structure',
   whyModel: null,
   tips: [
@@ -982,16 +982,58 @@ const ITEMS = {
   trigger: { type: 'perm', text: 'Committed — referenced by model-refs CI check' },
   what: 'Defines all available AI models with their capabilities, cost tiers, context windows, and named slots. Also defines the <strong>fallback policy</strong>: gated workflows (security, eval) fail-closed when a model is unavailable; advisory workflows (review, docs) use controlled fallback with reporting.',
   when: 'Referenced by model-refs.sh CI check to validate that all model: fields in frontmatter reference a known model. Also serves as documentation for model selection decisions.',
-  content: `{\n  "models": [\n    {\n      "name": "o3",\n      "vendor": "openai",\n      "slot": "reason",\n      "capabilities": ["reasoning", "planning",\n        "architecture"],\n      "costTier": "premium",\n      "contextWindow": "200k"\n    }\n  ],\n  "fallbackPolicy": {\n    "gated": { "behavior": "fail-closed" },\n    "advisory": {\n      "behavior": "controlled-fallback",\n      "fallbacks": { "o3": ["gpt-4.1"] }\n    }\n  }\n}`,
+  content: `{\n  "lastVerified": "2026-08-17",\n  "models": [\n    {\n      "name": "gpt-5.6-sol",\n      "vendor": "openai",\n      "slot": "reason",\n      "capabilities": ["reasoning", "planning",\n        "architecture", "long-context",\n        "reasoning-levels"],\n      "costTier": "high",\n      "contextWindow": "1M"\n    }\n  ],\n  "deprecated": {\n    "retired": [\n      { "model": "o3",\n        "replaceWith": "gpt-5.6-sol" }\n    ],\n    "scheduled": [\n      { "model": "claude-opus-4-5",\n        "retiresOn": "2026-09-01",\n        "replaceWith": "claude-opus-5" }\n    ]\n  },\n  "fallbackPolicy": {\n    "gated": { "behavior": "fail-closed" },\n    "advisory": {\n      "behavior": "controlled-fallback"\n    }\n  }\n}`,
   contentLabel: 'Model matrix structure',
   whyModel: null,
   tips: [
-    '<strong>Gated vs advisory fallback:</strong> Security scans and eval checks fail-closed (no substitution). Code review and documentation allow controlled fallback with reporting.',
-    'The slot field (reason, code, thorough, etc.) maps to the named model slots in .vscode/settings.json.',
-    'When a new model becomes available, add it here first — the CI check will reject references to unknown models.',
-    'Cost tiers (standard/premium) help teams make informed model choices — premium models cost more per request.'
+    '<strong>The roster turns over fast.</strong> Every model this repo originally routed to — o3, o4-mini, gpt-4.1, gemini-2.5-pro, gemini-2.0-flash — has since been retired by GitHub. Re-verify quarterly against the supported-models docs.',
+    '<strong>Retire, do not delete.</strong> Moving a dead model into the deprecated block with a replaceWith value makes model-refs.sh fail with a self-explaining message instead of an opaque "not in matrix".',
+    '<strong>1M context is a capability, not a tier.</strong> Nearly every frontier model now has it, in VS Code and Copilot CLI only — so longctx is a cost decision, not a capability one.',
+    '<strong>Reasoning level is a dial.</strong> Raising reasoning effort on a mid-tier model is usually cheaper than escalating from code to thorough.',
+    'The slot field (reason, code, thorough, etc.) mirrors github.copilot.chat.models in .vscode/settings.json — change both together.'
   ],
   tags: [{text:'committed', color:'green'},{text:'CI validated', color:'teal'},{text:'fallback policy', color:'amber'}]
+},
+
+'plugin-json': {
+  path: '.github/plugin.json',
+  label: 'plugin.json',
+  chip: 'c-purple',
+  model: null,
+  trigger: { type: 'auto', text: 'Loaded when the plugin is installed or registered locally' },
+  what: '<strong>Agent Plugins 1.0 manifest.</strong> Published August 2026 as a vendor-neutral standard (GitHub, AWS, Anysphere, Microsoft, OpenAI, Vercel, Google), it packages <strong>skills + MCP servers</strong> into one installable unit that works across VS Code, Copilot CLI, and the Copilot app. Here <code>.github/</code> <em>is</em> the plugin root, because <code>.github/skills/</code> already sits exactly where the spec wants <code>skills/</code>.',
+  when: 'Whenever you want your Copilot configuration to be installable by another team — or portable to another agent tool. Register a local plugin root with chat.pluginLocations to test it before publishing.',
+  content: `{\n  "$schema": "https://agent-plugins.org/schemas/\n              1.0.0/plugin.schema.json",\n  "name": "copilot-anatomy",\n  "version": "2.0.0",\n  "description": "...",\n  "license": "MIT",\n  "keywords": ["copilot", "skills", "mcp"],\n\n  // Client-specific data MUST be namespaced\n  "extensions": {\n    "com.github.copilot": {\n      "agents": "agents",\n      "instructions": "instructions",\n      "hooks": "hooks/copilot-hooks.json"\n    }\n  }\n}`,
+  contentLabel: 'Agent Plugins 1.0 manifest',
+  whyModel: null,
+  tips: [
+    '<strong>The root manifest is a CLOSED object.</strong> Only $schema, name, version, description, author, homepage, repository, license, keywords and extensions are legal. Add "hooks" or "mcpServers" at the top level and the package is invalid — and clients reject it <em>silently</em>.',
+    '<strong>Only skills and MCP servers are portable.</strong> Custom agents, instructions, hooks and prompt files are all Copilot-specific. If you want a capability to survive a move to another tool, write it as a skill.',
+    'Client-specific data goes under extensions["com.github.copilot"] — a reverse-domain namespace the client owns.',
+    'VS Code currently ignores client-extension data in Agent Plugins packages; it loads skills/ and mcp.json and nothing else. The extensions block is forward-looking.',
+    'Enterprises govern installs via managed-settings.json: enabledPlugins force-installs or blocks, and strictKnownMarketplaces is the setting that actually closes the gate.'
+  ],
+  tags: [{text:'portable', color:'green'},{text:'Agent Plugins 1.0', color:'purple'},{text:'CI validated', color:'teal'}]
+},
+
+'plugin-mcp-json': {
+  path: '.github/mcp.json',
+  label: 'mcp.json',
+  chip: 'c-purple',
+  model: null,
+  trigger: { type: 'auto', text: 'MCP servers load when the plugin is active' },
+  what: 'The <strong>portable</strong> MCP server configuration, using the Agent Plugins 1.0 schema. This is the third MCP config in the repo, and the only cross-client one: <code>.vscode/mcp.json</code> is VS Code-specific (top-level <code>servers</code>) and <code>.github/copilot-mcp-config.json</code> is cloud-agent-specific (<code>mcpServers</code> plus a mandatory <code>tools</code> allow-list).',
+  when: 'Use for MCP servers that should travel with the plugin. Keep it to servers that are safe under your default MCP profile — this repo ships only read-only ones.',
+  content: `{\n  "$schema": "https://agent-plugins.org/schemas/\n              1.0.0/mcp.schema.json",\n  "mcpServers": {\n    "context7": {\n      "type": "streamable-http",\n      "url": "https://mcp.context7.com/mcp"\n    },\n    "memory": {\n      "type": "stdio",\n      "command": "npx",\n      "args": ["-y",\n        "@modelcontextprotocol/server-memory"],\n      "env": {\n        "MEMORY_STORE_PATH":\n          "\${PLUGIN_DATA}/memory.json"\n      }\n    }\n  }\n}`,
+  contentLabel: 'Portable MCP configuration',
+  whyModel: null,
+  tips: [
+    '<strong>No "tools" allow-list here.</strong> That field belongs to the Copilot cloud-agent schema, not the portable one — plugin-manifest.sh warns if it appears.',
+    '<strong>${PLUGIN_ROOT} and ${PLUGIN_DATA} expand in args, env and cwd only — never in "command".</strong> Putting a placeholder in command is a silent failure; the CI check catches it.',
+    'Valid server types are stdio, streamable-http, and sse. Prefer streamable-http over sse for new remote servers.',
+    'MCP servers run with the developer&rsquo;s credentials. Enterprises should pair this with an mcpServers allowlist in managed-settings.json.'
+  ],
+  tags: [{text:'portable', color:'green'},{text:'read-only profile', color:'blue'},{text:'CI validated', color:'teal'}]
 },
 
 'governance-md': {
@@ -1044,7 +1086,7 @@ const ITEMS = {
   trigger: { type: 'perm', text: 'Committed — team defaults applied on repo open' },
   what: 'Team-wide VS Code + Copilot configuration. Defines the <strong>named model slots</strong> used across all prompts and custom agents. Registers instruction files for auto-loading. Enables the in-IDE agent mode and Custom Agents discovery (chat.agentFilesLocations).',
   when: 'Applied automatically when anyone opens this repo in VS Code.',
-  content: `// Model routing slots:\n"github.copilot.chat.models": {\n  "fast":     { "model": "o4-mini" },\n  "reason":   { "model": "o3" },\n  "code":     { "model": "claude-sonnet-4-5" },\n  "thorough": { "model": "claude-opus-4-5" },\n  "longctx":  { "model": "gemini-2.5-pro" },\n  "balanced": { "model": "gpt-4.1" }\n},\n// Chatmodes enabled:\n"chat.experimental.chatModes": true,\n// Auto-load instructions:\n"codeGeneration.instructions": [...]`,
+  content: `// Model routing slots:\n"github.copilot.chat.models": {\n  "fast":     { "model": "claude-haiku-4-5" },\n  "reason":   { "model": "gpt-5.6-sol" },\n  "code":     { "model": "claude-sonnet-5" },\n  "thorough": { "model": "claude-opus-5" },\n  "longctx":  { "model": "gpt-5.4" },\n  "balanced": { "model": "gpt-5.6-terra" }\n},\n// Chatmodes enabled:\n"chat.experimental.chatModes": true,\n// Auto-load instructions:\n"codeGeneration.instructions": [...]`,
   contentLabel: 'Key settings',
   whyModel: null,
   tips: [
@@ -1064,13 +1106,13 @@ const ITEMS = {
   trigger: { type: 'perm', text: 'Personal only — gitignored, never committed' },
   what: 'Personal machine-specific overrides. Never committed to git. Use for personal model preferences, local toolchain paths, experimental settings, or increased timeouts when on a slow VPN.',
   when: 'Applied on top of settings.json when you open VS Code. Add `.vscode/settings.local.json` to .gitignore.',
-  content: `{\n  // Override team model slots with personal prefs:\n  // "github.copilot.chat.models": {\n  //   "code": { "model": "claude-opus-4-5" }\n  // },\n\n  // Increase timeout on slow VPN:\n  "github.copilot.advanced": {\n    "timeout": 45000\n  },\n\n  // Local JDK path:\n  // "java.jdt.ls.java.home": "/opt/homebrew...",\n\n  "terminal.integrated.fontFamily": "MesloLGS NF"\n}`,
+  content: `{\n  // Override team model slots with personal prefs:\n  // "github.copilot.chat.models": {\n  //   "code": { "model": "claude-opus-5" }\n  // },\n\n  // Increase timeout on slow VPN:\n  "github.copilot.advanced": {\n    "timeout": 45000\n  },\n\n  // Local JDK path:\n  // "java.jdt.ls.java.home": "/opt/homebrew...",\n\n  "terminal.integrated.fontFamily": "MesloLGS NF"\n}`,
   contentLabel: 'Common personal overrides',
   whyModel: null,
   tips: [
     '<strong>Add to .gitignore:</strong> .vscode/settings.local.json — or a teammate will accidentally commit their local JDK path.',
     'Override a model slot if you have a different subscription: set "code" to claude-opus if your plan includes it.',
-    'Increase timeout to 45000ms if o3 responses are timing out on corporate VPN.',
+    'Increase timeout to 45000ms if gpt-5.6-sol responses are timing out on corporate VPN.',
     'Personal experimental features go here — enable next-edit suggestions without inflicting them on the team.'
   ],
   tags: [{text:'gitignored', color:'amber'},{text:'personal only', color:'gray'},{text:'never commit', color:'red'}]
@@ -1129,14 +1171,14 @@ const TREE = [
 
   { type:'section', label:'.github/ — the control center' },
 
-  { type:'folder', indent:1, cn:'├─', chip:'c-green', label:'prompts/', desc:'slash commands — type /name to invoke', arrow:true },
+  { type:'folder', indent:1, cn:'├─', chip:'c-gray', label:'prompts/', desc:'⚠ LEGACY — Local harness only · migrated to skills/', arrow:true },
   { id:'review',         indent:2, cn:'├─', chip:'c-gray', label:'review.prompt.md',          desc:'→ /review', model:'m-sonnet' },
   { id:'fix-issue',      indent:2, cn:'├─', chip:'c-gray', label:'fix-issue.prompt.md',       desc:'→ /fix-issue · edits files', model:'m-sonnet' },
   { id:'deploy',         indent:2, cn:'├─', chip:'c-gray', label:'deploy.prompt.md',          desc:'→ /deploy · helm checklist', model:'m-bal' },
-  { id:'architect',      indent:2, cn:'├─', chip:'c-gray', label:'architect.prompt.md',       desc:'→ /architect · trade-offs + ADR', model:'m-o3' },
+  { id:'architect',      indent:2, cn:'├─', chip:'c-gray', label:'architect.prompt.md',       desc:'→ /architect · trade-offs + ADR', model:'m-reason' },
   { id:'security-scan',  indent:2, cn:'├─', chip:'c-gray', label:'security-scan.prompt.md',   desc:'→ /security-scan · OWASP', model:'m-opus' },
   { id:'document',       indent:2, cn:'├─', chip:'c-gray', label:'document.prompt.md',        desc:'→ /document · Javadoc/GoDoc', model:'m-sonnet' },
-  { id:'explain-codebase',indent:2,cn:'├─', chip:'c-gray', label:'explain-codebase.prompt.md',desc:'→ /explain-codebase · 1M ctx', model:'m-gemini' },
+  { id:'explain-codebase',indent:2,cn:'├─', chip:'c-gray', label:'explain-codebase.prompt.md',desc:'→ /explain-codebase · 1M ctx', model:'m-longctx' },
   { id:'test-gen',       indent:2, cn:'├─', chip:'c-gray', label:'test-gen.prompt.md',        desc:'→ /test-gen · realistic tests', model:'m-sonnet' },
   { id:'wave2-cap-delivery',    indent:2, cn:'├─', chip:'c-gray', label:'wave2-capstone-delivery.prompt.md',    desc:'→ curriculum capstone wk1-2 · multi-agent', model:'m-opus' },
   { id:'wave2-cap-accelerator', indent:2, cn:'└─', chip:'c-gray', label:'wave2-capstone-accelerator.prompt.md', desc:'→ curriculum capstone wk3-4 · hackathon', model:'m-opus' },
@@ -1147,7 +1189,7 @@ const TREE = [
   { id:'api-conventions',  indent:2, cn:'├─', chip:'c-gray', label:'api-conventions.instructions.md',desc:'controller/ handler/ api/' },
   { id:'infrastructure-ins',indent:2,cn:'└─', chip:'c-gray', label:'infrastructure.instructions.md', desc:'*.tf *.yaml Dockerfile' },
 
-  { type:'folder', indent:1, cn:'├─', chip:'c-orange', label:'skills/', desc:'auto-discovered by description match', arrow:true, tbadge:'t-auto' },
+  { type:'folder', indent:1, cn:'├─', chip:'c-orange', label:'skills/', desc:'auto-discovered by description · also /name commands · PORTABLE', arrow:true, tbadge:'t-auto' },
   { type:'subfolder', indent:2, cn:'├─', chip:'c-orange', label:'helm-upgrade/' },
   { id:'helm-upgrade',   indent:3, cn:'└─', chip:'c-amber', label:'SKILL.md', desc:'deploy · upgrade · rollback · helm' },
   { type:'subfolder', indent:2, cn:'├─', chip:'c-orange', label:'debug-eks/' },
@@ -1165,14 +1207,14 @@ const TREE = [
   { indent:2, cn:'└─', chip:'c-orange', label:'wave2-…/', desc:'+ 7 more curriculum labs — docs/curriculum/wave-2/' },
 
   { type:'folder', indent:1, cn:'├─', chip:'c-pink', label:'agents/', desc:'Custom Agents — task chains + persona sessions', arrow:true, tbadge:'t-chain' },
-  { id:'plan-agent',      indent:2, cn:'├─', chip:'c-gray', label:'plan.agent.md',      desc:'task: scope · risks · handoff', model:'m-o3' },
+  { id:'plan-agent',      indent:2, cn:'├─', chip:'c-gray', label:'plan.agent.md',      desc:'task: scope · risks · handoff', model:'m-reason' },
   { id:'implement-agent', indent:2, cn:'├─', chip:'c-gray', label:'implement.agent.md', desc:'task: code + tests · write access', model:'m-sonnet' },
   { id:'review-agent',    indent:2, cn:'├─', chip:'c-gray', label:'review.agent.md',    desc:'task: checklist · PR description', model:'m-opus' },
   { id:'code-reviewer-cm',   indent:2, cn:'├─', chip:'c-gray', label:'code-reviewer.agent.md',   desc:'persona: Alex · Blocker/Suggestion/Nit', model:'m-sonnet' },
   { id:'security-auditor-cm',indent:2, cn:'├─', chip:'c-gray', label:'security-auditor.agent.md',desc:'persona: Morgan · OWASP · deep audit', model:'m-opus' },
-  { id:'architect-cm',       indent:2, cn:'├─', chip:'c-gray', label:'architect.agent.md',       desc:'persona: Jordan · trade-offs · ADRs', model:'m-o3' },
+  { id:'architect-cm',       indent:2, cn:'├─', chip:'c-gray', label:'architect.agent.md',       desc:'persona: Jordan · trade-offs · ADRs', model:'m-reason' },
   { id:'devops-cm',          indent:2, cn:'├─', chip:'c-gray', label:'devops-assistant.agent.md',desc:'persona: Sam · EKS · Helm · Terraform', model:'m-bal' },
-  { id:'longcontext-cm',     indent:2, cn:'├─', chip:'c-gray', label:'longcontext-reader.agent.md',desc:'persona: entire codebases · 1M tokens', model:'m-gemini' },
+  { id:'longcontext-cm',     indent:2, cn:'├─', chip:'c-gray', label:'longcontext-reader.agent.md',desc:'persona: entire codebases · 1M tokens', model:'m-longctx' },
   { id:'test-writer-cm',     indent:2, cn:'└─', chip:'c-gray', label:'test-writer.agent.md',     desc:'persona: happy path · failure · boundary', model:'m-sonnet' },
 
   { type:'folder', indent:1, cn:'├─', chip:'c-red', label:'workflows/', desc:'agent bootstrap + policy hooks + eval CI', arrow:true, tbadge:'t-agent' },
@@ -1182,8 +1224,10 @@ const TREE = [
 
   { type:'folder', indent:1, cn:'├─', chip:'c-teal', label:'eval/', desc:'deterministic quality checks + rubric definitions', arrow:true },
   { id:'asset-manifest',      indent:1, cn:'├─', chip:'c-teal',  label:'copilot-asset-manifest.json', desc:'single source of truth for all assets' },
-  { id:'model-compatibility',  indent:1, cn:'├─', chip:'c-teal',  label:'model-compatibility.json',    desc:'model capabilities + fallback policy' },
-  { id:'governance-md',        indent:1, cn:'└─', chip:'c-teal',  label:'GOVERNANCE.md',               desc:'checklist for adding/deprecating assets' },
+  { id:'model-compatibility',  indent:1, cn:'├─', chip:'c-teal',  label:'model-compatibility.json',    desc:'model roster · slots · deprecations · fallbacks' },
+  { id:'governance-md',        indent:1, cn:'├─', chip:'c-teal',  label:'GOVERNANCE.md',               desc:'checklist for adding/deprecating assets' },
+  { id:'plugin-json',          indent:1, cn:'├─', chip:'c-purple',label:'plugin.json',                 desc:'Agent Plugins 1.0 manifest · PORTABLE', tbadge:'t-auto' },
+  { id:'plugin-mcp-json',      indent:1, cn:'└─', chip:'c-purple',label:'mcp.json',                    desc:'portable MCP servers (spec schema)', tbadge:'t-auto' },
 
   { type:'section', label:'.vscode/ — IDE + model config' },
   { id:'settings-json',  indent:1, cn:'├─', chip:'c-amber', label:'settings.json',       desc:'model slots · team defaults · committed', tbadge:'t-perm' },
@@ -1193,13 +1237,13 @@ const TREE = [
 ];
 
 const MODEL_LABELS = {
-  'o3':     { cls:'m-o3',     text:'o3' },
-  'fast':   { cls:'m-fast',   text:'o4-mini' },
-  'bal':    { cls:'m-bal',    text:'gpt-4.1' },
-  'sonnet': { cls:'m-sonnet', text:'claude-sonnet' },
-  'opus':   { cls:'m-opus',   text:'claude-opus' },
-  'gemini': { cls:'m-gemini', text:'gemini-2.5' },
-  'flash':  { cls:'m-flash',  text:'gemini-flash' },
+  'reason':  { cls:'m-reason',  text:'gpt-5.6-sol' },
+  'fast':    { cls:'m-fast',    text:'claude-haiku-4-5' },
+  'bal':     { cls:'m-bal',     text:'gpt-5.6-terra' },
+  'sonnet':  { cls:'m-sonnet',  text:'claude-sonnet-5' },
+  'opus':    { cls:'m-opus',    text:'claude-opus-5' },
+  'longctx': { cls:'m-longctx', text:'gpt-5.4' },
+  'flash':   { cls:'m-flash',   text:'gemini-3.7-flash' },
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -1304,13 +1348,13 @@ function openPanel(id) {
   const modelBox = d.model ? (() => {
     const m = MODEL_LABELS[d.model];
     const modelNames = {
-      o3: 'o3',
-      fast: 'o4-mini',
-      bal: 'gpt-4.1',
-      sonnet: 'claude-sonnet-4-5',
-      opus: 'claude-opus-4-5',
-      gemini: 'gemini-2.5-pro',
-      flash: 'gemini-2.0-flash',
+      'reason':  'gpt-5.6-sol',
+      'fast':    'claude-haiku-4-5',
+      'bal':     'gpt-5.6-terra',
+      'sonnet':  'claude-sonnet-5',
+      'opus':    'claude-opus-5',
+      'longctx': 'gpt-5.4',
+      'flash':   'gemini-3.7-flash',
     };
     return `<div class="ps">
       <div class="ps-label">Model used</div>

@@ -70,3 +70,6 @@ jobs:
 
     - name: Validate deprecation lifecycle
       run: bash .github/eval/checks/deprecation.sh
+
+    - name: Validate Agent Plugins 1.0 package
+      run: bash .github/eval/checks/plugin-manifest.sh

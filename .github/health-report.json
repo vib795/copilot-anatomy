@@ -1,20 +1,20 @@
 {
-  "timestamp": "2026-06-10T22:22:56Z",
+  "timestamp": "2026-08-17T12:06:15Z",
   "healthScore": 100,
   "assets": {
     "prompts": 10,
     "agents": 59,
-    "skills": 74,
+    "skills": 84,
     "chatmodes": 0,
     "instructions": 4,
-    "total": 147,
-    "deprecated": 0
+    "total": 157,
+    "deprecated": 10
   },
   "evalChecks": {
-    "passed": 7,
+    "passed": 8,
     "failed": 0,
-    "total": 7,
-    "results": {"naming":"pass","frontmatter":"pass","model-refs":"pass","manifest-sync":"pass","governance":"pass","doc-consistency":"pass","deprecation":"pass"}
+    "total": 8,
+    "results": {"naming":"pass","frontmatter":"pass","model-refs":"pass","manifest-sync":"pass","governance":"pass","doc-consistency":"pass","deprecation":"pass","plugin-manifest":"pass"}
   },
   "policyChecks": {
     "totalWarnings": 9,

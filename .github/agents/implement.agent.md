@@ -1,6 +1,6 @@
 ---
 name: implement
-model: claude-sonnet-4-5
+model: claude-sonnet-5
 description: >
   Implementation agent. Executes the plan from the plan agent step by step.
   Makes code changes, writes tests, validates the build.
@@ -15,7 +15,7 @@ handoffs:
   - review
 ---
 <!--
-  MODEL: claude-sonnet-4-5 — best for code generation, instruction following,
+  MODEL: claude-sonnet-5 — best for code generation, instruction following,
   and producing idiomatic code. Reliably follows multi-step plans.
   TOOLS: Full write access — this agent modifies files and runs commands.
   CHAIN: plan → implement → review

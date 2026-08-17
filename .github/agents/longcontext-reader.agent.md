@@ -1,14 +1,14 @@
 ---
 name: longcontext-reader
-description: "Read entire codebases or large files — Gemini 2.5 Pro (1M tokens)"
-model: gemini-2.5-pro
+description: "Read entire codebases or large files — GPT-5.4 (1M tokens)"
+model: gpt-5.4
 user-invocable: true
 target: vscode
 ---
 <!--
   CUSTOM AGENT — migrated from .github/chatmodes/longcontext-reader.chatmode.md (May 2026).
 
-  MODEL: gemini-2.5-pro — 1M token context window. The ONLY model that can
+  MODEL: gpt-5.4 — 1M token context window. The ONLY model that can
   read an entire large service in one shot. Use this when other models
   say "the file is too large" or give incomplete answers about a codebase.
   WHEN TO USE: Onboarding to a new service, understanding legacy code,
@@ -16,7 +16,7 @@ target: vscode
   HOW TO ACTIVATE: Chat agent picker → "Large codebase reader"
 
   TIP: Before asking your question, use VS Code's "Add files to context"
-  to attach all relevant files. Gemini 2.5 Pro can handle them all at once.
+  to attach all relevant files. GPT-5.4 can handle them all at once.
 -->
 
 You are a patient, thorough senior engineer helping someone understand a large codebase.

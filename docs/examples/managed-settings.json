@@ -1,0 +1,123 @@
+{
+  "_comment": [
+    "EXAMPLE — Copilot enterprise managed settings. Not loaded from this path.",
+    "",
+    "Deploy this file as `managed-settings.json` to the machine-wide location for",
+    "your platform via MDM/Intune/Jamf. It applies across VS Code, Copilot CLI,",
+    "the Copilot app, and the Copilot cloud agent. Developers cannot override it.",
+    "",
+    "Settings combine ADDITIVELY with team-level overrides, so an org baseline and",
+    "a team supplement merge rather than replace one another.",
+    "",
+    "DOCS: https://docs.github.com/en/copilot/how-tos/administer-copilot",
+    "      https://code.visualstudio.com/docs/agent-customization/agent-plugins",
+    "",
+    "Copy this into your own admin repo and delete what you do not enforce —",
+    "an over-broad managed policy is how teams end up disabling Copilot entirely."
+  ],
+
+  "_comment_plugins": [
+    "── AGENT PLUGINS ────────────────────────────────────────────────────────",
+    "Agent Plugins 1.0 packages skills + MCP servers into one installable unit.",
+    "That is convenient for developers and a supply-chain surface for you: a",
+    "plugin can ship an MCP server that reaches the network and a skill that",
+    "tells the agent to use it. Govern installs, not just usage.",
+    "",
+    "enabledPlugins  — true force-installs, false blocks. Anything unlisted",
+    "                  stays at the developer's discretion unless",
+    "                  strictKnownMarketplaces closes that door.",
+    "The value is a plugin identifier, typically `<marketplace>/<name>`."
+  ],
+  "enabledPlugins": {
+    "awesome-copilot/copilot-anatomy": true,
+    "awesome-copilot/github-mcp": true,
+    "some-marketplace/unvetted-plugin": false
+  },
+
+  "_comment_marketplaces": [
+    "extraKnownMarketplaces  — additional sources beyond the default",
+    "                          Awesome Copilot marketplace.",
+    "strictKnownMarketplaces — when true, installs are restricted to the",
+    "                          marketplaces named here. This is the setting",
+    "                          that actually closes the gate; enabledPlugins",
+    "                          alone only curates a list."
+  ],
+  "extraKnownMarketplaces": {
+    "acme-internal": {
+      "url": "https://copilot-plugins.acme-corp.internal/registry.json"
+    }
+  },
+  "strictKnownMarketplaces": true,
+
+  "_comment_mcp": [
+    "── MCP ALLOWLIST ────────────────────────────────────────────────────────",
+    "Server-level approval, applied independently of how a server arrived —",
+    "hand-configured or bundled inside a plugin. Keep this tight: MCP servers",
+    "run with the developer's credentials.",
+    "",
+    "This repo's three-profile posture (read-only / standard / elevated) lives",
+    "in .github/copilot-mcp-profiles.json; the allowlist below is the",
+    "enterprise-side enforcement of that same intent."
+  ],
+  "mcpServers": {
+    "allowlist": [
+      "context7",
+      "github",
+      "memory"
+    ],
+    "denyUnlisted": true
+  },
+
+  "_comment_models": [
+    "── MODEL POLICY ─────────────────────────────────────────────────────────",
+    "Restricting the roster is how you control spend and data residency.",
+    "",
+    "Claude Fable 5 in particular requires explicit organisational enablement",
+    "because of Anthropic's data-retention behaviour for safety classification —",
+    "leave it out unless someone has actually signed off on that.",
+    "",
+    "Re-check this list against .github/model-compatibility.json each quarter:",
+    "o3, o4-mini, gpt-4.1, gemini-2.5-pro and gemini-2.0-flash are already gone,",
+    "and Claude Sonnet 4.5/4.6 and Opus 4.5/4.6 retire 2026-09-01."
+  ],
+  "models": {
+    "allowlist": [
+      "gpt-5.6-sol",
+      "gpt-5.6-terra",
+      "gpt-5.4",
+      "claude-sonnet-5",
+      "claude-opus-5",
+      "claude-haiku-4-5"
+    ]
+  },
+
+  "_comment_hooks": [
+    "── POLICY HOOKS ─────────────────────────────────────────────────────────",
+    "Administrator-deployed hooks are machine-wide, cannot be disabled by the",
+    "developer, and are CLI-only. Use them for audit logging and hard gates.",
+    "",
+    "Remember the failure modes: timeouts always fail OPEN, and preToolUse",
+    "command hooks fail CLOSED on non-timeout errors. A policy hook that is",
+    "slow degrades to no policy at all, so keep it fast and keep the timeout",
+    "generous enough that a cold start does not silently disable the gate."
+  ],
+  "policyHooks": {
+    "version": 1,
+    "hooks": {
+      "preToolUse": [
+        {
+          "type": "command",
+          "command": "/opt/acme/copilot/audit-gate",
+          "timeoutSec": 10
+        }
+      ],
+      "sessionStart": [
+        {
+          "type": "http",
+          "url": "https://audit.acme-corp.internal/copilot/session",
+          "timeoutSec": 5
+        }
+      ]
+    }
+  }
+}

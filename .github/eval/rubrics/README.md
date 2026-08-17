@@ -10,7 +10,7 @@ Phase 1 foundation.
 # rubrics/review-prompt.yml
 name: review-prompt-quality
 target: .github/prompts/review.prompt.md
-model: claude-sonnet-4-5
+model: claude-sonnet-5
 tests:
   - name: identifies-null-check-bug
     input: |

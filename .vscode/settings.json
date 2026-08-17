@@ -18,30 +18,51 @@
   },
 
   // ── MODEL ROUTING ─────────────────────────────────────────────────────────
-  // Named model slots used across prompts, chatmodes, and agents.
+  // Named model slots used across prompts, skills, and agents.
   // The string values must match your Copilot model picker exactly.
   // Check: VS Code → Copilot Chat panel → model dropdown → note the exact name.
   //
+  // Mirrors the `slots` block in .github/model-compatibility.json — change both
+  // together, then run `bash .github/eval/checks/model-refs.sh`.
+  //
   // STRATEGY:
-  //   "fast"     → o4-mini    Speed: inline, boilerplate, trivial fixes
-  //   "reason"   → o3         Reasoning: architecture, planning, debugging
-  //   "code"     → claude-sonnet-4-5   Code quality: gen, review, tests, docs
-  //   "thorough" → claude-opus-4-5     Thoroughness: security, deep review
-  //   "longctx"  → gemini-2.5-pro     Long context: reading entire codebases
-  //   "balanced" → gpt-4.1    Balanced: devops, general tasks, good default
+  //   "fast"     → claude-haiku-4-5   Speed: inline, boilerplate, trivial fixes
+  //   "reason"   → gpt-5.6-sol        Reasoning: architecture, planning, debugging
+  //   "code"     → claude-sonnet-5    Code quality: gen, review, tests, docs
+  //   "thorough" → claude-opus-5      Thoroughness: security, deep review
+  //   "longctx"  → gpt-5.4            Long context: reading entire codebases
+  //   "balanced" → gpt-5.6-terra      Balanced: devops, general tasks, good default
+  //
+  // ROSTER NOTE (verified 2026-08-17): o3, o4-mini, gpt-4.1, gemini-2.5-pro and
+  // gemini-2.0-flash have all been retired from Copilot. Claude Sonnet 4.5/4.6
+  // and Opus 4.5/4.6 retire 2026-09-01. See the `deprecated` block in
+  // .github/model-compatibility.json for the full replacement table.
   "github.copilot.chat.models": {
-    "fast":      { "model": "o4-mini" },
-    "reason":    { "model": "o3" },
-    "code":      { "model": "claude-sonnet-4-5" },
-    "thorough":  { "model": "claude-opus-4-5" },
-    "longctx":   { "model": "gemini-2.5-pro" },
-    "balanced":  { "model": "gpt-4.1" }
+    "fast":      { "model": "claude-haiku-4-5" },
+    "reason":    { "model": "gpt-5.6-sol" },
+    "code":      { "model": "claude-sonnet-5" },
+    "thorough":  { "model": "claude-opus-5" },
+    "longctx":   { "model": "gpt-5.4" },
+    "balanced":  { "model": "gpt-5.6-terra" }
   },
+
+  // ── REASONING EFFORT ──────────────────────────────────────────────────────
+  // Most 2026 frontier models expose a configurable reasoning level. Raising
+  // the level on a mid-tier model is usually cheaper than escalating to a
+  // flagship model — try this before switching `code` to `thorough`.
+  // Available in VS Code, Copilot CLI, and Copilot cloud agent.
+  "github.copilot.chat.reasoningEffort": "medium",
+
+  // ── LONG CONTEXT ──────────────────────────────────────────────────────────
+  // The 1M-token context window is a per-model capability (VS Code + CLI only),
+  // not a separate model tier. Opting in costs more per request, so leave it
+  // off by default and enable per-session when reading a whole repo.
+  "github.copilot.chat.largeContext.enabled": false,
 
   // ── INLINE COMPLETIONS ────────────────────────────────────────────────────
   // The model used for grey-text autocomplete as you type.
-  // o4-mini is ideal: fast enough to not interrupt typing, good quality.
-  // For slower networks or machines, try gemini-2.0-flash instead.
+  // claude-haiku-4-5 is ideal: fast enough to not interrupt typing, good quality.
+  // For slower networks or machines, try mai-code-1.1-flash or gemini-3.7-flash.
   "github.copilot.inlineSuggest.enable": true,
   "github.copilot.inlineSuggest.syntaxMatchingLanguages": [
     "java", "go", "python", "typescript", "terraform",
@@ -49,7 +70,7 @@
   ],
 
   // ── FEATURE FLAGS ─────────────────────────────────────────────────────────
-  // Enable Copilot agent mode (the in-IDE agent, not the GitHub coding agent).
+  // Enable Copilot agent mode (the in-IDE agent, not the Copilot cloud agent).
   "chat.agent.enabled": true,
   // Enable hooks declared in .agent.md frontmatter (`hooks:` field).
   "chat.useCustomAgentHooks": true,
@@ -74,14 +95,34 @@
   "chat.agentFilesLocations": {
     ".github/agents": true
   },
+  // Skills are an open standard shared with other agent tools. VS Code already
+  // discovers `.github/skills`, `.claude/skills` and `.agents/skills` by
+  // default; listing them keeps discovery explicit for mixed-tool teams.
   "chat.agentSkillsLocations": {
-    ".github/skills": true
+    ".github/skills": true,
+    ".claude/skills": true,
+    ".agents/skills": true
   },
+  // LEGACY: prompt files run only in the Local agent harness. Copilot CLI, the
+  // cloud agent, and Agent Plugins express slash commands as skills instead.
+  // Keep this while migrating; see COPILOT-CHEATSHEET.md → "Prompts (legacy)".
   "chat.promptFilesLocations": {
     ".github/prompts": true
   },
+  // Enables the built-in one-time "Migrate Prompts" action in the
+  // AI Customizations overview, which converts prompt files into skills.
+  "chat.customizations.promptMigration.enabled": true,
   "chat.instructionsFilesLocations": {
     ".github/instructions": true
+  },
+
+  // ── AGENT PLUGINS 1.0 ─────────────────────────────────────────────────────
+  // This repo ships as an Agent Plugin (see .github/plugin.json). Registering
+  // the plugin root locally lets VS Code load its skills and MCP servers
+  // exactly as it would after installing from a marketplace — which is how you
+  // test a plugin before publishing it.
+  "chat.pluginLocations": {
+    ".github": true
   },
 
   // ── AUTO-LOADED INSTRUCTIONS ───────────────────────────────────────────────

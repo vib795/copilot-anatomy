@@ -15,18 +15,36 @@ this checklist. CI will enforce manifest sync and frontmatter validation automat
   - `description`: one-line purpose description
 
 - [ ] **Frontmatter** — YAML frontmatter includes required fields:
-  - Prompts: `model`, `description`
+  - Skills: `name` (**must exactly match the directory name**) and `description`
+    (≤1024 chars, written as search keywords). Optional: `argument-hint`,
+    `user-invocable`, `disable-model-invocation`, `context: fork`.
+    Skills have **no `model:` field** — they are cross-tool.
   - Agents: `description` (model optional). Custom Agents (the persona kind,
     formerly chat modes) additionally take `name`, `user-invocable`, `target`.
-  - Skills: `description` field or trigger keywords in first 10 lines of SKILL.md
+  - Instructions: `applyTo:` glob; optional `excludeAgent:` to scope a rule
+    to (or away from) code review vs. the cloud agent.
+  - Prompts (**legacy**): `model`, `description`
 
-- [ ] **Model reference** — if `model:` is set, it references a model in `.github/model-compatibility.json`
+- [ ] **Primitive choice** — new slash commands are authored as **skills**, not
+  prompt files. Prompt files run only in the Local agent harness and are not
+  portable to Copilot CLI, the cloud agent, or an Agent Plugin. Adding a new
+  `.prompt.md` requires an explicit justification in the PR description.
+
+- [ ] **Model reference** — if `model:` is set, it references a model in
+  `.github/model-compatibility.json` that is **not** in that file's `deprecated`
+  block
 
 - [ ] **Naming** — file follows kebab-case convention:
-  - `my-prompt.prompt.md`
+  - `my-skill/SKILL.md` (directory is kebab-case, and `name:` matches it)
   - `my-agent.agent.md` (replaces the legacy `.chatmode.md` primitive)
   - `my-instructions.instructions.md`
-  - `my-skill/SKILL.md` (directory is kebab-case)
+  - `my-prompt.prompt.md` (legacy)
+
+- [ ] **Plugin validity** — if the change touches `.github/plugin.json`,
+  `.github/mcp.json`, or any skill, `bash .github/eval/checks/plugin-manifest.sh`
+  passes. The Agent Plugins root manifest is a **closed** object; only
+  `$schema`, `name`, `version`, `description`, `author`, `homepage`,
+  `repository`, `license`, `keywords`, and `extensions` are permitted.
 
 - [ ] **Changelog** — entry added to `COPILOT-CHANGELOG.md` under `[Unreleased]`
 
@@ -58,3 +76,20 @@ The following checks run automatically via `.github/workflows/copilot-eval.yml`:
 | `governance.sh`    | Owner, classification, description in manifest     | Yes      |
 | `doc-consistency.sh`| Stale references, duplicate guidance, conflicts   | Warn     |
 | `deprecation.sh`   | 60-day grace period, expired asset detection       | Yes      |
+| `plugin-manifest.sh`| Agent Plugins 1.0 package: closed manifest fields, skill `name` matches its directory, MCP server schema | Yes |
+
+## Keeping the model roster current
+
+Copilot's model roster turns over faster than anything else in this repo. A
+retired model in frontmatter is a hard CI failure, not a warning.
+
+- `.github/model-compatibility.json` carries `lastVerified` and `sourceOfTruth`.
+  **Re-verify quarterly** against
+  <https://docs.github.com/en/copilot/reference/ai-models/supported-models>.
+- When a model is retired, move it into that file's `deprecated` block with a
+  `replaceWith` value rather than deleting it. `model-refs.sh` then fails with
+  a self-explaining message instead of an opaque "not in matrix".
+- Update the `slots` block **and** `github.copilot.chat.models` in
+  `.vscode/settings.json` together — they mirror each other.
+- Prefer raising the reasoning level on the current model over re-pointing a
+  slot at a more expensive one.

@@ -1,12 +1,20 @@
 ---
 agent: ask
-model: o3
+model: gpt-5.6-sol
 description: "System design, trade-off analysis, and Architecture Decision Records"
 ---
 
+> [!WARNING]
+> **DEPRECATED (2026-08-17) — removal 2026-11-16.** Prompt files run only in the
+> Local agent harness. Copilot CLI, the Copilot cloud agent, and Agent Plugins
+> express slash commands as **skills**. This command now lives at
+> `.github/skills/architect/SKILL.md`; edit that file, not this one.
+> See `.github/GOVERNANCE.md` → "Deprecating an asset".
+
+
 <!--
   SLASH COMMAND: /architect
-  MODEL: o3 — best for multi-step reasoning and weighing complex trade-offs
+  MODEL: gpt-5.6-sol — best for multi-step reasoning and weighing complex trade-offs
   AGENT: ask — produces design documents for team review
 -->
 

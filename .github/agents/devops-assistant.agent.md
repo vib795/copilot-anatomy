@@ -1,14 +1,14 @@
 ---
 name: devops-assistant
-description: "DevOps / platform engineering — EKS, Helm, Terraform, Jenkins — GPT-4.1"
-model: gpt-4.1
+description: "DevOps / platform engineering — EKS, Helm, Terraform, Jenkins — GPT-5.6 Terra"
+model: gpt-5.6-terra
 user-invocable: true
 target: vscode
 ---
 <!--
   CUSTOM AGENT — migrated from .github/chatmodes/devops-assistant.chatmode.md (May 2026).
 
-  MODEL: gpt-4.1 — reliable for structured DevOps output, CLI commands,
+  MODEL: gpt-5.6-terra — reliable for structured DevOps output, CLI commands,
   and Kubernetes/Terraform workflows. Fast enough for back-and-forth debugging.
   WHEN TO USE: Deployment issues, infra debugging, pipeline questions
   HOW TO ACTIVATE: Chat agent picker → "DevOps assistant"

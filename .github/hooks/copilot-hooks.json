@@ -1,22 +1,56 @@
 {
   "_comment": [
-    "GitHub Copilot coding-agent hooks — local policy/observability gates.",
+    "GitHub Copilot hooks — local policy/observability gates.",
     "",
-    "DOCS: https://docs.github.com/en/copilot/how-tos/use-copilot-agents/coding-agent/use-hooks",
+    "DOCS: https://docs.github.com/en/copilot/reference/hooks-reference",
+    "      https://docs.github.com/en/copilot/concepts/agents/hooks",
     "",
-    "Six supported events:",
-    "  sessionStart        — fires when a Copilot coding session begins",
-    "  sessionEnd          — fires when a session terminates (success or failure)",
-    "  userPromptSubmitted — fires after the user sends a chat message",
-    "  preToolUse          — fires before any tool/MCP call. Non-zero exit blocks.",
-    "  postToolUse         — fires after a tool/MCP call returns",
-    "  errorOccurred       — fires when the agent or a tool errors out",
+    "Fourteen events are supported (this file wires the ones that earn their",
+    "keep; the rest are listed so you know what is available):",
     "",
-    "Each hook entry runs `bash` on macOS/Linux and `powershell` on Windows.",
-    "Exit non-zero from preToolUse to deny the pending tool call.",
-    "Set chat.useCustomAgentHooks: true in VS Code settings to enable agent-scoped hooks."
+    "  LIFECYCLE",
+    "    sessionStart          — new or resumed session begins   → additionalContext",
+    "    sessionEnd            — session terminates              → notification only",
+    "    agentStop             — main agent finishes a turn      → decision: block|allow",
+    "    subagentStart         — a subagent is spawned           → additionalContext",
+    "    subagentStop          — a subagent completes            → decision: block|allow",
+    "",
+    "  PROMPT",
+    "    userPromptSubmitted   — user sends a message            → modifiedPrompt (SDK only)",
+    "    userPromptTransformed — runtime rewrote the prompt      → modifiedTransformedPrompt",
+    "",
+    "  TOOLS",
+    "    preToolUse            — before any tool/MCP call        → permissionDecision, modifiedArgs",
+    "    postToolUse           — after a tool returns            → modifiedResult, additionalContext",
+    "    postToolUseFailure    — after a tool fails              → additionalContext (recovery hints)",
+    "    permissionRequest     — before the permission service   → behavior: allow|deny",
+    "",
+    "  CONTEXT & DIAGNOSTICS",
+    "    preCompact            — context compaction begins       → notification only",
+    "    errorOccurred         — agent or tool errored           → notification only",
+    "    notification          — CLI emitted a notification      → additionalContext (async)",
+    "",
+    "HOOK TYPES: `command` (bash / powershell / cross-platform command),",
+    "`http` (HTTPS POST of the payload), and `prompt` (auto-submitted text,",
+    "sessionStart + CLI only).",
+    "",
+    "DECISIONS: preToolUse hooks emit JSON on stdout rather than relying on exit",
+    "codes — {\"permissionDecision\": \"allow\"|\"deny\"|\"ask\"}. See scripts/policy-gate.sh.",
+    "",
+    "FAILURE MODES: timeouts always fail OPEN. preToolUse command hooks fail",
+    "CLOSED on non-timeout errors; HTTP hooks fail open. Output is capped at",
+    "10 MiB per invocation.",
+    "",
+    "CLOUD AGENT: runs in an ephemeral Linux sandbox — only `bash` and `command`",
+    "are honoured, a subset of events fire, and there is no user interactivity,",
+    "so `ask` behaves as `deny` there. Keep gates advisory or fail-open.",
+    "",
+    "SCOPE: repo hooks live in .github/hooks/*.json; personal hooks in",
+    "~/.copilot/hooks/*.json. Set chat.useCustomAgentHooks: true in VS Code to",
+    "additionally honour agent-scoped hooks declared in .agent.md frontmatter."
   ],
   "version": 1,
+  "disableAllHooks": false,
   "hooks": {
     "sessionStart": [
       {
@@ -44,9 +78,11 @@
     ],
     "preToolUse": [
       {
+        "_comment": "Scoped by matcher to shell/edit tools — running the policy scan before every read is wasted latency. Emits a permissionDecision object; see scripts/policy-gate.sh.",
         "type": "command",
-        "bash": "bash .github/hooks/scripts/destructive-commands.sh && bash .github/hooks/scripts/broad-permissions.sh && bash .github/hooks/scripts/secret-hygiene.sh",
-        "powershell": "Write-Host 'preToolUse policy checks not implemented for PowerShell'",
+        "matcher": "^(bash|shell|run_in_terminal|edit|str_replace|create|write)$",
+        "bash": "bash .github/hooks/scripts/policy-gate.sh",
+        "powershell": "Write-Output '{\"permissionDecision\":\"allow\"}'",
         "timeoutSec": 15
       }
     ],
@@ -56,6 +92,40 @@
         "bash": "node .github/hooks/scripts/observe.js postToolUse 2>/dev/null || true",
         "powershell": "try { node .github/hooks/scripts/observe.js postToolUse 2>$null } catch {}",
         "timeoutSec": 5
+      }
+    ],
+    "postToolUseFailure": [
+      {
+        "_comment": "Records failures separately from successes so the observation log can distinguish 'agent tried and failed' from 'agent never tried'.",
+        "type": "command",
+        "bash": "node .github/hooks/scripts/observe.js postToolUseFailure 2>/dev/null || true",
+        "powershell": "try { node .github/hooks/scripts/observe.js postToolUseFailure 2>$null } catch {}",
+        "timeoutSec": 5
+      }
+    ],
+    "subagentStart": [
+      {
+        "type": "command",
+        "bash": "node .github/hooks/scripts/observe.js subagentStart 2>/dev/null || true",
+        "powershell": "try { node .github/hooks/scripts/observe.js subagentStart 2>$null } catch {}",
+        "timeoutSec": 3
+      }
+    ],
+    "subagentStop": [
+      {
+        "type": "command",
+        "bash": "node .github/hooks/scripts/observe.js subagentStop 2>/dev/null || true",
+        "powershell": "try { node .github/hooks/scripts/observe.js subagentStop 2>$null } catch {}",
+        "timeoutSec": 3
+      }
+    ],
+    "preCompact": [
+      {
+        "_comment": "Compaction is where context silently disappears. Logging it makes 'the agent forgot X' debuggable after the fact.",
+        "type": "command",
+        "bash": "node .github/hooks/scripts/observe.js preCompact 2>/dev/null || true",
+        "powershell": "try { node .github/hooks/scripts/observe.js preCompact 2>$null } catch {}",
+        "timeoutSec": 3
       }
     ],
     "errorOccurred": [

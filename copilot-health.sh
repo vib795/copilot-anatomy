@@ -41,7 +41,7 @@ TOTAL_ASSETS=$((PROMPT_COUNT + AGENT_COUNT + SKILL_COUNT + CHATMODE_COUNT + INST
 
 # ─── Run eval checks ─────────────────────────────────────────────────────────
 CHECKS=()
-CHECK_NAMES=(naming frontmatter model-refs manifest-sync governance doc-consistency deprecation)
+CHECK_NAMES=(naming frontmatter model-refs manifest-sync governance doc-consistency deprecation plugin-manifest)
 PASS_COUNT=0
 FAIL_COUNT=0
 
