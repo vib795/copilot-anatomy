@@ -1,14 +1,14 @@
 ---
 name: test-writer
 description: "Generate comprehensive tests following project conventions — Claude Sonnet"
-model: claude-sonnet-4-5
+model: claude-sonnet-5
 user-invocable: true
 target: vscode
 ---
 <!--
   CUSTOM AGENT — migrated from .github/chatmodes/test-writer.chatmode.md (May 2026).
 
-  MODEL: claude-sonnet-4-5 — consistently best at generating realistic,
+  MODEL: claude-sonnet-5 — consistently best at generating realistic,
   idiomatic tests that follow project conventions. Produces scenarios
   that actually test behaviour, not just structure.
   WHEN TO USE: Adding tests to existing code, TDD for new features

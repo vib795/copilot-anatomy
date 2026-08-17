@@ -1,12 +1,20 @@
 ---
 agent: ask
-model: gpt-4.1
+model: gpt-5.6-terra
 description: "Generate deployment checklist and Helm commands for the active service"
 ---
 
+> [!WARNING]
+> **DEPRECATED (2026-08-17) — removal 2026-11-16.** Prompt files run only in the
+> Local agent harness. Copilot CLI, the Copilot cloud agent, and Agent Plugins
+> express slash commands as **skills**. This command now lives at
+> `.github/skills/deploy/SKILL.md`; edit that file, not this one.
+> See `.github/GOVERNANCE.md` → "Deprecating an asset".
+
+
 <!--
   SLASH COMMAND: /deploy
-  MODEL: gpt-4.1 — reliable for structured DevOps checklists and CLI commands
+  MODEL: gpt-5.6-terra — reliable for structured DevOps checklists and CLI commands
   AGENT: ask — produces output for you to review, does not run commands
 -->
 

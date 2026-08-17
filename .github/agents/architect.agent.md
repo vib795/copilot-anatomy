@@ -1,15 +1,15 @@
 ---
 name: architect
-description: "System design and ADRs — trade-off analysis — o3 (best reasoning)"
-model: o3
+description: "System design and ADRs — trade-off analysis — gpt-5.6-sol (best reasoning)"
+model: gpt-5.6-sol
 user-invocable: true
 target: vscode
 ---
 <!--
   CUSTOM AGENT — migrated from .github/chatmodes/architect.chatmode.md (May 2026).
 
-  MODEL: o3 — chosen specifically because architecture decisions require the
-  deepest reasoning. o3 thinks through multi-step trade-offs, second-order
+  MODEL: gpt-5.6-sol — chosen specifically because architecture decisions require the
+  deepest reasoning. gpt-5.6-sol thinks through multi-step trade-offs, second-order
   consequences, and operational constraints better than any other model.
   WHEN TO USE: New service design, major refactors, technology decisions
   HOW TO ACTIVATE: Chat agent picker → "Architect"

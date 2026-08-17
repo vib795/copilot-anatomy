@@ -1,12 +1,20 @@
 ---
 agent: agent
-model: claude-opus-4-5
+model: claude-opus-5
 description: "Wave 2 weeks 3-4 capstone hackathon: build a reusable accelerator (agent, workflow, or template library) that solves a real delivery problem"
 ---
 
+> [!WARNING]
+> **DEPRECATED (2026-08-17) — removal 2026-11-16.** Prompt files run only in the
+> Local agent harness. Copilot CLI, the Copilot cloud agent, and Agent Plugins
+> express slash commands as **skills**. This command now lives at
+> `.github/skills/wave2-capstone-accelerator/SKILL.md`; edit that file, not this one.
+> See `.github/GOVERNANCE.md` → "Deprecating an asset".
+
+
 <!--
   SLASH COMMAND: /wave2-capstone-accelerator
-  MODEL: claude-opus-4-5 — open-ended building task spanning design, authoring, and governance
+  MODEL: claude-opus-5 — open-ended building task spanning design, authoring, and governance
   AGENT: agent — teams create real asset files that must pass the eval checks
 -->
 

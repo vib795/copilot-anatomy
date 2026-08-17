@@ -1,12 +1,20 @@
 ---
 agent: agent
-model: claude-sonnet-4-5
+model: claude-sonnet-5
 description: "Generate or update documentation for the selected code"
 ---
 
+> [!WARNING]
+> **DEPRECATED (2026-08-17) — removal 2026-11-16.** Prompt files run only in the
+> Local agent harness. Copilot CLI, the Copilot cloud agent, and Agent Plugins
+> express slash commands as **skills**. This command now lives at
+> `.github/skills/document/SKILL.md`; edit that file, not this one.
+> See `.github/GOVERNANCE.md` → "Deprecating an asset".
+
+
 <!--
   SLASH COMMAND: /document
-  MODEL: claude-sonnet-4-5 — natural prose + technical accuracy
+  MODEL: claude-sonnet-5 — natural prose + technical accuracy
   AGENT: agent — autonomous mode that updates documentation inline in the file
 -->
 

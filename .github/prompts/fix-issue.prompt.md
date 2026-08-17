@@ -1,12 +1,20 @@
 ---
 agent: agent
-model: claude-sonnet-4-5
+model: claude-sonnet-5
 description: "Diagnose root cause and fix the bug in the active file"
 ---
 
+> [!WARNING]
+> **DEPRECATED (2026-08-17) — removal 2026-11-16.** Prompt files run only in the
+> Local agent harness. Copilot CLI, the Copilot cloud agent, and Agent Plugins
+> express slash commands as **skills**. This command now lives at
+> `.github/skills/fix-issue/SKILL.md`; edit that file, not this one.
+> See `.github/GOVERNANCE.md` → "Deprecating an asset".
+
+
 <!--
   SLASH COMMAND: /fix-issue
-  MODEL: claude-sonnet-4-5 — reliable at targeted code edits
+  MODEL: claude-sonnet-5 — reliable at targeted code edits
   AGENT: agent — autonomous mode that modifies files directly
 -->
 

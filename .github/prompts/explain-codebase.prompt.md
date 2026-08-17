@@ -1,12 +1,20 @@
 ---
 agent: ask
-model: gemini-2.5-pro
+model: gpt-5.4
 description: "Explain a large file, module, or subsystem — uses 1M token context"
 ---
 
+> [!WARNING]
+> **DEPRECATED (2026-08-17) — removal 2026-11-16.** Prompt files run only in the
+> Local agent harness. Copilot CLI, the Copilot cloud agent, and Agent Plugins
+> express slash commands as **skills**. This command now lives at
+> `.github/skills/explain-codebase/SKILL.md`; edit that file, not this one.
+> See `.github/GOVERNANCE.md` → "Deprecating an asset".
+
+
 <!--
   SLASH COMMAND: /explain-codebase
-  MODEL: gemini-2.5-pro — 1M token context window, reads entire codebases
+  MODEL: gpt-5.4 — 1M token context window, reads entire codebases
   AGENT: ask — produces an explanation document
   BEST FOR: Files > 2000 lines, entire packages, subsystems with many files
   TIP: Select multiple files before running this command for broader analysis

@@ -1,6 +1,6 @@
 ---
 name: review
-model: claude-opus-4-5
+model: claude-opus-5
 description: >
   Review agent. Performs thorough code review of the implementation, then
   produces a PR description ready to copy-paste. Final step in the chain.
@@ -10,7 +10,7 @@ tools:
   - list_directory
 ---
 <!--
-  MODEL: claude-opus-4-5 — most thorough Claude model. Used here because
+  MODEL: claude-opus-5 — most thorough Claude model. Used here because
   security and correctness review benefits from maximum scrutiny.
   TOOLS: Read-only — this agent does not modify files.
   CHAIN: plan → implement → review (terminal)
