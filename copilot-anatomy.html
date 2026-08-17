@@ -144,8 +144,11 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
 .code-label{font-family:var(--mono);font-size:9px;color:var(--hint);background:var(--bg3);border:1px solid var(--border);border-radius:4px 4px 0 0;padding:3px 10px;display:inline-block;margin-bottom:-1px}
 
 .tip-list{list-style:none;display:flex;flex-direction:column;gap:6px}
-.tip-list li{display:flex;gap:8px;font-size:12px;color:var(--muted);line-height:1.6}
-.tip-list li::before{content:"›";color:var(--border2);flex-shrink:0;font-size:14px;line-height:1.4}
+/* Hanging indent, NOT flex: a flex li turns every inline child (<strong>,
+   <em>, bare text) into its own flex item, which chops a tip with
+   mid-sentence markup into separate columns. */
+.tip-list li{position:relative;padding-left:16px;font-size:12px;color:var(--muted);line-height:1.6}
+.tip-list li::before{content:"›";position:absolute;left:0;top:0;color:var(--border2);font-size:14px;line-height:19.2px} /* 19.2px == the li's first line box (12px x 1.6), so the glyph sits on the first line */
 .tip-list li strong{color:var(--text)}
 
 .tag-row{display:flex;flex-wrap:wrap;gap:5px}
