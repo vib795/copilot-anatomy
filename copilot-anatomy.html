@@ -442,6 +442,46 @@ const ITEMS = {
   tags: [{text:'/test-gen', color:'blue'},{text:'agent: agent', color:'red'},{text:'claude-sonnet-4-5', color:'purple'}]
 },
 
+'wave2-cap-delivery': {
+  path: '.github/prompts/wave2-capstone-delivery.prompt.md',
+  label: 'wave2-capstone-delivery.prompt.md',
+  chip: 'c-gray',
+  model: 'opus',
+  trigger: { type: 'manual', text: 'Manual — type /wave2-capstone-delivery in Copilot Chat' },
+  what: 'The Wave 2 weeks 1–2 <strong>capstone facilitator</strong>: guides a mixed BA+Dev+QA team through a realistic delivery milestone using chained agents, shared context plans, and cross-persona handoffs — with <strong>no scaffolding provided</strong>. Tracks handoff count, contract amendments, and human interventions.',
+  when: 'At the end of curriculum weeks 1–2, after the team has built chains (lab 1), context plans (lab 2), guardrails (lab 3), and artifact contracts (lab 4).',
+  content: `---\nagent: agent\nmodel: claude-opus-4-5\ndescription: "Wave 2 weeks 1-2 capstone: end-to-end\n  delivery scenario using chained agents"\n---\n\n1. BA: brief → stories → criteria chain\n2. Handoff gate — artifact contract honored?\n3. Dev: plan → implement → test chain\n4. QA: coverage review → gap list handoff\n5. Guardrails on — violations stop the line\n6. Impact logged as you work`,
+  contentLabel: 'Frontmatter + scenario flow',
+  whyModel: 'claude-opus-4-5 is chosen because the capstone is a long, multi-phase orchestration: it must hold the scenario state, every persona\'s artifact contract, and the facilitation rules in one session while making judgment calls about when a handoff failed. The thorough model handles the open-ended, hours-long scope better than faster models.',
+  tips: [
+    '<strong>When a handoff fails, fix the contract — not the output.</strong> The facilitator directs teams to amend the artifact contract and regenerate, never hand-translate between personas.',
+    'The milestone is complete only when QA\'s coverage review passes and all validation checkpoints are green.',
+    'Every participant logs impact entries (lab 5 schema) <em>during</em> the scenario — retrospective logging inflates savings.',
+    'Pairs with the curriculum labs in .github/skills/wave2-*/ — see docs/curriculum/wave-2/README.md for the full map.'
+  ],
+  tags: [{text:'/wave2-capstone-delivery', color:'blue'},{text:'agent: agent', color:'red'},{text:'curriculum capstone', color:'teal'}]
+},
+
+'wave2-cap-accelerator': {
+  path: '.github/prompts/wave2-capstone-accelerator.prompt.md',
+  label: 'wave2-capstone-accelerator.prompt.md',
+  chip: 'c-gray',
+  model: 'opus',
+  trigger: { type: 'manual', text: 'Manual — type /wave2-capstone-accelerator in Copilot Chat' },
+  what: 'The Wave 2 weeks 3–4 <strong>hackathon facilitator</strong>: teams build a reusable accelerator (agent, workflow, or template library) that solves a real delivery problem. Enforces an evidence-based problem pitch, correct primitive choice, a non-negotiable governance gate, and a <strong>cold demo</strong> where the team may not speak.',
+  when: 'At the end of curriculum weeks 3–4, after teams have packaged accelerators (lab 7) and defined team standards (lab 8). Judged by leadership.',
+  content: `---\nagent: agent\nmodel: claude-opus-4-5\ndescription: "Wave 2 weeks 3-4 capstone hackathon:\n  build a reusable accelerator"\n---\n\nJudging criteria:\n| Real problem solved   | 30% | impact-log data |\n| Reusability           | 30% | the cold demo   |\n| Governance quality    | 20% | eval checks green |\n| Craft                 | 20% | right primitive  |`,
+  contentLabel: 'Frontmatter + judging table',
+  whyModel: 'claude-opus-4-5 spans the hackathon\'s full arc — problem framing, primitive-choice challenges, asset authoring, and governance review — where shallower models lose track of the judging rubric. The capstone is run rarely (once per cohort), so the cost trade-off favors quality.',
+  tips: [
+    '<strong>No evidence, no build.</strong> Problem pitches must cite impact-log data or retrospective findings, not anecdote.',
+    'The governance gate is non-negotiable: manifest entry + changelog entry + all eval checks green <em>before</em> judging.',
+    'The cold demo is the reusability test: someone not on the team runs the accelerator from its documentation alone.',
+    'Hold teams to primitive routing: one-shot task → prompt; runbook → skill; persona/handoffs → agent; always-on rule → instructions.'
+  ],
+  tags: [{text:'/wave2-capstone-accelerator', color:'blue'},{text:'agent: agent', color:'red'},{text:'judged hackathon', color:'amber'}]
+},
+
 // ── INSTRUCTIONS ─────────────────────────────────────────────────────────
 
 'code-style': {
@@ -604,6 +644,66 @@ const ITEMS = {
     'Severity definitions (Sev-1/2/3) are project-specific — edit these to match your team\'s actual SLA definitions.'
   ],
   tags: [{text:'auto-discovered', color:'amber'},{text:'incident response', color:'red'},{text:'no model', color:'gray'}]
+},
+
+'wave2-chaining': {
+  path: '.github/skills/wave2-chaining-agents/SKILL.md',
+  label: 'SKILL.md',
+  chip: 'c-amber',
+  model: null,
+  trigger: { type: 'auto-desc', text: 'Auto-discovered when prompt matches: agent chaining · handoffs · multi-step workflow · pipeline' },
+  what: 'Wave 2 curriculum lab (weeks 1–2, days 1–2): chain 2–3 agents into a multi-step delivery workflow. The shared concept is taught against this repo\'s real <strong>plan → implement → review</strong> handoff chain; persona files (<strong>ba-track.md / dev-track.md / qa-track.md</strong>) sit alongside SKILL.md with BA (brief → stories → criteria), Dev (spec → code → test → review), and QA (spec → test plan → test code → coverage) pipelines.',
+  when: 'Automatically when you ask about chaining agents, wiring handoffs, or building a multi-step agent workflow. Also the entry point for curriculum cohorts on days 1–2.',
+  content: `---\nname: wave2-chaining-agents\ndescription: >\n  Wave 2 curriculum lab (weeks 1-2, days 1-2).\n  Use when learning to chain two or three custom\n  agents into a multi-step workflow, wire agent\n  handoffs, or build a pipeline like brief to\n  stories to acceptance criteria.\n---\n\n## Lab steps\n1. Read handoffs: in plan.agent.md\n2. Run the existing chain on a toy task\n3. Sketch your own 2-3 link chain\n4. Author the agents on a scratch branch\n5. Capture where context was lost`,
+  contentLabel: 'SKILL.md structure',
+  whyModel: null,
+  tips: [
+    '<strong>The handoffs: frontmatter field is the chain mechanism</strong> — plan.agent.md names implement as its next agent; study it before building your own.',
+    'Persona-specific labs live as extra files in the skill folder — a skill is a directory, so it can bundle ba-track.md, dev-track.md, qa-track.md beside SKILL.md.',
+    'Exit criteria: a working 2+ agent chain, plus a written note on what context each handoff must carry to avoid rework.',
+    'This lab\'s chains are reused by labs 3 (guardrails), 4 (cross-persona) and the /wave2-capstone-delivery capstone.'
+  ],
+  tags: [{text:'auto-discovered', color:'amber'},{text:'curriculum wk1-2', color:'teal'},{text:'persona tracks', color:'pink'}]
+},
+
+'wave2-context': {
+  path: '.github/skills/wave2-context-engineering/SKILL.md',
+  label: 'SKILL.md',
+  chip: 'c-amber',
+  model: null,
+  trigger: { type: 'auto-desc', text: 'Auto-discovered when prompt matches: context engineering · chunking · context window · long specs · large codebase' },
+  what: 'Wave 2 curriculum lab (weeks 1–2, days 3–4): manage large context windows for real artifacts — <strong>chunking strategies, reference injection, and context prioritization</strong>. Learners compare the always-on team prompt (expensive, every request) against applyTo:-scoped instructions (cheap, targeted) and the longcontext-reader agent pattern, then build a written inject / chunk / summarize plan for their persona\'s artifact.',
+  when: 'Automatically when you ask about fitting a 100-page spec or a large codebase into context, chunking, or why an answer cites content the model never saw.',
+  content: `---\nname: wave2-context-engineering\ndescription: >\n  Wave 2 curriculum lab (weeks 1-2, days 3-4).\n  Use when learning to manage large context\n  windows, chunk long specs or large codebases,\n  inject references, and prioritize context.\n---\n\nTier 1 (inject whole): glossary, constraints\nTier 2 (chunk by section): requirements\nTier 3 (summarize-then-reference): appendices\n\nPersona tracks: ba / dev / qa-track.md`,
+  contentLabel: 'SKILL.md structure',
+  whyModel: null,
+  tips: [
+    '<strong>Always-on context eats every request\'s budget</strong> — the lab\'s first exercise is reading copilot-instructions.md for what it deliberately excludes.',
+    'Reference injection: paste requirement IDs + one-line summaries and let the agent ask for full text by ID — instead of pasting everything.',
+    'Models weight early context more heavily: put constraints and non-goals <em>before</em> the question.',
+    'Watch for answers citing line numbers from a truncated region — verify the model actually saw the section it cites.'
+  ],
+  tags: [{text:'auto-discovered', color:'amber'},{text:'curriculum wk1-2', color:'teal'},{text:'persona tracks', color:'pink'}]
+},
+
+'wave2-guardrails': {
+  path: '.github/skills/wave2-guardrails-error-recovery/SKILL.md',
+  label: 'SKILL.md',
+  chip: 'c-amber',
+  model: null,
+  trigger: { type: 'auto-desc', text: 'Auto-discovered when prompt matches: guardrails · fallback · validation checkpoints · error recovery · reliable agents' },
+  what: 'Wave 2 curriculum lab (weeks 1–2, days 5–6): make agents <strong>reliable enough for production, not just demos</strong>. Learners map this repo\'s guardrail layers — preToolUse hooks that block destructive tool calls, the three policy scripts, MCP least-privilege profiles, and eval checks as validation checkpoints — then trip one on purpose, add their own checkpoint, and write fallback rules (retry / hand back / escalate) for every chain link.',
+  when: 'Automatically when you ask about agent guardrails, fallback behavior, validation checkpoints, or making an agent chain production-safe.',
+  content: `---\nname: wave2-guardrails-error-recovery\ndescription: >\n  Wave 2 curriculum lab (weeks 1-2, days 5-6).\n  Use when learning to build agents with explicit\n  guardrails, fallback behaviors, and validation\n  checkpoints for production reliability.\n---\n\nLayers:\n- preToolUse hook → BLOCKS the tool call\n- policy scripts → destructive cmds, secrets\n- MCP profiles → read-only by default\n- eval checks → deterministic validation`,
+  contentLabel: 'SKILL.md structure',
+  whyModel: null,
+  tips: [
+    '<strong>Prevention vs detection:</strong> a preToolUse hook with non-zero exit blocks the pending tool call; eval checks catch what slipped through.',
+    'The lab has you trip a guardrail on purpose — generate a script containing rm -rf and watch destructive-commands.sh flag it.',
+    'Every chain link gets a written fallback rule: on validation failure, retry with the error appended, hand back to the previous link, or stop and ask a human.',
+    'Default MCP profile is read-only — the lab requires a written justification for any escalation.'
+  ],
+  tags: [{text:'auto-discovered', color:'amber'},{text:'curriculum wk1-2', color:'teal'},{text:'production safety', color:'red'}]
 },
 
 // ── AGENTS ────────────────────────────────────────────────────────────────
@@ -1037,7 +1137,9 @@ const TREE = [
   { id:'security-scan',  indent:2, cn:'├─', chip:'c-gray', label:'security-scan.prompt.md',   desc:'→ /security-scan · OWASP', model:'m-opus' },
   { id:'document',       indent:2, cn:'├─', chip:'c-gray', label:'document.prompt.md',        desc:'→ /document · Javadoc/GoDoc', model:'m-sonnet' },
   { id:'explain-codebase',indent:2,cn:'├─', chip:'c-gray', label:'explain-codebase.prompt.md',desc:'→ /explain-codebase · 1M ctx', model:'m-gemini' },
-  { id:'test-gen',       indent:2, cn:'└─', chip:'c-gray', label:'test-gen.prompt.md',        desc:'→ /test-gen · realistic tests', model:'m-sonnet' },
+  { id:'test-gen',       indent:2, cn:'├─', chip:'c-gray', label:'test-gen.prompt.md',        desc:'→ /test-gen · realistic tests', model:'m-sonnet' },
+  { id:'wave2-cap-delivery',    indent:2, cn:'├─', chip:'c-gray', label:'wave2-capstone-delivery.prompt.md',    desc:'→ curriculum capstone wk1-2 · multi-agent', model:'m-opus' },
+  { id:'wave2-cap-accelerator', indent:2, cn:'└─', chip:'c-gray', label:'wave2-capstone-accelerator.prompt.md', desc:'→ curriculum capstone wk3-4 · hackathon', model:'m-opus' },
 
   { type:'folder', indent:1, cn:'├─', chip:'c-green', label:'instructions/', desc:'auto-loaded rules by file type', arrow:true },
   { id:'code-style',       indent:2, cn:'├─', chip:'c-gray', label:'code-style.instructions.md',     desc:'*.java *.go *.py *.ts' },
@@ -1052,8 +1154,15 @@ const TREE = [
   { id:'debug-eks',      indent:3, cn:'└─', chip:'c-amber', label:'SKILL.md', desc:'OOMKilled · CrashLoopBackOff · kubectl' },
   { type:'subfolder', indent:2, cn:'├─', chip:'c-orange', label:'terraform-plan/' },
   { id:'terraform-plan', indent:3, cn:'└─', chip:'c-amber', label:'SKILL.md', desc:'tofu plan · apply · state' },
-  { type:'subfolder', indent:2, cn:'└─', chip:'c-orange', label:'incident-triage/' },
+  { type:'subfolder', indent:2, cn:'├─', chip:'c-orange', label:'incident-triage/' },
   { id:'incident-triage',indent:3, cn:'└─', chip:'c-amber', label:'SKILL.md', desc:'production incident · postmortem' },
+  { type:'subfolder', indent:2, cn:'├─', chip:'c-orange', label:'wave2-chaining-agents/' },
+  { id:'wave2-chaining', indent:3, cn:'└─', chip:'c-amber', label:'SKILL.md', desc:'curriculum: chain agents · handoffs' },
+  { type:'subfolder', indent:2, cn:'├─', chip:'c-orange', label:'wave2-context-engineering/' },
+  { id:'wave2-context',  indent:3, cn:'└─', chip:'c-amber', label:'SKILL.md', desc:'curriculum: chunking · long specs' },
+  { type:'subfolder', indent:2, cn:'├─', chip:'c-orange', label:'wave2-guardrails-error-recovery/' },
+  { id:'wave2-guardrails',indent:3,cn:'└─', chip:'c-amber', label:'SKILL.md', desc:'curriculum: guardrails · fallbacks' },
+  { indent:2, cn:'└─', chip:'c-orange', label:'wave2-…/', desc:'+ 7 more curriculum labs — docs/curriculum/wave-2/' },
 
   { type:'folder', indent:1, cn:'├─', chip:'c-pink', label:'agents/', desc:'Custom Agents — task chains + persona sessions', arrow:true, tbadge:'t-chain' },
   { id:'plan-agent',      indent:2, cn:'├─', chip:'c-gray', label:'plan.agent.md',      desc:'task: scope · risks · handoff', model:'m-o3' },

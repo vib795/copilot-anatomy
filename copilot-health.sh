@@ -30,7 +30,12 @@ AGENT_COUNT=$(find .github/agents -name '*.agent.md' 2>/dev/null | wc -l | tr -d
 SKILL_COUNT=$(find .github/skills -name 'SKILL.md' 2>/dev/null | wc -l | tr -d ' ')
 # Legacy: chat modes were renamed to Custom Agents (.agent.md). Kept here so
 # the dashboard still flags any stragglers if a `.chatmode.md` re-appears.
-CHATMODE_COUNT=$(find .github/chatmodes -name '*.chatmode.md' 2>/dev/null | wc -l | tr -d ' ')
+# The directory itself was removed 2026-05-07; under pipefail a find on a
+# missing path would abort the script, so guard on existence first.
+CHATMODE_COUNT=0
+if [[ -d .github/chatmodes ]]; then
+  CHATMODE_COUNT=$(find .github/chatmodes -name '*.chatmode.md' | wc -l | tr -d ' ')
+fi
 INSTRUCTION_COUNT=$(find .github/instructions -name '*.instructions.md' 2>/dev/null | wc -l | tr -d ' ')
 TOTAL_ASSETS=$((PROMPT_COUNT + AGENT_COUNT + SKILL_COUNT + CHATMODE_COUNT + INSTRUCTION_COUNT))
 

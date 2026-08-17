@@ -9,6 +9,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Wave 2 curriculum (10 lab skills + 2 capstone prompts) — "From Individual Proficiency → Delivery-Integrated, Team-Scale AI Execution", imported from the Wave 2 Proposed Curriculum sheet. Ten `wave2-*` skill directories under `.github/skills/` — weeks 1–2 (Advanced Agent Building & Multi-Step Workflows): chaining-agents, context-engineering, guardrails-error-recovery, cross-persona-collaboration, impact-tracking; weeks 3–4 (Delivery Integration & Reusable Assets): embedding-ai-project, reusable-accelerators, team-standards-agent-library, ai-estimation-planning, ai-delivery-playbook. Persona-specific labs carry `ba-track.md` / `dev-track.md` / `qa-track.md` alongside `SKILL.md`.
+- `.github/prompts/wave2-capstone-delivery.prompt.md` — weeks 1–2 capstone: end-to-end delivery scenario with chained agents and cross-persona handoffs (`/wave2-capstone-delivery`).
+- `.github/prompts/wave2-capstone-accelerator.prompt.md` — weeks 3–4 capstone hackathon: build a governance-clean reusable accelerator, judged on evidence, reusability, governance, and craft (`/wave2-capstone-accelerator`).
+- `docs/curriculum/wave-2/README.md` — curriculum map: day-by-day lab → asset table, lab threading, and cohort-run instructions.
+
 - `AGENTS.md` at repo root — cross-tool instruction file recognized by Copilot, Claude Code, Cursor, Aider, and other agents that read `AGENTS.md` alongside `CLAUDE.md` and `GEMINI.md`.
 - `.vscode/settings.json` — current canonical chat-customization location keys: `chat.agentFilesLocations`, `chat.agentSkillsLocations`, `chat.promptFilesLocations`, `chat.instructionsFilesLocations`. New flags: `chat.agent.enabled`, `chat.useCustomAgentHooks`, `chat.mcp.discovery.enabled`, `chat.useCustomizationsInParentRepositories`, `github.copilot.chat.organizationCustomAgents.enabled`.
 - `.vscode/mcp.json` — examples of the `streamable-http` server type, `envFile`, `dev: { watch }`, and the `sandboxEnabled` / `sandbox` block (filesystem + network rules).
@@ -38,6 +43,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Changed
 
+- `copilot-anatomy.html` — visualizer now includes Wave 2 curriculum examples: three lab skills (`wave2-chaining-agents`, `wave2-context-engineering`, `wave2-guardrails-error-recovery`) in the skills/ tree and both capstone prompts (`/wave2-capstone-delivery`, `/wave2-capstone-accelerator`) in the prompts/ tree, each with full detail panels (trigger, lab structure, tips); a placeholder row points at the 7 remaining labs via `docs/curriculum/wave-2/`.
 - `copilot-instructions.md` — added governance, model compatibility references, and MCP security posture section
 - `COPILOT-CHEATSHEET.md` — added governance section with manifest, eval, and changelog guidance; migrated `mode:` examples to the new `agent:` field syntax
 - `copilot-hooks.yml` — integrated 3 policy check steps in pre-action-checks job
@@ -61,6 +67,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - `mkdir "$ROOT/.github/chatmodes"` in `copilot-setup.sh` — generator no longer creates the legacy directory in target repos.
 - `chatmode` asset type from `copilot-discover.sh` indexer (folded into `agent`).
 - `chatmodes/` folder tile from the `copilot-anatomy.html` visualizer (merged into the `agents/` tile, which now hosts both task and persona agents).
+
+### Fixed
+
+- 49 of 59 `.github/agents/*.agent.md` files had every newline stripped — each file was one single line, with frontmatter keys run together and all body structure (headings, lists, example blocks, tables, code fences) collapsed. Restored proper multi-line formatting; verified whitespace-stripped content is byte-identical to the prior state for every file.
+- 14 of those agent files also carried cp437 mojibake from the same encoding accident (`ΓÇö` for em dash, `ΓåÆ` for arrow, garbled emoji, `┬▓` for superscript-2). Reversed deterministically; zero reversible mojibake sequences remain in the repo.
+- `copilot-health.sh` — aborted under `set -euo pipefail` because it ran `find` on the removed `.github/chatmodes/` directory (broken since the 2026-05-07 chatmode removal). The chatmode count is now guarded on directory existence; the health dashboard regenerates again.
 
 ### Security
 
