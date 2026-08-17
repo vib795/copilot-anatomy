@@ -96,7 +96,7 @@ if [[ -n "$LINE_LIMITS" ]]; then
   limit_count=$(echo "$limit_values" | grep -c '[^ ]' || true)
   if [[ "$limit_count" -gt 1 ]]; then
     echo "  WARN: Conflicting line length limits found:"
-    echo "$LINE_LIMITS" | head -5
+    printf '%s\n' "$LINE_LIMITS" | head -5 || true   # tolerate SIGPIPE from head
     WARNINGS=$((WARNINGS + 1))
   fi
 fi
