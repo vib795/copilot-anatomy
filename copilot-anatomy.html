@@ -167,6 +167,23 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
   .main{padding:18px 16px 60px}
   .panel{width:100vw;height:85vh;top:auto;bottom:0;border-left:none;border-top:1px solid var(--border);border-radius:16px 16px 0 0;transform:translateY(100%)}
   .panel.open{transform:translateY(0)}
+
+  /* Tree rows are one nowrap flex line of connector + filename + dots +
+     description + model badge. That is ~620px wide, so on a phone it forced
+     the whole page to scroll sideways. Let the row wrap onto two lines
+     instead: filename on top, description + badge underneath. */
+  .row{flex-wrap:wrap;align-items:flex-start;row-gap:2px;min-height:0;padding:5px 4px}
+  /* The dot leader becomes the line break: full-width basis pushes whatever
+     follows onto line 2, and zero height + no border makes it invisible. */
+  .dot-leader{flex-basis:100%;height:0;border:none;margin:0}
+  /* Long descriptions must be allowed to wrap and to shrink below their
+     content width, otherwise they overflow again on the second line. */
+  .row-desc{white-space:normal;flex-shrink:1;min-width:0;margin-left:16px}
+  .row-badges{flex-wrap:wrap;row-gap:3px}
+  /* Keep the tree's own indent columns from eating a phone's width. */
+  .indent1{width:8px}
+  .indent2{width:16px}
+  .indent3{width:24px}
 }
 </style>
 </head>
