@@ -1,5 +1,5 @@
 ---
-name: gstack-upgrade
+name: gstack-gstack-upgrade
 version: 1.1.0
 description: |
   Upgrade gstack to the latest version. Detects global vs vendored install,
