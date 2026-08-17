@@ -408,7 +408,7 @@ const ITEMS = {
   chip: 'c-gray',
   model: 'longctx',
   trigger: { type: 'manual', text: 'Manual — type /explain-codebase in Copilot Chat' },
-  what: 'Reads entire large files or complete codebases using Gemini\'s 1M token context window. Produces: what it does (plain language), key concepts, data flow trace, gotchas, and where to start if making a change.',
+  what: 'Reads entire large files or complete codebases using GPT-5.4\'s 1M token context window. Produces: what it does (plain language), key concepts, data flow trace, gotchas, and where to start if making a change.',
   when: 'When you type /explain-codebase. Best for files over 2,000 lines, entire packages, or unfamiliar services. Use "Add files to context" in VS Code to attach multiple files before running.',
   content: `---\nagent: ask\nmodel: gpt-5.4\ndescription: "Explain large files/codebases — 1M token context"\n---\n\n## 1. What this does (2-3 sentences)\n## 2. Key concepts (3-5 things)\n## 3. Data flow / request lifecycle\n## 4. Non-obvious behaviour\n## 5. Where to start if making a change\n\nNote: Never truncate — that's the point.`,
   contentLabel: 'Frontmatter + output structure',
@@ -417,7 +417,7 @@ const ITEMS = {
     'Use VS Code\'s <strong>"Add files to context"</strong> (paperclip icon) before running /explain-codebase to attach all relevant files.',
     'GPT-5.4 is premium tier — use this for genuine onboarding or deep code archaeology, not casual questions.',
     'The output format is designed for printing or saving — consider pasting it into Confluence or Notion as a service reference.',
-    'Works equally well for unfamiliar libraries: attach the library source and ask Gemini to explain its architecture.'
+    'Works equally well for unfamiliar libraries: attach the library source and ask GPT-5.4 to explain its architecture.'
   ],
   tags: [{text:'/explain-codebase', color:'blue'},{text:'1M tokens', color:'teal'},{text:'gpt-5.4', color:'teal'}]
 },
@@ -860,7 +860,7 @@ const ITEMS = {
   when: 'Select "Large codebase reader" from the chat mode dropdown. Use "Add files to context" (paperclip icon) before asking your question to attach multiple files at once.',
   content: `---\ndescription: "Read entire codebases — GPT-5.4 (1M tokens)"\nmodel: gpt-5.4\n---\n\n1M token context window. Read everything first.\n\nFor every analysis:\n1. What it does (2-3 sentences, plain language)\n2. Key concepts (3-5 things)\n3. Data flow trace (numbered steps)\n4. Non-obvious behaviour (surprises)\n5. Entry points for new contributors\n\nNever truncate — that's the point.`,
   contentLabel: 'Full custom agent definition',
-  whyModel: 'GPT-5.4\'s <strong>1 million token context window</strong> is why this persona agent exists. A typical Spring Boot service with all tests might be 50,000-100,000 tokens. Other models truncate or chunk it, losing the holistic view. Gemini reads the whole thing in one shot, enabling analysis that considers how all the pieces interact.',
+  whyModel: 'GPT-5.4\'s <strong>1 million token context window</strong> is why this persona agent exists. A typical Spring Boot service with all tests might be 50,000-100,000 tokens. Other models truncate or chunk it, losing the holistic view. GPT-5.4 reads the whole thing in one shot, enabling analysis that considers how all the pieces interact.',
   tips: [
     'Use <strong>"Add files to context"</strong> (📎 paperclip in VS Code chat) to attach all files in a module before asking.',
     'GPT-5.4 is premium tier — use it for genuine onboarding or legacy archaeology sessions.',
