@@ -1,8 +1,11 @@
 # Copilot Anatomy
 
 A reference implementation for configuring **GitHub Copilot** across a multi-model,
-polyglot team. Includes every customisation primitive — instructions, prompts, skills,
-agents, chat modes — plus governance tooling and an interactive visualisation.
+polyglot team. Includes every customisation primitive — `AGENTS.md`, instructions,
+skills, custom agents, hooks, MCP, and Agent Plugins 1.0 packaging — plus governance
+tooling and an interactive visualisation.
+
+*Verified against GitHub Copilot's documented behaviour on 2026-08-17.*
 
 > **[Live demo →](https://vib795.github.io/copilot-anatomy/)** Explore every file and
 > how the pieces fit together — right in your browser.
@@ -32,11 +35,14 @@ Browse the files directly. The cheatsheet explains everything:
 ## What's inside
 
 ```
-.github/
+.github/                             ← also the Agent Plugins 1.0 plugin root
 ├── copilot-instructions.md          ← Always-on team instructions
 ├── copilot-asset-manifest.json      ← Single source of truth for all assets
-├── model-compatibility.json         ← Model × primitive compatibility matrix
+├── model-compatibility.json         ← Model roster, slots, deprecations, fallbacks
 ├── GOVERNANCE.md                    ← Checklist for adding new assets
+├── plugin.json                      ← Agent Plugins 1.0 manifest
+├── mcp.json                         ← Portable MCP servers (spec schema)
+├── com.github.copilot/              ← Copilot-only extension namespace
 │
 ├── instructions/                    ← Auto-loaded rules scoped by file type
 │   ├── code-style.instructions.md
@@ -44,9 +50,9 @@ Browse the files directly. The cheatsheet explains everything:
 │   ├── api-conventions.instructions.md
 │   └── infrastructure.instructions.md
 │
-├── prompts/                         ← Slash commands (/review, /deploy, etc.)
-│   ├── review.prompt.md
-│   ├── fix-issue.prompt.md
+├── prompts/                         ← LEGACY slash commands — Local harness only
+│   ├── review.prompt.md                (deprecated, removal 2026-11-16)
+│   ├── fix-issue.prompt.md             each now has a skills/ equivalent
 │   ├── deploy.prompt.md
 │   ├── architect.prompt.md
 │   ├── security-scan.prompt.md
@@ -58,23 +64,25 @@ Browse the files directly. The cheatsheet explains everything:
 │   ├── review.agent.md
 │   └── ... (50+ specialist reviewers)
 │
-├── skills/                          ← Auto-discovered task runbooks
-│   ├── debug-eks/SKILL.md
+├── skills/                          ← Auto-discovered runbooks + slash commands
+│   ├── debug-eks/SKILL.md              (the portable primitive — prefer these)
 │   ├── helm-upgrade/SKILL.md
 │   ├── terraform-plan/SKILL.md
-│   ├── incident-triage/SKILL.md
-│   └── ... (60+ skills)
+│   ├── review/SKILL.md                 ← migrated from review.prompt.md
+│   └── ... (84 skills)
 │
 │   (Persona agents — formerly `.chatmode.md` under chatmodes/ — now live
 │    in agents/ above. Chat modes were deprecated by GitHub Copilot in 2026
 │    in favor of Custom Agents with a richer frontmatter schema.)
 │
 ├── eval/                            ← Quality gates
-│   ├── checks/                         (manifest sync, frontmatter, model refs)
+│   ├── checks/                         (manifest sync, frontmatter, model refs,
+│   │                                    plugin manifest, deprecation lifecycle)
 │   └── rubrics/
 │
-├── hooks/                           ← Session lifecycle hooks
-│   └── copilot-hooks.json
+├── hooks/                           ← Lifecycle hooks (14 events available)
+│   ├── copilot-hooks.json
+│   └── scripts/policy-gate.sh          ← emits permissionDecision allow/ask/deny
 │
 └── workflows/                       ← CI/bootstrap workflows
     └── copilot-setup-steps.yml
@@ -95,19 +103,36 @@ COPILOT-CHANGELOG.md                 ← Asset change log
 
 ## Model routing strategy
 
-Each model is routed to tasks that play to its strengths:
+Each slot is routed to the model that plays to its strengths:
 
-| Model                 | Best for                                             |
-| --------------------- | ---------------------------------------------------- |
-| **o3**                | Architecture decisions, complex reasoning, planning  |
-| **o4-mini**           | Fast completions, boilerplate, quick fixes           |
-| **gpt-4.1**           | General-purpose, DevOps commands, balanced tasks     |
-| **Claude Sonnet 4.5** | Code generation, review, documentation, tests        |
-| **Claude Opus 4.5**   | Security audits, thorough review, nuanced analysis   |
-| **Gemini 2.5 Pro**    | Reading large files or entire codebases (1M context) |
-| **Gemini 2.0 Flash**  | Fast analysis of many files simultaneously           |
+| Slot           | Model                | Best for                                              |
+| -------------- | -------------------- | ----------------------------------------------------- |
+| **`reason`**   | GPT-5.6 Sol          | Architecture decisions, complex reasoning, planning    |
+| **`balanced`** | GPT-5.6 Terra        | General-purpose, DevOps commands, the everyday default |
+| **`code`**     | Claude Sonnet 5      | Code generation, review, documentation, tests          |
+| **`thorough`** | Claude Opus 5        | Security audits, deep review, nuanced analysis         |
+| **`longctx`**  | GPT-5.4              | Reading large files or entire codebases                |
+| **`fast`**     | Claude Haiku 4.5     | Inline completions, boilerplate, trivial fixes         |
 
-Routing is configured in `.vscode/settings.json` and referenced from prompt/agent frontmatter via `.github/model-compatibility.json`.
+Routing is configured in `.vscode/settings.json` and referenced from asset
+frontmatter via `.github/model-compatibility.json`.
+
+> **Two things changed in 2026 that make the old table misleading.**
+>
+> **1M context is a capability, not a tier.** Nearly every frontier model now
+> offers a 1M-token window in VS Code and Copilot CLI, so `longctx` is a cost
+> decision rather than a capability one.
+>
+> **Reasoning level is a dial.** Models expose configurable reasoning effort.
+> Raising it on a mid-tier model is usually cheaper than escalating to a
+> flagship — try that before moving a task from `code` to `thorough`.
+
+> **Roster currency (verified 2026-08-17).** `o3`, `o4-mini`, `gpt-4.1`,
+> `gemini-2.5-pro`, and `gemini-2.0-flash` have been retired from Copilot
+> entirely. Claude Sonnet 4.5/4.6 and Opus 4.5/4.6 retire **2026-09-01**.
+> The full replacement table lives in the `deprecated` block of
+> `.github/model-compatibility.json`; `model-refs.sh` fails CI on any asset
+> still pointing at a retired model.
 
 ---
 
@@ -126,21 +151,64 @@ See [GOVERNANCE.md](.github/GOVERNANCE.md) for the full process.
 
 ---
 
-## The five primitives
+## The primitives
 
-| Primitive             | Trigger                       | Location                         |
-| --------------------- | ----------------------------- | -------------------------------- |
-| **Team instructions** | Always on                     | `copilot-instructions.md`        |
-| **Instruction files** | Auto, by `applyTo:` glob      | `instructions/*.instructions.md` |
-| **Prompt files**      | Manual — `/command`           | `prompts/*.prompt.md`            |
-| **Skills**            | Auto-discovered by description| `skills/*/SKILL.md`              |
-| **Custom Agents**     | Agent picker, chained, autonomous | `agents/*.agent.md`         |
+| Primitive             | Trigger                            | Location                         | Portable? |
+| --------------------- | ---------------------------------- | -------------------------------- | --------- |
+| **Team instructions** | Always on                          | `copilot-instructions.md`         | Copilot   |
+| **`AGENTS.md`**       | Always on, nearest file wins       | `AGENTS.md` (root or nested)      | **Yes**   |
+| **Instruction files** | Auto, by `applyTo:` glob           | `instructions/*.instructions.md`  | Copilot   |
+| **Skills**            | Auto-discovered by description, or `/name` | `skills/*/SKILL.md`       | **Yes**   |
+| **Custom Agents**     | Agent picker, `handoffs:`, autonomous | `agents/*.agent.md`            | Copilot   |
+| **Hooks**             | Lifecycle events (14 of them)      | `hooks/*.json`                    | Copilot   |
+| **Agent Plugin**      | Installed from a marketplace       | `plugin.json` + `skills/` + `mcp.json` | **Yes** |
+| **Prompt files** ⚠️   | Manual — `/command`                | `prompts/*.prompt.md`             | No — legacy |
 
-> Custom Agents subsume the legacy "chat modes" primitive. Persona agents
+> **⚠️ Prompt files are legacy.** They run **only in the Local agent harness**.
+> Copilot CLI, the Copilot cloud agent, and Agent Plugins all express slash
+> commands as skills, and GitHub ships a one-time *Migrate Prompts* action to
+> convert them. The ten commands in this repo are published as skills, with the
+> `.prompt.md` originals kept and formally deprecated (removal **2026-11-16**)
+> so you can see both shapes side by side.
+
+> **Custom Agents subsume the legacy "chat modes" primitive.** Persona agents
 > (formerly `.chatmode.md`) and task agents (plan / implement / review +
 > 50+ specialist reviewers) now share the same `.agent.md` schema, with
 > richer frontmatter (`agents`, `handoffs`, `user-invocable`,
 > `disable-model-invocation`, `target`, `mcp-servers`, `hooks`).
+
+> **"Portable" means it survives a move to another agent tool.** Agent Plugins
+> 1.0 standardises exactly two things across clients — skills and MCP servers.
+> Everything else is Copilot-specific. If you want a capability to outlive your
+> current tool choice, write it as a skill.
+
+---
+
+## Agent Plugins 1.0
+
+Since August 2026, skills and MCP servers can be packaged into a single
+installable unit under a vendor-neutral standard backed by GitHub, AWS,
+Anysphere, Microsoft, OpenAI, Vercel, and Google. This repo ships as one —
+`.github/` **is** the plugin root:
+
+```
+.github/                             ← plugin root
+├── plugin.json                      ← Agent Plugins 1.0 manifest (closed schema)
+├── skills/<name>/SKILL.md           ← portable, spec-standard
+├── mcp.json                         ← portable MCP servers
+└── com.github.copilot/              ← Copilot-only extension namespace
+```
+
+The root manifest is a **closed object** — only `$schema`, `name`, `version`,
+`description`, `author`, `homepage`, `repository`, `license`, `keywords`, and
+`extensions` are permitted. Putting `hooks` or `mcpServers` at the top level
+makes the package invalid, and clients reject it *silently*, so
+`.github/eval/checks/plugin-manifest.sh` validates it in CI.
+
+Enterprises govern plugins through `managed-settings.json` — `enabledPlugins`
+to force-install or block, `extraKnownMarketplaces` to add sources, and
+`strictKnownMarketplaces` to close the gate. See
+[`docs/examples/managed-settings.json`](docs/examples/managed-settings.json).
 
 ---
 

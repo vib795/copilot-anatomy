@@ -3,8 +3,8 @@
 # copilot-setup.sh
 # =============================================================================
 # GitHub Copilot — Complete Multi-Model Configuration
-# Supports: OpenAI (GPT-4.1, o3, o4-mini), Anthropic (Claude Sonnet/Opus/Haiku),
-#           Google (Gemini 2.5 Pro, Gemini 2.0 Flash), and more via model picker.
+# Supports: OpenAI (GPT-5.6 Terra, gpt-5.6-sol, claude-haiku-4-5), Anthropic (Claude Sonnet/Opus/Haiku),
+#           Google (GPT-5.4, Gemini 3.7 Flash), and more via model picker.
 #
 # USAGE:  bash copilot-setup.sh [target-directory]
 # If no directory is given, writes into the current directory.
@@ -24,14 +24,14 @@
 #   .vscode/extensions.json           ← Recommended extensions
 #
 # MODEL ROUTING STRATEGY (why each model goes where):
-#   o3             → Deep reasoning: architecture, trade-off analysis, planning
-#   o4-mini        → Speed: inline completions, quick fixes, boilerplate
-#   gpt-4.1        → General: devops commands, balanced tasks, default fallback
-#   claude-sonnet-4-5 → Code quality: generation, review, docs, tests
-#   claude-opus-4-5   → Thoroughness: security audits, complex review
+#   gpt-5.6-sol             → Deep reasoning: architecture, trade-off analysis, planning
+#   claude-haiku-4-5        → Speed: inline completions, quick fixes, boilerplate
+#   gpt-5.6-terra        → General: devops commands, balanced tasks, default fallback
+#   claude-sonnet-5 → Code quality: generation, review, docs, tests
+#   claude-opus-5   → Thoroughness: security audits, complex review
 #   claude-haiku-4-5  → Speed + cost: persona agents needing fast iteration
-#   gemini-2.5-pro    → Long context: reading large codebases, entire repos
-#   gemini-2.0-flash  → Fast long context: quick analysis of many files
+#   gpt-5.4    → Long context: reading large codebases, entire repos
+#   gemini-3.7-flash  → Fast long context: quick analysis of many files
 #
 # NOTE ON model: IN FRONTMATTER:
 #   Setting `model:` in .prompt.md / .agent.md files tells
@@ -59,6 +59,8 @@ mkdir -p \
   "$ROOT/.github/skills/terraform-plan" \
   "$ROOT/.github/skills/incident-triage" \
   "$ROOT/.github/agents" \
+  "$ROOT/.github/hooks" \
+  "$ROOT/.github/com.github.copilot" \
   "$ROOT/.github/workflows" \
   "$ROOT/.vscode"
 
@@ -95,13 +97,13 @@ artefacts in JFrog Artifactory.
 ## Available models in this project
 
 We have access to all major model families. Use the right tool:
-- **o3** → architecture decisions, complex reasoning, planning
-- **o4-mini** → fast completions, boilerplate, quick fixes
-- **gpt-4.1** → general-purpose, DevOps commands, balanced tasks
-- **claude-sonnet-4-5** → code generation, review, documentation, tests
-- **claude-opus-4-5** → security audits, thorough review, nuanced analysis
-- **gemini-2.5-pro** → reading large files or entire codebases (1M token context)
-- **gemini-2.0-flash** → fast analysis of many files simultaneously
+- **gpt-5.6-sol** → architecture decisions, complex reasoning, planning
+- **claude-haiku-4-5** → fast completions, boilerplate, quick fixes
+- **gpt-5.6-terra** → general-purpose, DevOps commands, balanced tasks
+- **claude-sonnet-5** → code generation, review, documentation, tests
+- **claude-opus-5** → security audits, thorough review, nuanced analysis
+- **gpt-5.4** → reading large files or entire codebases (1M token context)
+- **gemini-3.7-flash** → fast analysis of many files simultaneously
 
 Use `/review`, `/fix-issue`, `/deploy`, `/architect`, `/security-scan` for
 guided workflows. Type `/skills list` to see available skills.
@@ -257,30 +259,51 @@ cat > "$ROOT/.vscode/settings.json" << 'HEREDOC'
   },
 
   // ── MODEL ROUTING ─────────────────────────────────────────────────────────
-  // Named model slots used across prompts and agents.
+  // Named model slots used across prompts, skills, and agents.
   // The string values must match your Copilot model picker exactly.
   // Check: VS Code → Copilot Chat panel → model dropdown → note the exact name.
   //
+  // Mirrors the `slots` block in .github/model-compatibility.json — change both
+  // together, then run `bash .github/eval/checks/model-refs.sh`.
+  //
   // STRATEGY:
-  //   "fast"     → o4-mini    Speed: inline, boilerplate, trivial fixes
-  //   "reason"   → o3         Reasoning: architecture, planning, debugging
-  //   "code"     → claude-sonnet-4-5   Code quality: gen, review, tests, docs
-  //   "thorough" → claude-opus-4-5     Thoroughness: security, deep review
-  //   "longctx"  → gemini-2.5-pro     Long context: reading entire codebases
-  //   "balanced" → gpt-4.1    Balanced: devops, general tasks, good default
+  //   "fast"     → claude-haiku-4-5   Speed: inline, boilerplate, trivial fixes
+  //   "reason"   → gpt-5.6-sol        Reasoning: architecture, planning, debugging
+  //   "code"     → claude-sonnet-5    Code quality: gen, review, tests, docs
+  //   "thorough" → claude-opus-5      Thoroughness: security, deep review
+  //   "longctx"  → gpt-5.4            Long context: reading entire codebases
+  //   "balanced" → gpt-5.6-terra      Balanced: devops, general tasks, good default
+  //
+  // ROSTER NOTE (verified 2026-08-17): o3, o4-mini, gpt-4.1, gemini-2.5-pro and
+  // gemini-2.0-flash have all been retired from Copilot. Claude Sonnet 4.5/4.6
+  // and Opus 4.5/4.6 retire 2026-09-01. See the `deprecated` block in
+  // .github/model-compatibility.json for the full replacement table.
   "github.copilot.chat.models": {
-    "fast":      { "model": "o4-mini" },
-    "reason":    { "model": "o3" },
-    "code":      { "model": "claude-sonnet-4-5" },
-    "thorough":  { "model": "claude-opus-4-5" },
-    "longctx":   { "model": "gemini-2.5-pro" },
-    "balanced":  { "model": "gpt-4.1" }
+    "fast":      { "model": "claude-haiku-4-5" },
+    "reason":    { "model": "gpt-5.6-sol" },
+    "code":      { "model": "claude-sonnet-5" },
+    "thorough":  { "model": "claude-opus-5" },
+    "longctx":   { "model": "gpt-5.4" },
+    "balanced":  { "model": "gpt-5.6-terra" }
   },
+
+  // ── REASONING EFFORT ──────────────────────────────────────────────────────
+  // Most 2026 frontier models expose a configurable reasoning level. Raising
+  // the level on a mid-tier model is usually cheaper than escalating to a
+  // flagship model — try this before switching `code` to `thorough`.
+  // Available in VS Code, Copilot CLI, and Copilot cloud agent.
+  "github.copilot.chat.reasoningEffort": "medium",
+
+  // ── LONG CONTEXT ──────────────────────────────────────────────────────────
+  // The 1M-token context window is a per-model capability (VS Code + CLI only),
+  // not a separate model tier. Opting in costs more per request, so leave it
+  // off by default and enable per-session when reading a whole repo.
+  "github.copilot.chat.largeContext.enabled": false,
 
   // ── INLINE COMPLETIONS ────────────────────────────────────────────────────
   // The model used for grey-text autocomplete as you type.
-  // o4-mini is ideal: fast enough to not interrupt typing, good quality.
-  // For slower networks or machines, try gemini-2.0-flash instead.
+  // claude-haiku-4-5 is ideal: fast enough to not interrupt typing, good quality.
+  // For slower networks or machines, try mai-code-1.1-flash or gemini-3.7-flash.
   "github.copilot.inlineSuggest.enable": true,
   "github.copilot.inlineSuggest.syntaxMatchingLanguages": [
     "java", "go", "python", "typescript", "terraform",
@@ -288,27 +311,71 @@ cat > "$ROOT/.vscode/settings.json" << 'HEREDOC'
   ],
 
   // ── FEATURE FLAGS ─────────────────────────────────────────────────────────
-  // Enable Copilot in-IDE agent mode (the chat agent picker).
+  // Enable Copilot agent mode (the in-IDE agent, not the Copilot cloud agent).
   "chat.agent.enabled": true,
-  // Honor `hooks:` frontmatter declared in custom agents.
+  // Enable hooks declared in .agent.md frontmatter (`hooks:` field).
   "chat.useCustomAgentHooks": true,
-  // Allow VS Code to discover MCP servers from other apps (Claude Desktop etc.).
-  "chat.mcp.discovery.enabled": true,
+  // Allow VS Code to discover MCP servers from other apps (Claude Desktop, etc.).
+  "chat.mcp.discovery.enabled": {
+    "claude-desktop": true,
+    "windsurf": true,
+    "cursor-global": true,
+    "cursor-workspace": true
+  },
+  // Inherit chat customizations from parent repos in nested workspace setups.
+  "chat.useCustomizationsInParentRepositories": true,
+  // Allow custom agents from organization-level locations.
+  "github.copilot.chat.organizationCustomAgents.enabled": true,
   // Keeps Copilot responses in English regardless of OS locale.
   "github.copilot.chat.localeOverride": "en",
 
-  // ── ASSET DISCOVERY LOCATIONS (current canonical keys) ───────────────────
-  // Replace the legacy `chat.modeFilesLocations` / `experimental.chatModes`.
-  "chat.agentFilesLocations":        { ".github/agents":       true },
-  "chat.agentSkillsLocations":       { ".github/skills":       true },
-  "chat.promptFilesLocations":       { ".github/prompts":      true },
-  "chat.instructionsFilesLocations": { ".github/instructions": true },
+  // ── ASSET DISCOVERY LOCATIONS ─────────────────────────────────────────────
+  // Tell VS Code where to find each asset type. These are the current
+  // canonical keys (replacing the older `chat.modeFilesLocations` and the
+  // legacy `github.copilot.chat.experimental.chatModes` shim).
+  "chat.agentFilesLocations": {
+    ".github/agents": true
+  },
+  // Skills are an open standard shared with other agent tools. VS Code already
+  // discovers `.github/skills`, `.claude/skills` and `.agents/skills` by
+  // default; listing them keeps discovery explicit for mixed-tool teams.
+  "chat.agentSkillsLocations": {
+    ".github/skills": true,
+    ".claude/skills": true,
+    ".agents/skills": true
+  },
+  // LEGACY: prompt files run only in the Local agent harness. Copilot CLI, the
+  // cloud agent, and Agent Plugins express slash commands as skills instead.
+  // Keep this while migrating; see COPILOT-CHEATSHEET.md → "Prompts (legacy)".
+  "chat.promptFilesLocations": {
+    ".github/prompts": true
+  },
+  // Enables the built-in one-time "Migrate Prompts" action in the
+  // AI Customizations overview, which converts prompt files into skills.
+  "chat.customizations.promptMigration.enabled": true,
+  "chat.instructionsFilesLocations": {
+    ".github/instructions": true
+  },
+
+  // ── AGENT PLUGINS 1.0 ─────────────────────────────────────────────────────
+  // This repo ships as an Agent Plugin (see .github/plugin.json). Registering
+  // the plugin root locally lets VS Code load its skills and MCP servers
+  // exactly as it would after installing from a marketplace — which is how you
+  // test a plugin before publishing it.
+  "chat.pluginLocations": {
+    ".github": true
+  },
 
   // ── AUTO-LOADED INSTRUCTIONS ───────────────────────────────────────────────
-  // These instruction files are automatically injected into every code
-  // generation request (completions, edits, chat with code context).
-  // Order matters: files listed first are injected first.
-  // Each file uses applyTo: globs to scope itself to relevant file types.
+  // Modern: instruction files self-scope via `applyTo:` globs in their own
+  // frontmatter, so this explicit list is no longer required. Kept here to
+  // pin load order — files listed first are injected first.
+  //
+  // DEPRECATED (VS Code 1.102+): the sibling instruction-category settings
+  //   github.copilot.chat.commitMessageGeneration.instructions
+  //   github.copilot.chat.pullRequestDescriptionGeneration.instructions
+  //   github.copilot.chat.reviewSelection.instructions
+  // were removed. Use `applyTo:` in a single .instructions.md file instead.
   "github.copilot.chat.codeGeneration.instructions": [
     { "file": ".github/instructions/code-style.instructions.md" },
     { "file": ".github/instructions/testing.instructions.md" },
@@ -387,7 +454,7 @@ cat > "$ROOT/.vscode/settings.local.json" << 'HEREDOC'
   // Add this file to .gitignore: .vscode/settings.local.json
   // ══════════════════════════════════════════════════════════════════════════
 
-  // Increase timeout if you're on a slow VPN or using large models like o3
+  // Increase timeout if you're on a slow VPN or using large models like gpt-5.6-sol
   "github.copilot.advanced": {
     "timeout": 45000
   },
@@ -397,7 +464,7 @@ cat > "$ROOT/.vscode/settings.local.json" << 'HEREDOC'
   // Useful if you have a different subscription tier than teammates.
   // Example: prefer Claude Opus over Sonnet for all code tasks:
   // "github.copilot.chat.models": {
-  //   "code": { "model": "claude-opus-4-5" }
+  //   "code": { "model": "claude-opus-5" }
   // },
 
   // ── LOCAL TOOLCHAIN ───────────────────────────────────────────────────────
@@ -611,25 +678,25 @@ HEREDOC
 #
 # MODEL ROUTING IN PROMPTS:
 #   Each prompt picks the best model for its job.
-#   This means /review uses Claude Sonnet while /architect uses o3 —
+#   This means /review uses Claude Sonnet while /architect uses gpt-5.6-sol —
 #   automatically, without you switching models manually.
 # =============================================================================
 
 # ─── review.prompt.md ─────────────────────────────────────────────────────────
-# WHY claude-sonnet-4-5: Best balance of code understanding + natural language
+# WHY claude-sonnet-5: Best balance of code understanding + natural language
 # for expressing review comments. Claude models are trained extensively on
 # code review scenarios and follow multi-step instructions reliably.
 # ─────────────────────────────────────────────────────────────────────────────
 cat > "$ROOT/.github/prompts/review.prompt.md" << 'HEREDOC'
 ---
 agent: ask
-model: claude-sonnet-4-5
+model: claude-sonnet-5
 description: "Code review: correctness, security, performance, style, tests"
 ---
 
 <!--
   SLASH COMMAND: /review
-  MODEL: claude-sonnet-4-5 — best for structured multi-step code analysis
+  MODEL: claude-sonnet-5 — best for structured multi-step code analysis
   AGENT: ask — read-only, produces a review report without editing files
 -->
 
@@ -672,20 +739,20 @@ End with:
 HEREDOC
 
 # ─── fix-issue.prompt.md ─────────────────────────────────────────────────────
-# WHY claude-sonnet-4-5: Excellent at following multi-step diagnostic workflows
+# WHY claude-sonnet-5: Excellent at following multi-step diagnostic workflows
 # and producing minimal targeted edits. Avoids over-engineering the fix.
 # agent: agent — autonomous mode that actually modifies files.
 # ─────────────────────────────────────────────────────────────────────────────
 cat > "$ROOT/.github/prompts/fix-issue.prompt.md" << 'HEREDOC'
 ---
 agent: agent
-model: claude-sonnet-4-5
+model: claude-sonnet-5
 description: "Diagnose root cause and fix the bug in the active file"
 ---
 
 <!--
   SLASH COMMAND: /fix-issue
-  MODEL: claude-sonnet-4-5 — reliable at targeted code edits
+  MODEL: claude-sonnet-5 — reliable at targeted code edits
   AGENT: agent — autonomous mode that modifies files directly
 -->
 
@@ -729,20 +796,20 @@ Do not change unrelated files. Do not bump version numbers.
 HEREDOC
 
 # ─── deploy.prompt.md ────────────────────────────────────────────────────────
-# WHY gpt-4.1: DevOps command generation is a balanced task — needs code
-# understanding but not deep reasoning. GPT-4.1 is reliable for structured
-# checklists and exact CLI command generation. Also faster than o3.
+# WHY gpt-5.6-terra: DevOps command generation is a balanced task — needs code
+# understanding but not deep reasoning. GPT-5.6 Terra is reliable for structured
+# checklists and exact CLI command generation. Also faster than gpt-5.6-sol.
 # ─────────────────────────────────────────────────────────────────────────────
 cat > "$ROOT/.github/prompts/deploy.prompt.md" << 'HEREDOC'
 ---
 agent: ask
-model: gpt-4.1
+model: gpt-5.6-terra
 description: "Generate deployment checklist and Helm commands for the active service"
 ---
 
 <!--
   SLASH COMMAND: /deploy
-  MODEL: gpt-4.1 — reliable for structured DevOps checklists and CLI commands
+  MODEL: gpt-5.6-terra — reliable for structured DevOps checklists and CLI commands
   AGENT: ask — produces output for you to review, does not run commands
 -->
 
@@ -798,20 +865,20 @@ helm rollback <service> 0 -n <namespace>       # 0 = previous revision
 HEREDOC
 
 # ─── architect.prompt.md ─────────────────────────────────────────────────────
-# WHY o3: Architecture decisions involve multi-step trade-off reasoning —
-# exactly what o3 was optimised for. It weighs options systematically,
+# WHY gpt-5.6-sol: Architecture decisions involve multi-step trade-off reasoning —
+# exactly what gpt-5.6-sol was optimised for. It weighs options systematically,
 # identifies second-order consequences, and produces structured ADRs.
 # ─────────────────────────────────────────────────────────────────────────────
 cat > "$ROOT/.github/prompts/architect.prompt.md" << 'HEREDOC'
 ---
 agent: ask
-model: o3
+model: gpt-5.6-sol
 description: "System design, trade-off analysis, and Architecture Decision Records"
 ---
 
 <!--
   SLASH COMMAND: /architect
-  MODEL: o3 — best for multi-step reasoning and weighing complex trade-offs
+  MODEL: gpt-5.6-sol — best for multi-step reasoning and weighing complex trade-offs
   AGENT: ask — produces design documents for team review
 -->
 
@@ -866,20 +933,20 @@ Do not recommend complexity the team isn't ready to operate on a pager.
 HEREDOC
 
 # ─── security-scan.prompt.md ─────────────────────────────────────────────────
-# WHY claude-opus-4-5: Security review requires the most thorough analysis —
+# WHY claude-opus-5: Security review requires the most thorough analysis —
 # Claude Opus is the most capable Claude model and consistently outperforms
 # on nuanced reasoning about attack vectors and subtle vulnerabilities.
 # ─────────────────────────────────────────────────────────────────────────────
 cat > "$ROOT/.github/prompts/security-scan.prompt.md" << 'HEREDOC'
 ---
 agent: ask
-model: claude-opus-4-5
+model: claude-opus-5
 description: "Comprehensive security audit — threat model, OWASP, CVE patterns"
 ---
 
 <!--
   SLASH COMMAND: /security-scan
-  MODEL: claude-opus-4-5 — most thorough analysis, catches subtle issues
+  MODEL: claude-opus-5 — most thorough analysis, catches subtle issues
   AGENT: ask — produces a security report, does not edit files
 -->
 
@@ -930,20 +997,20 @@ Work through each category. Only report findings — skip categories with nothin
 HEREDOC
 
 # ─── document.prompt.md ──────────────────────────────────────────────────────
-# WHY claude-sonnet-4-5: Documentation writing requires clear, natural prose
+# WHY claude-sonnet-5: Documentation writing requires clear, natural prose
 # alongside accurate technical understanding. Claude Sonnet excels at both —
 # it produces documentation that humans actually want to read.
 # ─────────────────────────────────────────────────────────────────────────────
 cat > "$ROOT/.github/prompts/document.prompt.md" << 'HEREDOC'
 ---
 agent: agent
-model: claude-sonnet-4-5
+model: claude-sonnet-5
 description: "Generate or update documentation for the selected code"
 ---
 
 <!--
   SLASH COMMAND: /document
-  MODEL: claude-sonnet-4-5 — natural prose + technical accuracy
+  MODEL: claude-sonnet-5 — natural prose + technical accuracy
   AGENT: agent — autonomous mode that updates documentation inline in the file
 -->
 
@@ -991,20 +1058,20 @@ Rules:
 HEREDOC
 
 # ─── explain-codebase.prompt.md ──────────────────────────────────────────────
-# WHY gemini-2.5-pro: This command is specifically for understanding large
-# files or entire subsystems. Gemini 2.5 Pro has a 1M token context window —
+# WHY gpt-5.4: This command is specifically for understanding large
+# files or entire subsystems. GPT-5.4 has a 1M token context window —
 # it can read your entire service in one shot. No other model comes close.
 # ─────────────────────────────────────────────────────────────────────────────
 cat > "$ROOT/.github/prompts/explain-codebase.prompt.md" << 'HEREDOC'
 ---
 agent: ask
-model: gemini-2.5-pro
+model: gpt-5.4
 description: "Explain a large file, module, or subsystem — uses 1M token context"
 ---
 
 <!--
   SLASH COMMAND: /explain-codebase
-  MODEL: gemini-2.5-pro — 1M token context window, reads entire codebases
+  MODEL: gpt-5.4 — 1M token context window, reads entire codebases
   AGENT: ask — produces an explanation document
   BEST FOR: Files > 2000 lines, entire packages, subsystems with many files
   TIP: Select multiple files before running this command for broader analysis
@@ -1036,20 +1103,20 @@ Point to the 2-3 files a new contributor should read first.
 HEREDOC
 
 # ─── test-gen.prompt.md ──────────────────────────────────────────────────────
-# WHY claude-sonnet-4-5: Claude is consistently ranked best at generating
+# WHY claude-sonnet-5: Claude is consistently ranked best at generating
 # tests that follow conventions. It produces realistic scenarios rather than
 # trivial ones, and respects the testing patterns in the instructions files.
 # ─────────────────────────────────────────────────────────────────────────────
 cat > "$ROOT/.github/prompts/test-gen.prompt.md" << 'HEREDOC'
 ---
 agent: agent
-model: claude-sonnet-4-5
+model: claude-sonnet-5
 description: "Generate tests for the selected code following project conventions"
 ---
 
 <!--
   SLASH COMMAND: /test-gen
-  MODEL: claude-sonnet-4-5 — produces realistic, convention-following tests
+  MODEL: claude-sonnet-5 — produces realistic, convention-following tests
   AGENT: agent — autonomous mode that adds test files or test cases
 -->
 
@@ -1614,13 +1681,13 @@ HEREDOC
 #
 # MODEL ROUTING IN AGENTS:
 #   Each agent picks the best model for its phase of the workflow:
-#   plan → o3 (reasoning), implement → claude-sonnet-4-5 (code), review → claude-opus-4-5 (thorough)
+#   plan → gpt-5.6-sol (reasoning), implement → claude-sonnet-5 (code), review → claude-opus-5 (thorough)
 # =============================================================================
 
 cat > "$ROOT/.github/agents/plan.agent.md" << 'HEREDOC'
 ---
 name: plan
-model: o3
+model: gpt-5.6-sol
 description: >
   Planning agent. Takes a feature request or bug report and produces a structured
   implementation plan with file changes, test strategy, and risk assessment.
@@ -1633,14 +1700,14 @@ handoffs:
   - implement
 ---
 <!--
-  MODEL: o3 — best reasoning model for trade-off analysis and planning.
-  o3 thinks through consequences systematically — exactly what planning needs.
+  MODEL: gpt-5.6-sol — best reasoning model for trade-off analysis and planning.
+  gpt-5.6-sol thinks through consequences systematically — exactly what planning needs.
   TOOLS: Read-only — this agent does NOT modify files.
   CHAIN: plan → implement → review
 -->
 
 You are in planning mode. Think before writing code.
-Use o3's reasoning capabilities to fully analyse the request before proposing anything.
+Use gpt-5.6-sol's reasoning capabilities to fully analyse the request before proposing anything.
 
 ## Output structure
 
@@ -1675,7 +1742,7 @@ HEREDOC
 cat > "$ROOT/.github/agents/implement.agent.md" << 'HEREDOC'
 ---
 name: implement
-model: claude-sonnet-4-5
+model: claude-sonnet-5
 description: >
   Implementation agent. Executes the plan from the plan agent step by step.
   Makes code changes, writes tests, validates the build.
@@ -1690,7 +1757,7 @@ handoffs:
   - review
 ---
 <!--
-  MODEL: claude-sonnet-4-5 — best for code generation, instruction following,
+  MODEL: claude-sonnet-5 — best for code generation, instruction following,
   and producing idiomatic code. Reliably follows multi-step plans.
   TOOLS: Full write access — this agent modifies files and runs commands.
   CHAIN: plan → implement → review
@@ -1719,7 +1786,7 @@ HEREDOC
 cat > "$ROOT/.github/agents/review.agent.md" << 'HEREDOC'
 ---
 name: review
-model: claude-opus-4-5
+model: claude-opus-5
 description: >
   Review agent. Performs thorough code review of the implementation, then
   produces a PR description ready to copy-paste. Final step in the chain.
@@ -1729,7 +1796,7 @@ tools:
   - list_directory
 ---
 <!--
-  MODEL: claude-opus-4-5 — most thorough Claude model. Used here because
+  MODEL: claude-opus-5 — most thorough Claude model. Used here because
   security and correctness review benefits from maximum scrutiny.
   TOOLS: Read-only — this agent does not modify files.
   CHAIN: plan → implement → review (terminal)
@@ -1812,11 +1879,11 @@ HEREDOC
 #
 # MODEL ROUTING:
 #   Each persona picks the model that matches its job:
-#   - Security audit → claude-opus-4-5 (most thorough)
-#   - Architecture → o3 (best reasoning)
-#   - Large files → gemini-2.5-pro (long context)
-#   - General coding → claude-sonnet-4-5 (best code quality)
-#   - DevOps commands → gpt-4.1 (fast, structured output)
+#   - Security audit → claude-opus-5 (most thorough)
+#   - Architecture → gpt-5.6-sol (best reasoning)
+#   - Large files → gpt-5.4 (long context)
+#   - General coding → claude-sonnet-5 (best code quality)
+#   - DevOps commands → gpt-5.6-terra (fast, structured output)
 #
 # PREREQUISITE: `chat.agentFilesLocations: { ".github/agents": true }` plus
 #               `chat.agent.enabled: true` in settings.json.
@@ -1826,12 +1893,12 @@ cat > "$ROOT/.github/agents/code-reviewer.agent.md" << 'HEREDOC'
 ---
 name: code-reviewer
 description: "Code review — direct feedback, concrete fixes, Claude Sonnet"
-model: claude-sonnet-4-5
+model: claude-sonnet-5
 user-invocable: true
 target: vscode
 ---
 <!--
-  MODEL: claude-sonnet-4-5 — best balance of code understanding + clear feedback
+  MODEL: claude-sonnet-5 — best balance of code understanding + clear feedback
   WHEN TO USE: Daily code review, PR comments, before pushing a branch
   HOW TO ACTIVATE: Chat agent picker → "Code review"
 -->
@@ -1860,12 +1927,12 @@ cat > "$ROOT/.github/agents/security-auditor.agent.md" << 'HEREDOC'
 ---
 name: security-auditor
 description: "Security audit — threat model, OWASP, CVEs — Claude Opus (most thorough)"
-model: claude-opus-4-5
+model: claude-opus-5
 user-invocable: true
 target: vscode
 ---
 <!--
-  MODEL: claude-opus-4-5 — most capable Claude model, catches subtle issues
+  MODEL: claude-opus-5 — most capable Claude model, catches subtle issues
   WHEN TO USE: Before security reviews, PRs touching auth/permissions, new endpoints
   HOW TO ACTIVATE: Chat agent picker → "Security audit"
 -->
@@ -1895,14 +1962,14 @@ HEREDOC
 cat > "$ROOT/.github/agents/architect.agent.md" << 'HEREDOC'
 ---
 name: architect
-description: "System design and ADRs — trade-off analysis — o3 (best reasoning)"
-model: o3
+description: "System design and ADRs — trade-off analysis — gpt-5.6-sol (best reasoning)"
+model: gpt-5.6-sol
 user-invocable: true
 target: vscode
 ---
 <!--
-  MODEL: o3 — chosen specifically because architecture decisions require the
-  deepest reasoning. o3 thinks through multi-step trade-offs, second-order
+  MODEL: gpt-5.6-sol — chosen specifically because architecture decisions require the
+  deepest reasoning. gpt-5.6-sol thinks through multi-step trade-offs, second-order
   consequences, and operational constraints better than any other model.
   WHEN TO USE: New service design, major refactors, technology decisions
   HOW TO ACTIVATE: Chat agent picker → "Architect"
@@ -1933,13 +2000,13 @@ HEREDOC
 cat > "$ROOT/.github/agents/devops-assistant.agent.md" << 'HEREDOC'
 ---
 name: devops-assistant
-description: "DevOps / platform engineering — EKS, Helm, Terraform, Jenkins — GPT-4.1"
-model: gpt-4.1
+description: "DevOps / platform engineering — EKS, Helm, Terraform, Jenkins — GPT-5.6 Terra"
+model: gpt-5.6-terra
 user-invocable: true
 target: vscode
 ---
 <!--
-  MODEL: gpt-4.1 — reliable for structured DevOps output, CLI commands,
+  MODEL: gpt-5.6-terra — reliable for structured DevOps output, CLI commands,
   and Kubernetes/Terraform workflows. Fast enough for back-and-forth debugging.
   WHEN TO USE: Deployment issues, infra debugging, pipeline questions
   HOW TO ACTIVATE: Chat agent picker → "DevOps assistant"
@@ -1965,13 +2032,13 @@ HEREDOC
 cat > "$ROOT/.github/agents/longcontext-reader.agent.md" << 'HEREDOC'
 ---
 name: longcontext-reader
-description: "Read entire codebases or large files — Gemini 2.5 Pro (1M tokens)"
-model: gemini-2.5-pro
+description: "Read entire codebases or large files — GPT-5.4 (1M tokens)"
+model: gpt-5.4
 user-invocable: true
 target: vscode
 ---
 <!--
-  MODEL: gemini-2.5-pro — 1M token context window. The ONLY model that can
+  MODEL: gpt-5.4 — 1M token context window. The ONLY model that can
   read an entire large service in one shot. Use this when other models
   say "the file is too large" or give incomplete answers about a codebase.
   WHEN TO USE: Onboarding to a new service, understanding legacy code,
@@ -1979,7 +2046,7 @@ target: vscode
   HOW TO ACTIVATE: Chat agent picker → "Large codebase reader"
 
   TIP: Before asking your question, use VS Code's "Add files to context"
-  to attach all relevant files. Gemini 2.5 Pro can handle them all at once.
+  to attach all relevant files. GPT-5.4 can handle them all at once.
 -->
 
 You are a patient, thorough senior engineer helping someone understand a large codebase.
@@ -2007,12 +2074,12 @@ cat > "$ROOT/.github/agents/test-writer.agent.md" << 'HEREDOC'
 ---
 name: test-writer
 description: "Generate comprehensive tests following project conventions — Claude Sonnet"
-model: claude-sonnet-4-5
+model: claude-sonnet-5
 user-invocable: true
 target: vscode
 ---
 <!--
-  MODEL: claude-sonnet-4-5 — consistently best at generating realistic,
+  MODEL: claude-sonnet-5 — consistently best at generating realistic,
   idiomatic tests that follow project conventions. Produces scenarios
   that actually test behaviour, not just structure.
   WHEN TO USE: Adding tests to existing code, TDD for new features
@@ -2047,17 +2114,17 @@ HEREDOC
 cat > "$ROOT/.github/workflows/copilot-setup-steps.yml" << 'HEREDOC'
 # copilot-setup-steps.yml
 # ─────────────────────────────────────────────────────────────────────────────
-# PURPOSE: Bootstraps the toolchain for the GitHub Copilot coding agent
+# PURPOSE: Bootstraps the toolchain for the GitHub Copilot cloud agent
 #          (the cloud agent that works on assigned GitHub issues).
-# WHEN RUNS: Automatically before the Copilot coding agent starts any task —
+# WHEN RUNS: Automatically before the Copilot cloud agent starts any task —
 #            GitHub discovers this workflow by the REQUIRED job name
 #            `copilot-setup-steps` and runs it before agent execution.
 #            Also runs on workflow_dispatch and on PRs that modify this file
 #            so a broken bootstrap is caught at PR time, not at agent-task time.
 # REQUIRED: The job MUST be named `copilot-setup-steps`.
-# DOCS: https://docs.github.com/en/copilot/how-tos/use-copilot-agents/coding-agent/customize-the-agent-environment
+# DOCS: https://docs.github.com/en/copilot/how-tos/use-copilot-agents/cloud-agent/customize-the-agent-environment
 #
-# NOTE: There is NO `on: copilot:` trigger. The coding agent invokes this
+# NOTE: There is NO `on: copilot:` trigger. The cloud agent invokes this
 #       workflow internally; the `on:` block below is only for self-validation
 #       in normal CI.
 # ─────────────────────────────────────────────────────────────────────────────
@@ -2074,10 +2141,10 @@ on:
       - .github/workflows/copilot-setup-steps.yml
 
 jobs:
-  # The job name `copilot-setup-steps` is REQUIRED by the coding agent.
+  # The job name `copilot-setup-steps` is REQUIRED by the cloud agent.
   copilot-setup-steps:
     runs-on: ubuntu-latest
-    timeout-minutes: 30  # coding-agent hard limit is 59 minutes
+    timeout-minutes: 30  # cloud-agent hard limit is 59 minutes
     steps:
       - uses: actions/checkout@v4
 
@@ -2174,10 +2241,10 @@ cat > "$ROOT/.github/workflows/copilot-hooks.yml" << 'HEREDOC'
 # IMPORTANT — DEPRECATED TRIGGERS REMOVED:
 #   Earlier templates used `on: copilot_pre_action` / `copilot_post_action`.
 #   Those triggers DO NOT EXIST in GitHub Actions. The real Copilot
-#   coding-agent hook mechanism lives in `.github/hooks/<name>/hooks.json`
+#   cloud-agent hook mechanism lives in `.github/hooks/<name>/hooks.json`
 #   with the six events: sessionStart, sessionEnd, userPromptSubmitted,
 #   preToolUse, postToolUse, errorOccurred.
-#   See: https://docs.github.com/en/copilot/how-tos/use-copilot-agents/coding-agent/use-hooks
+#   See: https://docs.github.com/en/copilot/how-tos/use-copilot-agents/cloud-agent/use-hooks
 # ─────────────────────────────────────────────────────────────────────────────
 
 name: "Copilot Policy Checks (CI)"
@@ -2279,6 +2346,147 @@ jobs:
 HEREDOC
 
 # =============================================================================
+# SECTION 8: AGENT PLUGINS 1.0 PACKAGING
+# =============================================================================
+# Agent Plugins 1.0 (August 2026) is the vendor-neutral standard for packaging
+# skills + MCP servers into one installable unit. `.github/` doubles as the
+# plugin root because `.github/skills/` already sits exactly where the spec
+# wants `skills/`.
+#
+# The root manifest is a CLOSED object — only $schema, name, version,
+# description, author, homepage, repository, license, keywords and extensions
+# are legal. Adding `hooks` or `mcpServers` at the top level makes the package
+# invalid and clients reject it SILENTLY.
+# ─────────────────────────────────────────────────────────────────────────────
+cat > "$ROOT/.github/plugin.json" << 'HEREDOC'
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "team-copilot-config",
+  "version": "1.0.0",
+  "description": "Team Copilot configuration: skills, custom agents, instructions, hooks, and MCP servers.",
+  "license": "MIT",
+  "keywords": ["copilot", "skills", "mcp", "team-config"],
+  "extensions": {
+    "com.github.copilot": {
+      "agents": "agents",
+      "instructions": "instructions",
+      "hooks": "hooks/copilot-hooks.json"
+    }
+  }
+}
+HEREDOC
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Portable MCP config. Note: NO `tools:` allow-list — that is a Copilot
+# cloud-agent field, not part of the portable schema. ${PLUGIN_ROOT} and
+# ${PLUGIN_DATA} expand in args/env/cwd only, never in `command`.
+# ─────────────────────────────────────────────────────────────────────────────
+cat > "$ROOT/.github/mcp.json" << 'HEREDOC'
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "context7": {
+      "type": "streamable-http",
+      "url": "https://mcp.context7.com/mcp"
+    }
+  }
+}
+HEREDOC
+
+cat > "$ROOT/.github/com.github.copilot/README.md" << 'HEREDOC'
+# `com.github.copilot/` — client extension namespace
+
+Agent Plugins 1.0 standardises only **skills** and **MCP servers** across agent
+clients. Everything else is client-specific and belongs under a reverse-domain
+namespace. GitHub's is `com.github.copilot`.
+
+The namespace may be expressed as manifest data under
+`extensions["com.github.copilot"]` in `plugin.json`, or as files in a
+`com.github.copilot/` directory. This setup uses the manifest form, because
+VS Code discovers `agents/`, `instructions/`, and `hooks/` at their canonical
+`.github/` paths — relocating them here would break the IDE experience.
+
+| Asset | Portable? | Location |
+| --- | --- | --- |
+| Skills | Yes | `.github/skills/<name>/SKILL.md` |
+| MCP servers | Yes | `.github/mcp.json` |
+| Custom agents | No | `.github/agents/*.agent.md` |
+| Instructions | No | `.github/instructions/*.instructions.md` |
+| Hooks | No | `.github/hooks/copilot-hooks.json` |
+| Prompt files | No — Local harness only | `.github/prompts/*.prompt.md` (legacy) |
+
+**If you want a capability to survive a move to another agent tool, write it as
+a skill.** Note that VS Code currently ignores client-extension data in Agent
+Plugins packages, so the `extensions` block is forward-looking.
+
+Spec: <https://agent-plugins.org/specification>
+HEREDOC
+
+# =============================================================================
+# SECTION 9: PROMPT → SKILL MIGRATION
+# =============================================================================
+# Prompt files run ONLY in the Local agent harness. Copilot CLI, the Copilot
+# cloud agent, and Agent Plugins all express slash commands as skills, so a
+# /command that exists only as a .prompt.md silently does not exist outside
+# the IDE.
+#
+# Rather than maintain both bodies, we derive each skill from the prompt file
+# generated above: the body is copied verbatim and the frontmatter is rewritten
+# to the SKILL.md schema. Skills carry no `model:` field (they are cross-tool),
+# so the recommended model moves into the body.
+#
+# The .prompt.md originals are kept and marked deprecated so teams can see both
+# shapes while migrating.
+# ─────────────────────────────────────────────────────────────────────────────
+echo "── Deriving portable skills from prompt files ──"
+
+for _prompt in "$ROOT/.github/prompts"/*.prompt.md; do
+  [ -e "$_prompt" ] || continue
+  _name="$(basename "$_prompt" .prompt.md)"
+  _skill_dir="$ROOT/.github/skills/$_name"
+  _model="$(awk -F': *' '/^model:/{print $2; exit}' "$_prompt" | tr -d '"'"'"' ')"
+  # Strip any existing quotes, escape backslashes and double quotes, then
+  # re-quote. Descriptions routinely contain ": ", which is invalid YAML unquoted.
+  _desc="$(awk '/^description:/{sub(/^description: */,""); print; exit}' "$_prompt" \
+            | sed -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'$//" \
+                  -e 's/\\/\\\\/g' -e 's/"/\\"/g')"
+
+  mkdir -p "$_skill_dir"
+  {
+    echo '---'
+    echo "name: $_name"
+    echo "description: \"$_desc\""
+    echo '---'
+    echo
+    echo "> **Recommended model:** \`$_model\`"
+    echo ">"
+    echo "> Skills are portable across agent clients and carry no Copilot-specific"
+    echo "> \`model:\` field. Set the model via the picker or a custom agent."
+    echo
+    awk 'BEGIN{f=0} /^---$/{f++; next} f>=2' "$_prompt"
+  } > "$_skill_dir/SKILL.md"
+
+  # Mark the legacy prompt file as deprecated, in place, once.
+  if ! grep -q 'DEPRECATED — migrate to' "$_prompt"; then
+    _tmp="$(mktemp)"
+    awk -v n="$_name" '
+      BEGIN{f=0; done=0}
+      /^---$/{f++; print; if(f==2 && !done){
+        print "";
+        print "> [!WARNING]";
+        print "> **DEPRECATED — migrate to `.github/skills/" n "/SKILL.md`.**";
+        print "> Prompt files run only in the Local agent harness. Copilot CLI, the";
+        print "> Copilot cloud agent, and Agent Plugins express slash commands as skills.";
+        done=1}
+        next}
+      {print}
+    ' "$_prompt" > "$_tmp" && mv "$_tmp" "$_prompt"
+  fi
+
+  echo "   /$_name → skills/$_name/SKILL.md"
+done
+
+# =============================================================================
 # SUMMARY
 # =============================================================================
 echo ""
@@ -2303,7 +2511,7 @@ echo "   export DB_READONLY_URL=<postgres-connection-string>"
 echo "   export BRAVE_API_KEY=<brave-search-api-key>"
 echo "   export AWS_PROFILE=<your-aws-profile>"
 echo ""
-echo "3. Add repo secrets (for the Copilot coding agent workflow):"
+echo "3. Add repo secrets (for the Copilot cloud agent workflow):"
 echo "   ARTIFACTORY_URL, ARTIFACTORY_USER, ARTIFACTORY_TOKEN"
 echo ""
 echo "4. Enable in-IDE agents and Custom Agent file discovery in VS Code:"

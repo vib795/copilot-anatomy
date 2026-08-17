@@ -2,7 +2,7 @@
 # =============================================================================
 # copilot-discover.sh — Find the right Copilot asset for a task
 # =============================================================================
-# Maps common tasks to prompts, skills, agents, and chat modes in ≤3 steps.
+# Maps common tasks to skills, agents, prompts, and instructions in ≤3 steps.
 #
 # USAGE:
 #   bash copilot-discover.sh                    # Interactive menu
@@ -155,7 +155,7 @@ interactive_menu() {
       echo -e "  ${YELLOW}implement agent${NC}      — Full implementation from a plan"
       echo -e "  ${BOLD}code-reviewer mode${NC}  — Extended review conversation"
       echo ""
-      echo "  Model tip: claude-sonnet-4-5 for code gen, claude-opus-4-5 for thorough review"
+      echo "  Model tip: claude-sonnet-5 for code gen, claude-opus-5 for thorough review"
       ;;
     2)
       echo -e "\n${BOLD}Deployment and release:${NC}\n"
@@ -164,7 +164,7 @@ interactive_menu() {
       echo -e "  ${BLUE}gstack-ship skill${NC}   — Full ship workflow (tests → PR)"
       echo -e "  ${BOLD}devops-engineer mode${NC} — Interactive deployment help"
       echo ""
-      echo "  Model tip: gpt-4.1 for fast CLI output"
+      echo "  Model tip: gpt-5.6-terra for fast CLI output"
       ;;
     3)
       echo -e "\n${BOLD}Debugging:${NC}\n"
@@ -172,7 +172,7 @@ interactive_menu() {
       echo -e "  ${BLUE}gstack-investigate skill${NC} — Root cause analysis"
       echo -e "  ${GREEN}/fix-issue${NC}               — Fix from bug description"
       echo ""
-      echo "  Model tip: claude-sonnet-4-5 for targeted fixes"
+      echo "  Model tip: claude-sonnet-5 for targeted fixes"
       ;;
     4)
       echo -e "\n${BOLD}Security and compliance:${NC}\n"
@@ -180,7 +180,7 @@ interactive_menu() {
       echo -e "  ${BLUE}gstack-cso skill${NC}         — Full security officer review"
       echo -e "  ${BOLD}security-auditor mode${NC}    — Deep security conversation"
       echo ""
-      echo "  Model tip: claude-opus-4-5 for maximum thoroughness"
+      echo "  Model tip: claude-opus-5 for maximum thoroughness"
       ;;
     5)
       echo -e "\n${BOLD}Architecture and planning:${NC}\n"
@@ -189,7 +189,7 @@ interactive_menu() {
       echo -e "  ${BLUE}brainstorming skill${NC}      — Explore approaches first"
       echo -e "  ${BOLD}architect mode${NC}           — Extended design conversation"
       echo ""
-      echo "  Model tip: o3 for deep reasoning, gemini-2.5-pro for large codebases"
+      echo "  Model tip: gpt-5.6-sol for deep reasoning, gpt-5.4 for large codebases"
       ;;
     6)
       echo -e "\n${BOLD}Infrastructure:${NC}\n"
@@ -198,7 +198,7 @@ interactive_menu() {
       echo -e "  ${BLUE}debug-eks skill${NC}          — EKS pod debugging"
       echo -e "  ${BOLD}devops-engineer mode${NC}     — Infrastructure conversation"
       echo ""
-      echo "  Model tip: gpt-4.1 for DevOps commands"
+      echo "  Model tip: gpt-5.6-terra for DevOps commands"
       ;;
     7)
       echo -e "\n${BOLD}Production incident:${NC}\n"

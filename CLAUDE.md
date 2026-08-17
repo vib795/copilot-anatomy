@@ -29,6 +29,7 @@ bash .github/eval/checks/manifest-sync.sh
 bash .github/eval/checks/governance.sh
 bash .github/eval/checks/doc-consistency.sh   # warn-only
 bash .github/eval/checks/deprecation.sh
+bash .github/eval/checks/plugin-manifest.sh   # Agent Plugins 1.0 package validity
 
 # Run a single eval check (the smallest unit of "test" in this repo)
 bash .github/eval/checks/manifest-sync.sh
@@ -69,30 +70,47 @@ Every Copilot asset lives at the intersection of three files. Editing one withou
               (Keep-a-Changelog entry under [Unreleased])
 ```
 
-When you add or rename an asset (`*.prompt.md`, `*.agent.md`, `*.instructions.md`, `skills/*/SKILL.md`):
+When you add or rename an asset (`*.agent.md`, `*.instructions.md`, `skills/*/SKILL.md`, `*.prompt.md`):
 
 1. Add a manifest entry with `path`, `owner`, `classification` (`core`/`workflow`/`extension`), `generated` (bool), `description`.
-2. If frontmatter sets `model:`, the value must exist in `model-compatibility.json`.
-3. Filename must be kebab-case with the right double-extension.
+2. If frontmatter sets `model:`, the value must exist in `model-compatibility.json` **and not be in its `deprecated` block**.
+3. Filename must be kebab-case with the right double-extension. For a skill, the frontmatter `name:` must exactly match its directory name — `plugin-manifest.sh` fails otherwise.
 4. Add a `COPILOT-CHANGELOG.md` entry under `[Unreleased]`.
+5. New slash commands are authored as **skills**, not prompt files.
 
 `manifest-sync.sh` enforces bidirectional consistency — orphan files on disk *and* manifest entries pointing at missing files both fail. See `.github/GOVERNANCE.md` for the full checklist (including the 60-day deprecation grace period enforced by `deprecation.sh`).
 
-## Architecture: the six Copilot primitives
+## Architecture: the Copilot primitives
 
-Each primitive solves a different routing problem. Adding new functionality means picking the right primitive, not invading another:
+Each primitive solves a different routing problem. Adding new functionality means picking the right primitive, not invading another. **Portable** marks what survives a move to another agent tool — Agent Plugins 1.0 standardises only skills and MCP servers:
 
-| Primitive       | Path                              | Trigger                         | When to extend                                    |
-| --------------- | --------------------------------- | ------------------------------- | ------------------------------------------------- |
-| Team prompt     | `.github/copilot-instructions.md` | Always-on                       | Project-wide non-negotiables only (eats context)  |
-| Instructions    | `instructions/*.instructions.md`  | Auto, by `applyTo:` glob        | Language/framework conventions                    |
-| Prompts         | `prompts/*.prompt.md`             | Manual `/command`               | One-shot repeatable tasks                         |
-| Skills          | `skills/<name>/SKILL.md`          | Auto-discovered via description | Multi-step task runbooks; description = keywords  |
-| Custom Agents   | `agents/*.agent.md`               | Agent picker, chained via `handoffs:`, or autonomous | Personas (formerly chatmodes) and task agents (plan→implement→review + 50+ specialist reviewers) |
+| Primitive       | Path                              | Trigger                         | Portable | When to extend                                    |
+| --------------- | --------------------------------- | ------------------------------- | -------- | ------------------------------------------------- |
+| Team prompt     | `.github/copilot-instructions.md` | Always-on                       | Copilot  | Project-wide non-negotiables only (eats context)  |
+| `AGENTS.md`     | root or any subdirectory          | Always-on; nearest file wins    | **Yes**  | Cross-tool context; supports `@path` includes     |
+| Instructions    | `instructions/*.instructions.md`  | Auto, by `applyTo:` glob        | Copilot  | Language/framework conventions; `excludeAgent:` to scope |
+| Skills          | `skills/<name>/SKILL.md`          | Auto-discovered via description, or `/name` | **Yes** | Runbooks **and** slash commands; description = keywords; `name` must match the directory |
+| Custom Agents   | `agents/*.agent.md`               | Agent picker, chained via `handoffs:`, or autonomous | Copilot | Personas (formerly chatmodes) and task agents (plan→implement→review + 50+ specialist reviewers) |
+| Hooks           | `hooks/*.json`                    | 14 lifecycle events             | Copilot  | Policy gates, audit, observability                |
+| Agent Plugin    | `plugin.json` + `skills/` + `mcp.json` | Marketplace install        | **Yes**  | Shipping the whole bundle to other teams          |
+| Prompts ⚠️      | `prompts/*.prompt.md`             | Manual `/command`               | No       | **Legacy — do not add new ones.** Write a skill.  |
 
-Model selection priority: frontmatter `model:` > model picker > Auto. Slash commands and custom-agent frontmatter override the user's picker. See `COPILOT-CHEATSHEET.md` for the comprehensive task → model routing table.
+Model selection priority: frontmatter `model:` > model picker > Auto. Custom-agent frontmatter overrides the user's picker. Skills have **no `model:` field** — they are cross-tool. See `COPILOT-CHEATSHEET.md` for the comprehensive task → model routing table.
+
+> **Prompt files run only in the Local agent harness.** Copilot CLI, the Copilot cloud agent, and Agent Plugins express slash commands as skills. All 10 `.prompt.md` files here were migrated to `.github/skills/<name>/SKILL.md` on 2026-08-17 and deprecated with removal on 2026-11-16; the originals are retained so the legacy format stays documented.
 
 > The legacy `.chatmode.md` primitive was deprecated by GitHub Copilot in 2026; persona "chat modes" are now Custom Agents. The `.github/chatmodes/` directory and the legacy `experimental.chatModes` setting were removed in this repo on 2026-05-07.
+
+> GitHub renamed **"Copilot coding agent" → "Copilot cloud agent"** in April 2026. Use the current name in new content.
+
+## Architecture: model roster currency
+
+`.github/model-compatibility.json` is the source of truth and carries `lastVerified` + `sourceOfTruth`. **Copilot's roster turns over faster than anything else in this repo** — every model this repo originally routed to (`o3`, `o4-mini`, `gpt-4.1`, `gemini-2.5-pro`, `gemini-2.0-flash`) has since been retired, and Claude Sonnet 4.5/4.6 + Opus 4.5/4.6 retire 2026-09-01.
+
+- Re-verify quarterly against <https://docs.github.com/en/copilot/reference/ai-models/supported-models>.
+- Retiring a model means **moving it into the `deprecated` block with a `replaceWith`**, not deleting it — that is what makes `model-refs.sh` failures self-explaining.
+- The `slots` block and `github.copilot.chat.models` in `.vscode/settings.json` mirror each other; change both.
+- 1M context and reasoning level are now per-model **capabilities**, not tiers. Prefer raising reasoning effort over escalating to a pricier model.
 
 ## Architecture: the generator (`copilot-setup.sh`)
 

@@ -1,6 +1,6 @@
 # Copilot Health Dashboard
 
-> Generated: 2026-06-10T22:22:56Z
+> Generated: 2026-08-17T12:06:15Z
 > Health Score: **100%** (Healthy)
 
 ## Asset Inventory
@@ -9,13 +9,13 @@
 |------|-------|
 | Prompts | 10 |
 | Agents | 59 |
-| Skills | 74 |
+| Skills | 84 |
 | Chat modes | 0 |
 | Instruction files | 4 |
-| **Total** | **147** |
-| Deprecated | 0 |
+| **Total** | **157** |
+| Deprecated | 10 |
 
-## Eval Checks (7/7 passing)
+## Eval Checks (8/8 passing)
 
 | Check | Status |
 |-------|--------|
@@ -26,6 +26,7 @@
 | governance | Pass |
 | doc-consistency | Pass |
 | deprecation | Pass |
+| plugin-manifest | Pass |
 
 ## Policy Checks (9 warning(s))
 
