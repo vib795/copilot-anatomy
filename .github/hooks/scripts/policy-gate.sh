@@ -44,8 +44,12 @@ run_check() {
   local name="$1" script="$2" out=""
   [[ -f "$script" ]] || return 0
   out="$(bash "$script" 2>&1 || true)"
-  if printf '%s' "$out" | grep -qE '^(WARN|FAIL):'; then
-    findings+="${name}: $(printf '%s' "$out" | grep -E '^(WARN|FAIL):' | head -3 | tr '\n' '; ')"
+  local hits
+  # No `| head` here: head closing the pipe early raises SIGPIPE, which GNU
+  # grep reports as an error. Slice with awk in-process instead.
+  hits="$(printf '%s\n' "$out" | awk '/^(WARN|FAIL):/ {print; if (++n>=3) exit}' || true)"
+  if [[ -n "$hits" ]]; then
+    findings+="${name}: $(printf '%s' "$hits" | tr '\n' '; ')"
   fi
 }
 
